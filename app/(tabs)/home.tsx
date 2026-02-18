@@ -1,10 +1,21 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '@hooks/useAuth';
 import { useSubscription } from '@hooks/useSubscription';
+import { testSupabaseConnection, testAuth } from '@lib/supabase/test-connection';
 
 export default function HomeScreen() {
   const { user } = useAuth();
   const { isPremium, limits } = useSubscription(user?.id);
+
+  const handleTestConnection = async () => {
+    const result = await testSupabaseConnection();
+    const authResult = await testAuth();
+    
+    Alert.alert(
+      'Supabase Test Results',
+      `Connection: ${result.message}\n\nAuth: ${authResult.authenticated ? `Logged in as ${authResult.user?.email}` : 'Not authenticated'}`
+    );
+  };
 
   const handleDrawCard = () => {
     // TODO: Implement card drawing logic
@@ -52,6 +63,10 @@ export default function HomeScreen() {
           <Text style={styles.promoPrice}>$49/year</Text>
         </View>
       )}
+
+      <Pressable style={styles.testButton} onPress={handleTestConnection}>
+        <Text style={styles.testButtonText}>🔍 Test Supabase Connection</Text>
+      </Pressable>
     </View>
   );
 }
@@ -135,5 +150,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#8b5cf6',
+  },
+  testButton: {
+    marginTop: 20,
+    padding: 12,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    alignItems: 'center',
+  },
+  testButtonText: {
+    fontSize: 14,
+    color: '#6b7280',
   },
 });
