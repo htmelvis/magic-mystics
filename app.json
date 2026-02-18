@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Magic Mystics",
+    "slug": "magic-mystics",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "magic-mystics",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#8b5cf6"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.edwardwieczorek.magicmystics"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#8b5cf6"
+      },
+      "package": "com.edwardwieczorek.magicmystics",
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "react-native-reanimated/plugin"
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    }
+  }
+}
