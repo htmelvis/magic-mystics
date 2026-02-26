@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@lib/supabase/client';
-import type { Subscription, UserLimits } from '@types/user';
+import type { UserLimits } from '@/types/user';
+import type { Database } from '@/types/database';
 
 const FREE_TIER_LIMITS: UserLimits = {
   maxReadingHistory: 30, // Last 30 readings
@@ -14,8 +15,10 @@ const PREMIUM_TIER_LIMITS: UserLimits = {
   hasAIContext: true,
 };
 
+type SubscriptionRow = Database['public']['Tables']['subscriptions']['Row'];
+
 export function useSubscription(userId: string | null | undefined) {
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [subscription, setSubscription] = useState<SubscriptionRow | null>(null);
   const [limits, setLimits] = useState<UserLimits>(FREE_TIER_LIMITS);
   const [loading, setLoading] = useState(true);
 
@@ -49,7 +52,7 @@ export function useSubscription(userId: string | null | undefined) {
     fetchSubscription();
   }, [userId]);
 
-  const isPremium = subscription?.tier === 'premium' && subscription.isActive;
+  const isPremium = subscription?.tier === 'premium' && subscription.is_active;
 
   return {
     subscription,

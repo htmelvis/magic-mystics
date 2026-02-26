@@ -5,6 +5,13 @@ export interface UserProfile {
   email: string;
   displayName: string | null;
   avatarUrl: string | null;
+  birthDate: string | null;
+  birthTime: string | null;
+  birthLocation: string | null;
+  sunSign: string | null;
+  moonSign: string | null;
+  risingSign: string | null;
+  onboardingCompleted: boolean;
   createdAt: string;
   updatedAt: string;
 }

@@ -16,7 +16,7 @@ export default function ProfileScreen() {
         style: 'destructive',
         onPress: async () => {
           await signOut();
-          router.replace('/auth/sign-in');
+          router.replace('/(auth)/sign-in');
         },
       },
     ]);
@@ -34,12 +34,10 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Subscription</Text>
         <View style={styles.subscriptionCard}>
-          <Text style={styles.tierText}>
-            {isPremium ? '✨ Premium Member' : '🌙 Free Tier'}
-          </Text>
-          {isPremium && subscription?.expiryDate && (
+          <Text style={styles.tierText}>{isPremium ? '✨ Premium Member' : '🌙 Free Tier'}</Text>
+          {isPremium && subscription?.expiry_date && (
             <Text style={styles.expiryText}>
-              Expires: {new Date(subscription.expiryDate).toLocaleDateString()}
+              Expires: {new Date(subscription.expiry_date).toLocaleDateString()}
             </Text>
           )}
           {!isPremium && (

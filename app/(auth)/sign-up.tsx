@@ -29,39 +29,52 @@ export default function SignUpScreen() {
       Alert.alert('Error', error.message);
     } else {
       Alert.alert('Success', 'Check your email to verify your account!');
-      router.replace('/auth/sign-in');
+      router.replace('/(onboarding)/welcome');
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
-      <Text style={styles.subtitle}>Start your mystical journey today</Text>
+      <View style={styles.header}>
+        <Text style={styles.emoji}>✨🔮✨</Text>
+        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.subtitle}>Start your mystical journey today</Text>
+      </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
+      <View style={styles.form}>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#9ca3af"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          editable={!loading}
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Password (min 6 characters)"
+          placeholderTextColor="#9ca3af"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          editable={!loading}
+        />
 
-      <Pressable style={styles.button} onPress={handleSignUp} disabled={loading}>
-        <Text style={styles.buttonText}>{loading ? 'Creating Account...' : 'Sign Up'}</Text>
-      </Pressable>
+        <Pressable
+          style={[styles.button, loading && styles.buttonDisabled]}
+          onPress={handleSignUp}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>{loading ? 'Creating Account...' : 'Sign Up'}</Text>
+        </Pressable>
+      </View>
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>Already have an account? </Text>
-        <Link href="/auth/sign-in" asChild>
+        <Link href="/(auth)/sign-in" asChild>
           <Pressable>
             <Text style={styles.link}>Sign In</Text>
           </Pressable>
@@ -74,52 +87,76 @@ export default function SignUpScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 20,
+    justifyContent: 'space-between',
+    padding: 24,
     backgroundColor: '#fff',
+  },
+  header: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emoji: {
+    fontSize: 64,
+    marginBottom: 24,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 8,
     textAlign: 'center',
+    color: '#8b5cf6',
   },
   subtitle: {
     fontSize: 16,
     color: '#666',
-    marginBottom: 32,
     textAlign: 'center',
+    lineHeight: 24,
+  },
+  form: {
+    gap: 16,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 16,
+    backgroundColor: '#f9fafb',
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    padding: 16,
+    borderRadius: 12,
     fontSize: 16,
+    color: '#1f2937',
   },
   button: {
     backgroundColor: '#8b5cf6',
-    padding: 15,
-    borderRadius: 8,
+    padding: 18,
+    borderRadius: 12,
     alignItems: 'center',
     marginTop: 8,
+    shadowColor: '#8b5cf6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
+    paddingBottom: 20,
   },
   footerText: {
     color: '#666',
+    fontSize: 16,
   },
   link: {
     color: '#8b5cf6',
     fontWeight: '600',
+    fontSize: 16,
   },
 });

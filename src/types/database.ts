@@ -1,34 +1,173 @@
-import type { Reading, Reflection, PPFReading } from './tarot';
-import type { UserProfile, Subscription } from './user';
+/**
+ * Database type definitions mirroring the actual Supabase schema.
+ *
+ * All types use snake_case column names to match PostgreSQL and satisfy
+ * Supabase's GenericTable / GenericSchema constraints. These are intentionally
+ * separate from the camelCase app-layer types in user.ts / tarot.ts.
+ */
 
 export interface Database {
   public: {
     Tables: {
       users: {
-        Row: UserProfile;
-        Insert: Omit<UserProfile, 'id' | 'createdAt' | 'updatedAt'>;
-        Update: Partial<Omit<UserProfile, 'id' | 'createdAt'>>;
+        Row: {
+          id: string;
+          email: string;
+          display_name: string | null;
+          avatar_url: string | null;
+          birth_date: string | null;
+          birth_time: string | null;
+          birth_location: string | null;
+          sun_sign: string | null;
+          moon_sign: string | null;
+          rising_sign: string | null;
+          onboarding_completed: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          email: string;
+          display_name?: string | null;
+          avatar_url?: string | null;
+          birth_date?: string | null;
+          birth_time?: string | null;
+          birth_location?: string | null;
+          sun_sign?: string | null;
+          moon_sign?: string | null;
+          rising_sign?: string | null;
+          onboarding_completed?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          email?: string;
+          display_name?: string | null;
+          avatar_url?: string | null;
+          birth_date?: string | null;
+          birth_time?: string | null;
+          birth_location?: string | null;
+          sun_sign?: string | null;
+          moon_sign?: string | null;
+          rising_sign?: string | null;
+          onboarding_completed?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       subscriptions: {
-        Row: Subscription;
-        Insert: Omit<Subscription, 'id'>;
-        Update: Partial<Omit<Subscription, 'id' | 'userId'>>;
+        Row: {
+          id: string;
+          user_id: string;
+          tier: 'free' | 'premium';
+          start_date: string;
+          expiry_date: string | null;
+          is_active: boolean;
+          auto_renew: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          tier: 'free' | 'premium';
+          start_date?: string;
+          expiry_date?: string | null;
+          is_active?: boolean;
+          auto_renew?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          tier?: 'free' | 'premium';
+          start_date?: string;
+          expiry_date?: string | null;
+          is_active?: boolean;
+          auto_renew?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       readings: {
-        Row: Reading;
-        Insert: Omit<Reading, 'id' | 'createdAt' | 'updatedAt'>;
-        Update: Partial<Omit<Reading, 'id' | 'userId' | 'createdAt'>>;
+        Row: {
+          id: string;
+          user_id: string;
+          spread_type: 'daily' | 'past-present-future';
+          drawn_cards: unknown;
+          ai_insight: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          spread_type: 'daily' | 'past-present-future';
+          drawn_cards: unknown;
+          ai_insight?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          spread_type?: 'daily' | 'past-present-future';
+          drawn_cards?: unknown;
+          ai_insight?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       reflections: {
-        Row: Reflection;
-        Insert: Omit<Reflection, 'id' | 'createdAt' | 'updatedAt'>;
-        Update: Partial<Omit<Reflection, 'id' | 'userId' | 'readingId' | 'createdAt'>>;
+        Row: {
+          id: string;
+          reading_id: string;
+          user_id: string;
+          content: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          reading_id: string;
+          user_id: string;
+          content: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          content?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       ppf_readings: {
-        Row: PPFReading;
-        Insert: Omit<PPFReading, 'id' | 'createdAt'>;
-        Update: Partial<Omit<PPFReading, 'id' | 'userId' | 'createdAt'>>;
+        Row: {
+          id: string;
+          user_id: string;
+          past_card: unknown;
+          present_card: unknown;
+          future_card: unknown;
+          ai_insight: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          past_card: unknown;
+          present_card: unknown;
+          future_card: unknown;
+          ai_insight?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          past_card?: unknown;
+          present_card?: unknown;
+          future_card?: unknown;
+          ai_insight?: string | null;
+        };
+        Relationships: [];
       };
     };
+    Views: { [_ in never]: never };
+    Functions: { [_ in never]: never };
+    Enums: { [_ in never]: never };
   };
 }

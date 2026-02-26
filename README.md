@@ -12,7 +12,7 @@ A daily tarot pull mobile application for iOS and Android, built with React Nati
 - **User Reflections**: Journal your thoughts on each reading
 - **Subscription Tiers**:
   - Free: 30 readings history, basic features
-  - Premium ($49/year): Unlimited history, monthly PPF spread, AI with historical context
+  - Premium ($--/year): Unlimited history, monthly PPF spread, AI with historical context
 
 ### Upcoming Features
 
@@ -32,7 +32,7 @@ A daily tarot pull mobile application for iOS and Android, built with React Nati
 
 ## Project Structure
 
-```
+```bash
 magic-mystics/
 ├── app/                      # Expo Router file-based routing
 │   ├── (auth)/              # Authentication screens
@@ -77,20 +77,20 @@ magic-mystics/
 
 ### Installation
 
-1. Clone the repository:
+- Clone the repository:
 
 ```bash
 git clone <repository-url>
 cd magic-mystics
 ```
 
-2. Install dependencies:
+- Install dependencies:
 
 ```bash
 npm install
 ```
 
-3. Set up environment variables:
+- Set up environment variables:
 
 ```bash
 cp .env.example .env
@@ -98,7 +98,7 @@ cp .env.example .env
 
 Edit `.env` and add your keys:
 
-```
+```bash
 EXPO_PUBLIC_SUPABASE_URL=your-supabase-project-url
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 OPENAI_API_KEY=your-openai-api-key
@@ -107,7 +107,7 @@ ANTHROPIC_API_KEY=your-anthropic-api-key
 
 ### Supabase Setup
 
-1. Create a new Supabase project at https://supabase.com
+1. Create a new Supabase project at [https://supabase.com]
 2. Run the database migrations in `supabase/migrations/`
 3. Enable Row Level Security (RLS) on all tables
 4. Copy your project URL and anon key to `.env`
