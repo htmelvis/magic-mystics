@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    // "newArchEnabled": true,
     "scheme": "magic-mystics",
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -23,7 +23,7 @@
         "backgroundColor": "#8b5cf6"
       },
       "package": "com.edwardwieczorek.magicmystics",
-      "edgeToEdgeEnabled": true,
+      // "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -37,6 +37,7 @@
         "origin": false
       },
       "eas": {
+        // links to the EAS project, used for EAS Update and other services
         "projectId": "your-project-id"
       }
     }

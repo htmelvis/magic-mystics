@@ -18,6 +18,7 @@ const PREMIUM_TIER_LIMITS: UserLimits = {
 type SubscriptionRow = Database['public']['Tables']['subscriptions']['Row'];
 
 export function useSubscription(userId: string | null | undefined) {
+  console.log(userId, 'useSubscription called with userId');
   const [subscription, setSubscription] = useState<SubscriptionRow | null>(null);
   const [limits, setLimits] = useState<UserLimits>(FREE_TIER_LIMITS);
   const [loading, setLoading] = useState(true);
@@ -34,8 +35,8 @@ export function useSubscription(userId: string | null | undefined) {
       const { data, error } = await supabase
         .from('subscriptions')
         .select('*')
-        .eq('userId', userId)
-        .eq('isActive', true)
+        .eq('user_id', userId)
+        .eq('is_active', true)
         .single();
 
       if (error) {
