@@ -1,50 +1,24 @@
-import { useState, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAuth } from '@hooks/useAuth';
 import { useSubscription } from '@hooks/useSubscription';
-import { supabase } from '@lib/supabase/client';
-import { UserProfile } from '@types/user';
+import { useUserProfile } from '@hooks/useUserProfile';
+import { useDailyMetaphysical } from '@hooks/useDailyMetaphysical';
+import { useJourneyStats } from '@hooks/useJourneyStats';
+import { Screen, Card, Button, Badge } from '@components/ui';
+import { CosmicWeatherCard } from '@/components/home/CosmicWeatherCard';
+import { theme } from '@theme';
 
 export default function HomeScreen() {
   const { user } = useAuth();
-  const { isPremium, limits } = useSubscription(user?.id);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (!error && data) {
-        setUserProfile({
-          id: data.id,
-          email: data.email,
-          displayName: data.display_name,
-          avatarUrl: data.avatar_url,
-          birthDate: data.birth_date,
-          birthTime: data.birth_time,
-          birthLocation: data.birth_location,
-          sunSign: data.sun_sign,
-          moonSign: data.moon_sign,
-          risingSign: data.rising_sign,
-          onboardingCompleted: data.onboarding_completed,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at,
-        });
-      }
-    };
-
-    fetchUserProfile();
-  }, [user]);
+  const { isPremium } = useSubscription(user?.id);
+  const { userProfile } = useUserProfile(user?.id);
+  const { data: cosmic, isLoading: cosmicLoading } = useDailyMetaphysical();
+  const { data: stats } = useJourneyStats(user?.id);
+  const router = useRouter();
 
   const handleDrawCard = () => {
-    // TODO: Implement card drawing logic
-    console.warn('Draw card functionality coming soon!');
+    router.push('/draw');
   };
 
   const handlePPFSpread = () => {
@@ -64,19 +38,22 @@ export default function HomeScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <Screen>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.greeting}>{getGreeting()}</Text>
         <Text style={styles.userName}>{userProfile?.displayName || user?.email}</Text>
-        {userProfile?.sunSign && (
-          <View style={styles.zodiacBadge}>
-            <Text style={styles.zodiacText}>
-              ☀️ {userProfile.sunSign} • 🌙 {userProfile.moonSign} • ⬆️ {userProfile.risingSign}
-            </Text>
-          </View>
-        )}
+      {userProfile?.sunSign && (
+        <Badge 
+          label={`☀️ ${userProfile.sunSign} • 🌙 ${userProfile.moonSign} • ⬆️ ${userProfile.risingSign}`}
+          variant="primary"
+          size="md"
+        />
+      )}
       </View>
+
+      {/* Cosmic Weather */}
+      <CosmicWeatherCard cosmic={cosmic} isLoading={cosmicLoading} />
 
       {/* Main Actions */}
       <View style={styles.actionsContainer}>
@@ -127,179 +104,149 @@ export default function HomeScreen() {
           <Text style={styles.statsTitle}>Your Journey</Text>
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>0</Text>
+              <Text style={styles.statNumber}>{stats?.readings ?? '—'}</Text>
               <Text style={styles.statLabel}>Readings</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>0</Text>
+              <Text style={styles.statNumber}>{stats?.reflections ?? '—'}</Text>
               <Text style={styles.statLabel}>Reflections</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>0</Text>
+              <Text style={styles.statNumber}>{stats?.daysActive ?? '—'}</Text>
               <Text style={styles.statLabel}>Days Active</Text>
             </View>
           </View>
         </View>
       )}
-    </ScrollView>
+    </Screen>
   );
 }
 
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fafafa',
-  },
-  contentContainer: {
-    padding: 20,
-    paddingBottom: 40,
-  },
   header: {
-    marginTop: 20,
-    marginBottom: 32,
+    marginTop: theme.spacing.lg,
+    marginBottom: theme.spacing.xxl,
   },
   greeting: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 4,
+    ...theme.textStyles.body,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing.xxs,
   },
   userName: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 12,
-  },
-  zodiacBadge: {
-    backgroundColor: '#f3e8ff',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-  },
-  zodiacText: {
-    fontSize: 14,
-    color: '#8b5cf6',
-    fontWeight: '600',
+    ...theme.textStyles.h1,
+    marginBottom: theme.spacing.sm,
   },
   actionsContainer: {
-    gap: 16,
-    marginBottom: 24,
+    gap: theme.spacing.md,
+    marginBottom: theme.spacing.xl,
   },
   primaryButton: {
-    backgroundColor: '#8b5cf6',
-    padding: 24,
-    borderRadius: 16,
+    backgroundColor: theme.colors.brand.primary,
+    padding: theme.spacing.xl,
+    borderRadius: theme.borderRadius.card,
     alignItems: 'center',
-    shadowColor: '#8b5cf6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    ...theme.shadows.button,
   },
   primaryButtonIcon: {
     fontSize: 32,
-    marginBottom: 8,
+    marginBottom: theme.spacing.xs,
   },
   primaryButtonText: {
-    color: '#fff',
+    color: theme.colors.text.inverse,
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: theme.spacing.xxs,
   },
   primaryButtonSubtext: {
-    color: '#f3e8ff',
+    color: theme.colors.brand.primaryMuted,
     fontSize: 14,
   },
   secondaryButton: {
-    backgroundColor: '#fff',
-    padding: 24,
-    borderRadius: 16,
+    backgroundColor: theme.colors.surface.card,
+    padding: theme.spacing.xl,
+    borderRadius: theme.borderRadius.card,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e5e7eb',
+    borderColor: theme.colors.border.main,
   },
   secondaryButtonIcon: {
     fontSize: 32,
-    marginBottom: 8,
+    marginBottom: theme.spacing.xs,
   },
   secondaryButtonText: {
-    color: '#1f2937',
+    color: theme.colors.text.primary,
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: theme.spacing.xxs,
   },
   secondaryButtonSubtext: {
-    color: '#666',
+    color: theme.colors.text.secondary,
     fontSize: 14,
   },
   disabledButton: {
     opacity: 0.5,
   },
   promoCard: {
-    backgroundColor: '#fff',
-    padding: 24,
-    borderRadius: 16,
+    backgroundColor: theme.colors.surface.card,
+    padding: theme.spacing.xl,
+    borderRadius: theme.borderRadius.card,
     borderWidth: 2,
-    borderColor: '#8b5cf6',
-    marginBottom: 24,
+    borderColor: theme.colors.brand.primary,
+    marginBottom: theme.spacing.xl,
   },
   promoIcon: {
     fontSize: 32,
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: theme.spacing.sm,
   },
   promoTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    color: '#8b5cf6',
+    ...theme.textStyles.h2,
+    marginBottom: theme.spacing.md,
+    color: theme.colors.brand.primary,
     textAlign: 'center',
   },
   promoFeatures: {
-    gap: 8,
-    marginBottom: 20,
+    gap: theme.spacing.xs,
+    marginBottom: theme.spacing.lg,
   },
   promoFeature: {
-    fontSize: 15,
-    lineHeight: 24,
-    color: '#666',
+    ...theme.textStyles.body,
+    color: theme.colors.text.secondary,
   },
   promoFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 16,
+    paddingTop: theme.spacing.md,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: theme.colors.border.main,
   },
   promoPrice: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#8b5cf6',
+    color: theme.colors.brand.primary,
   },
   upgradeButton: {
-    backgroundColor: '#8b5cf6',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+    backgroundColor: theme.colors.brand.primary,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
   },
   upgradeButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: theme.colors.text.inverse,
+    ...theme.textStyles.button,
   },
   statsCard: {
-    backgroundColor: '#fff',
-    padding: 24,
-    borderRadius: 16,
+    backgroundColor: theme.colors.surface.card,
+    padding: theme.spacing.xl,
+    borderRadius: theme.borderRadius.card,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: theme.colors.border.main,
   },
   statsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 20,
+    ...theme.textStyles.h3,
+    marginBottom: theme.spacing.lg,
     textAlign: 'center',
   },
   statsRow: {
@@ -312,11 +259,11 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#8b5cf6',
-    marginBottom: 4,
+    color: theme.colors.brand.primary,
+    marginBottom: theme.spacing.xxs,
   },
   statLabel: {
-    fontSize: 14,
-    color: '#666',
+    ...theme.textStyles.bodySmall,
+    color: theme.colors.text.secondary,
   },
 });

@@ -1,0 +1,37 @@
+-- =====================================================
+-- Migration 004: Enable pg_cron and pg_net
+-- Schedules the daily-metaphysical edge function
+-- =====================================================
+
+-- Enable pg_net (HTTP client — safe to create via SQL)
+CREATE EXTENSION IF NOT EXISTS pg_net SCHEMA extensions;
+
+-- NOTE: pg_cron must be enabled via the Supabase dashboard, NOT via SQL.
+-- Supabase runs an internal after-create hook that fails when triggered from
+-- a migration. Enable it at:
+--   Dashboard → Database → Extensions → search "pg_cron" → toggle on
+--
+-- ── Schedule (run AFTER enabling pg_cron in the dashboard) ───────────────────
+-- Open the SQL editor and run the block below with your actual values:
+--
+--   SELECT cron.schedule(
+--     'daily-metaphysical',
+--     '1 0 * * *',
+--     $$
+--     SELECT net.http_post(
+--       url        := 'https://<PROJECT_REF>.supabase.co/functions/v1/daily-metaphysical',
+--       headers    := '{"Content-Type":"application/json","Authorization":"Bearer <SERVICE_ROLE_KEY>"}'::jsonb,
+--       body       := '{}'::jsonb,
+--       timeout_milliseconds := 30000
+--     );
+--     $$
+--   );
+--
+-- Find <PROJECT_REF>:      Dashboard → Settings → General
+-- Find <SERVICE_ROLE_KEY>: Dashboard → Settings → API → Project API keys
+--
+-- Useful follow-up queries:
+--   SELECT * FROM cron.job;                             -- view scheduled jobs
+--   SELECT cron.unschedule('daily-metaphysical');        -- remove the schedule
+--   -- Backfill a date: GET /functions/v1/daily-metaphysical?date=YYYY-MM-DD
+-- ─────────────────────────────────────────────────────────────────────────────

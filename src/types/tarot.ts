@@ -1,5 +1,20 @@
 export type TarotCardSuit = 'major' | 'wands' | 'cups' | 'swords' | 'pentacles';
 
+/**
+ * Snapshot stored in readings.drawn_cards JSONB.
+ * Intentionally denormalized — captures enough identity to render history
+ * lists without joining back to tarot_cards. Full card details (meanings,
+ * symbolism, imagery) are fetched on demand from tarot_cards by id.
+ */
+export interface DrawnCardRecord {
+  cardId: number;
+  cardName: string;
+  arcana: 'Major' | 'Minor';
+  suit: 'Wands' | 'Cups' | 'Swords' | 'Pentacles' | null;
+  orientation: TarotCardOrientation;
+  position: 'past' | 'present' | 'future' | null;
+}
+
 export type TarotCardOrientation = 'upright' | 'reversed';
 
 export interface TarotCard {

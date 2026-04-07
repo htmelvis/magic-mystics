@@ -1,5 +1,7 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Screen, Button } from '@components/ui';
+import { theme } from '@theme';
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -9,35 +11,40 @@ export default function WelcomeScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.emoji}>🔮✨</Text>
-        <Text style={styles.title}>Welcome to Magic Mystics</Text>
-        <Text style={styles.subtitle}>
-          Your personal tarot and astrology companion
-        </Text>
+    <Screen scroll={false} padding={false}>
+      <View style={styles.container}>
+        <View style={styles.content}>
+          <Text style={styles.emoji}>🔮✨</Text>
+          <Text style={styles.title}>Welcome to Magic Mystics</Text>
+          <Text style={styles.subtitle}>
+            Your personal tarot and astrology companion
+          </Text>
 
-        <View style={styles.descriptionContainer}>
-          <Text style={styles.description}>
-            To provide you with personalized insights, we'll need a few details about you.
-          </Text>
-          <Text style={styles.description}>
-            We'll calculate your Sun, Moon, and Rising signs to enhance your daily readings.
-          </Text>
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.description}>
+              To provide you with personalized insights, we'll need a few details about you.
+            </Text>
+            <Text style={styles.description}>
+              We'll calculate your Sun, Moon, and Rising signs to enhance your daily readings.
+            </Text>
+          </View>
         </View>
-      </View>
 
-      <Pressable style={styles.button} onPress={handleGetStarted}>
-        <Text style={styles.buttonText}>Get Started</Text>
-      </Pressable>
-    </View>
+        <Button 
+          title="Get Started" 
+          onPress={handleGetStarted}
+          fullWidth
+          size="lg"
+        />
+      </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
+    padding: theme.spacing.xl,
     justifyContent: 'space-between',
   },
   content: {
@@ -47,41 +54,27 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: 80,
-    marginBottom: 24,
+    marginBottom: theme.spacing.xl,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#8b5cf6',
+    ...theme.textStyles.display,
+    color: theme.colors.brand.primary,
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: theme.spacing.sm,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#666',
+    ...theme.textStyles.h3,
+    color: theme.colors.text.secondary,
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: theme.spacing.xxxl,
   },
   descriptionContainer: {
-    gap: 16,
-    paddingHorizontal: 20,
+    gap: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
   },
   description: {
-    fontSize: 16,
-    color: '#666',
+    ...theme.textStyles.body,
+    color: theme.colors.text.secondary,
     textAlign: 'center',
-    lineHeight: 24,
-  },
-  button: {
-    backgroundColor: '#8b5cf6',
-    padding: 18,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
   },
 });

@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingTop: 60,
+    paddingTop: 16,
   },
   progress: {
     fontSize: 14,

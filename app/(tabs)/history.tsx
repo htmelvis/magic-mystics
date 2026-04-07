@@ -1,62 +1,167 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '@hooks/useAuth';
 import { useSubscription } from '@hooks/useSubscription';
+import { useReadings } from '@hooks/useReadings';
+import type { ReadingRow } from '@hooks/useReadings';
+import { ReadingListItem, ReadingDrawer, SkeletonRow } from '@/components/history';
+import { theme } from '@theme';
+
+// ── Screen ────────────────────────────────────────────────────────────────────
 
 export default function HistoryScreen() {
   const { user } = useAuth();
-  const { limits } = useSubscription(user?.id);
+  const { limits, isPremium } = useSubscription(user?.id);
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+    refetch,
+    isRefetching,
+  } = useReadings(user?.id, limits.maxReadingHistory);
+
+  const [selectedReading, setSelectedReading] = useState<ReadingRow | null>(null);
+
+  const readings = useMemo(() => data?.pages.flat() ?? [], [data]);
+
+  const openDrawer = useCallback((r: ReadingRow) => setSelectedReading(r), []);
+  const closeDrawer = useCallback(() => setSelectedReading(null), []);
+
+  const onEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const renderItem = useCallback(
+    ({ item }: { item: ReadingRow }) => (
+      <ReadingListItem reading={item} onPress={openDrawer} />
+    ),
+    [openDrawer]
+  );
+
+  const keyExtractor = useCallback((item: ReadingRow) => item.id, []);
+
+  const ListHeader = (
+    <View style={screenStyles.listHeader}>
+      <Text style={screenStyles.title}>Reading History</Text>
+      <Text style={screenStyles.subtitle}>
+        {isPremium
+          ? `${readings.length} reading${readings.length !== 1 ? 's' : ''}`
+          : `${readings.length} of ${limits.maxReadingHistory}`}
+      </Text>
+    </View>
+  );
+
+  const ListEmpty = isLoading ? (
+    <View style={screenStyles.skeletons}>
+      <SkeletonRow />
+      <SkeletonRow />
+      <SkeletonRow />
+    </View>
+  ) : (
+    <View style={screenStyles.emptyState}>
+      <Text style={screenStyles.emptyIcon}>🔮</Text>
+      <Text style={screenStyles.emptyTitle}>No readings yet</Text>
+      <Text style={screenStyles.emptyBody}>
+        Draw your first card from the Home screen to begin your journey.
+      </Text>
+    </View>
+  );
+
+  const ListFooter = (
+    <View style={screenStyles.footer}>
+      {isFetchingNextPage && (
+        <ActivityIndicator color={theme.colors.brand.primary} size="small" style={{ marginVertical: 16 }} />
+      )}
+      {!isPremium && !isLoading && readings.length >= limits.maxReadingHistory && (
+        <View style={screenStyles.upgradePrompt}>
+          <Text style={screenStyles.upgradeText}>
+            Upgrade to Premium to unlock your full reading history.
+          </Text>
+        </View>
+      )}
+      {isPremium && !hasNextPage && readings.length > 0 && (
+        <Text style={screenStyles.caughtUp}>You're all caught up ✦</Text>
+      )}
+    </View>
+  );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Reading History</Text>
-      <Text style={styles.subtitle}>
-        {limits.maxReadingHistory === -1
-          ? 'Unlimited history'
-          : `Last ${limits.maxReadingHistory} readings`}
-      </Text>
+    <>
+      <FlatList
+        data={readings}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        style={screenStyles.list}
+        contentContainerStyle={screenStyles.content}
+        ListHeaderComponent={ListHeader}
+        ListEmptyComponent={ListEmpty}
+        ListFooterComponent={ListFooter}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={0.4}
+        onRefresh={refetch}
+        refreshing={isRefetching}
+        removeClippedSubviews
+        initialNumToRender={12}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+      />
 
-      <View style={styles.emptyState}>
-        <Text style={styles.emptyText}>No readings yet</Text>
-        <Text style={styles.emptySubtext}>
-          Draw your first card from the Home screen to begin your journey
-        </Text>
-      </View>
-    </View>
+      <ReadingDrawer reading={selectedReading} onClose={closeDrawer} />
+    </>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
+// ── Styles ────────────────────────────────────────────────────────────────────
+
+const screenStyles = StyleSheet.create({
+  list: { flex: 1, backgroundColor: theme.colors.surface.subtle },
+  content: { padding: theme.spacing.lg, paddingBottom: 40 },
+  listHeader: { paddingTop: theme.spacing.lg, marginBottom: theme.spacing.lg },
+  title: { 
+    fontSize: 28, 
+    fontWeight: 'bold', 
+    color: theme.colors.text.primary, 
+    marginBottom: 4 
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginTop: 60,
-    marginBottom: 8,
+  subtitle: { fontSize: theme.typography.fontSize.sm, color: theme.colors.text.muted },
+  skeletons: { gap: 0 },
+  emptyState: { 
+    paddingTop: 80, 
+    alignItems: 'center', 
+    paddingHorizontal: 40 
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 24,
+  emptyIcon: { fontSize: 48, marginBottom: theme.spacing.lg },
+  emptyTitle: { 
+    fontSize: theme.typography.fontSize.xl, 
+    fontWeight: '700', 
+    color: theme.colors.text.secondary, 
+    marginBottom: theme.spacing.sm 
   },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
+  emptyBody: { 
+    fontSize: theme.typography.fontSize.base, 
+    color: theme.colors.text.muted, 
+    textAlign: 'center', 
+    lineHeight: 22 
+  },
+  footer: { paddingTop: theme.spacing.sm },
+  upgradePrompt: {
+    backgroundColor: theme.colors.brand.purple[50],
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.lg,
     alignItems: 'center',
-    paddingHorizontal: 40,
   },
-  emptyText: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 8,
+  upgradeText: { 
+    fontSize: theme.typography.fontSize.sm, 
+    color: theme.colors.brand.purple[600], 
+    textAlign: 'center', 
+    fontWeight: '600' 
   },
-  emptySubtext: {
-    fontSize: 16,
-    color: '#999',
-    textAlign: 'center',
+  caughtUp: { 
+    textAlign: 'center', 
+    fontSize: theme.typography.fontSize.sm, 
+    color: theme.colors.text.muted, 
+    paddingVertical: theme.spacing.lg 
   },
 });

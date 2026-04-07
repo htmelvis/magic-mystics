@@ -1,42 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@lib/supabase/client';
 
+async function fetchOnboardingStatus(userId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('users')
+    .select('onboarding_completed')
+    .eq('id', userId)
+    .single();
+
+  if (error) throw error;
+  return data?.onboarding_completed ?? false;
+}
+
 export function useOnboarding(userId: string | undefined) {
-  const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
+  const { data: onboardingCompleted, isPending } = useQuery({
+    queryKey: ['onboarding', userId],
+    queryFn: () => fetchOnboardingStatus(userId!),
+    enabled: !!userId,
+  });
+
+  // Realtime subscription so calculating.tsx completing onboarding
+  // immediately updates the layout without waiting for a refetch.
   useEffect(() => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
+    if (!userId) return;
 
-    const checkOnboardingStatus = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('onboarding_completed')
-          .eq('id', userId)
-          .single();
-
-        if (error) {
-          console.warn('Error checking onboarding status:', error);
-          setOnboardingCompleted(false);
-        } else {
-          setOnboardingCompleted(data?.onboarding_completed ?? false);
-        }
-      } catch (error) {
-        console.warn('Error in useOnboarding:', error);
-        setOnboardingCompleted(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkOnboardingStatus();
-
-    // Subscribe to realtime updates so the layout reflects completion
-    // immediately when calculating.tsx writes onboarding_completed: true.
     const channel = supabase
       .channel(`onboarding-${userId}`)
       .on(
@@ -45,7 +35,7 @@ export function useOnboarding(userId: string | undefined) {
         (payload) => {
           const row = payload.new as Record<string, unknown>;
           if (typeof row['onboarding_completed'] === 'boolean') {
-            setOnboardingCompleted(row['onboarding_completed']);
+            queryClient.setQueryData(['onboarding', userId], row['onboarding_completed']);
           }
         }
       )
@@ -54,7 +44,12 @@ export function useOnboarding(userId: string | undefined) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId]);
+  }, [userId, queryClient]);
 
-  return { onboardingCompleted, loading };
+  return {
+    onboardingCompleted: onboardingCompleted ?? null,
+    // isPending is true when enabled:false (no userId yet), so the layout
+    // correctly waits rather than evaluating with null onboardingCompleted.
+    loading: isPending,
+  };
 }

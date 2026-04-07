@@ -31,7 +31,7 @@ INSERT INTO crystals (name, scientific_name, color, chakra, element, planetary_r
 
 ('Moss Agate', 'Chalcedony', ARRAY['Green', 'White'], ARRAY['Heart'], 'Earth', 'Moon',
  ARRAY['abundance', 'grounding', 'stability'],
- 'Virgo's stone. Connects to nature, promotes new beginnings and growth.',
+ 'Virgo''s stone. Connects to nature, promotes new beginnings and growth.',
  'Form of chalcedony with mineral inclusions'),
 
 -- Air Sign Crystals
@@ -53,7 +53,7 @@ INSERT INTO crystals (name, scientific_name, color, chakra, element, planetary_r
 -- Water Sign Crystals
 ('Moonstone', 'Feldspar', ARRAY['White', 'Peach', 'Blue'], ARRAY['Crown', 'Sacral'], 'Water', 'Moon',
  ARRAY['intuition', 'emotional balance', 'feminine energy', 'new beginnings'],
- 'Cancer's primary stone. Enhances intuition and emotional intelligence.',
+ 'Cancer''s primary stone. Enhances intuition and emotional intelligence.',
  'Hardness 6-6.5, displays adularescence'),
 
 ('Amethyst', 'Silicon Dioxide', ARRAY['Purple', 'Violet'], ARRAY['Third Eye', 'Crown'], 'Water', 'Jupiter',

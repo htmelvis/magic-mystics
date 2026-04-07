@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@hooks/useAuth';
 import { supabase } from '@lib/supabase/client';
 import { calculateAstrologyData } from '@lib/astrology/calculate-signs';
@@ -14,6 +15,7 @@ export default function CalculatingScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [status, setStatus] = useState('Calculating your signs...');
   const hasRun = useRef(false);
 
@@ -100,11 +102,11 @@ export default function CalculatingScreen() {
             });
         }
 
-        // Navigate to home
+        // Update cache immediately so the layout's effect fires and navigates to home.
+        // This avoids a race where router.replace runs while onboardingCompleted is
+        // still false in cache, causing the layout to redirect back to onboarding.
         setStatus('All set! Taking you to your dashboard...');
-        setTimeout(() => {
-          router.replace('/(tabs)/home');
-        }, 1500);
+        queryClient.setQueryData(['onboarding', user.id], true);
       } catch (error) {
         console.warn('Error completing onboarding:', error);
         setStatus('Something went wrong. Please try again.');
