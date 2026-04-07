@@ -6,6 +6,7 @@ import { GluestackUIProvider } from '@gluestack-ui/themed';
 import { config } from '../gluestack-ui.config';
 import { useAuth } from '@hooks/useAuth';
 import { useOnboarding } from '@hooks/useOnboarding';
+import { ThemeProvider } from '@/context/ThemeContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -61,12 +62,14 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   return (
-    <GluestackUIProvider config={config}>
-      <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
-          <RootLayoutNav />
-        </QueryClientProvider>
-      </SafeAreaProvider>
-    </GluestackUIProvider>
+    <ThemeProvider>
+      <GluestackUIProvider config={config}>
+        <SafeAreaProvider>
+          <QueryClientProvider client={queryClient}>
+            <RootLayoutNav />
+          </QueryClientProvider>
+        </SafeAreaProvider>
+      </GluestackUIProvider>
+    </ThemeProvider>
   );
 }

@@ -1,7 +1,6 @@
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import { View, StyleSheet, ViewStyle, Animated } from 'react-native';
 import { theme } from '@theme';
 import { useEffect, useRef } from 'react';
-import { Animated } from 'react-native';
 
 export type LoadingVariant = 'text' | 'card' | 'avatar' | 'custom';
 
@@ -46,16 +45,18 @@ export function LoadingState({
 
   return (
     <Animated.View
-      style={[
-        styles.skeleton,
-        {
-          width,
-          height: height || defaultHeight,
-          opacity,
-        },
-        variant === 'avatar' && styles.avatar,
-        style,
-      ]}
+      style={
+        [
+          styles.skeleton,
+          variant === 'avatar' && styles.avatar,
+          style,
+          {
+            width,
+            height: height || defaultHeight,
+            opacity,
+          },
+        ] as any
+      }
     />
   );
 }

@@ -7,7 +7,7 @@ export interface CardProps {
   children: React.ReactNode;
   variant?: CardVariant;
   onPress?: () => void;
-  padding?: keyof typeof theme.spacing;
+  padding?: number | keyof Omit<typeof theme.spacing, 'safeArea' | 'unit'>;
   style?: ViewStyle;
 }
 
@@ -18,22 +18,24 @@ export function Card({
   padding = 'cardPadding',
   style,
 }: CardProps) {
-  const paddingValue = theme.spacing[padding];
+  const paddingValue = typeof padding === 'number' 
+    ? padding 
+    : theme.spacing[padding as keyof Omit<typeof theme.spacing, 'safeArea' | 'unit'>];
 
-  const cardStyles = [
+  const cardStyles: ViewStyle[] = [
     styles.card,
-    styles[`card_${variant}`],
-    { padding: paddingValue },
-    style,
+    styles[`card_${variant}`] as ViewStyle,
+    { padding: paddingValue as number },
+    style || {},
   ];
 
   if (onPress) {
     return (
       <Pressable
-        style={({ pressed }) => [
-          ...cardStyles,
-          pressed && styles.card_pressed,
-        ]}
+        style={({ pressed }) => {
+          const pressedStyle = pressed ? styles.card_pressed : {};
+          return [...cardStyles, pressedStyle];
+        }}
         onPress={onPress}
       >
         {children}
