@@ -57,6 +57,9 @@ function RootLayoutNav() {
       <Stack.Screen name="(onboarding)" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="draw" options={{ headerShown: false, presentation: 'card' }} />
+      <Stack.Protected guard={__DEV__}>
+        <Stack.Screen name="storybook" options={{ headerShown: false }} />
+      </Stack.Protected>
     </Stack>
   );
 }
