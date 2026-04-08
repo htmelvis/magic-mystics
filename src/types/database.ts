@@ -229,6 +229,52 @@ export interface Database {
         };
         Relationships: [];
       };
+      daily_metaphysical_data: {
+        Row: {
+          id: number;
+          date: string;
+          lucky_numbers: number[] | null;
+          lucky_colors: string[] | null;
+          recommended_crystal_id: number | null;
+          recommended_tarot_card_id: number | null;
+          moon_phase: string | null;
+          moon_sign_id: number | null;
+          retrograde_planets: string[] | null;
+          energy_theme: string | null;
+          advice: string | null;
+          metadata: unknown;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          date: string;
+          lucky_numbers?: number[] | null;
+          lucky_colors?: string[] | null;
+          recommended_crystal_id?: number | null;
+          recommended_tarot_card_id?: number | null;
+          moon_phase?: string | null;
+          moon_sign_id?: number | null;
+          retrograde_planets?: string[] | null;
+          energy_theme?: string | null;
+          advice?: string | null;
+          metadata?: unknown;
+          created_at?: string;
+        };
+        Update: {
+          date?: string;
+          lucky_numbers?: number[] | null;
+          lucky_colors?: string[] | null;
+          recommended_crystal_id?: number | null;
+          recommended_tarot_card_id?: number | null;
+          moon_phase?: string | null;
+          moon_sign_id?: number | null;
+          retrograde_planets?: string[] | null;
+          energy_theme?: string | null;
+          advice?: string | null;
+          metadata?: unknown;
+        };
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };

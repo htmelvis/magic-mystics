@@ -114,7 +114,6 @@ export const config = createConfig({
       '5xl': 48,
     },
   },
-  globalStyle: {},
 } as const);
 
 type Config = typeof config;
