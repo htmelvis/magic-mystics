@@ -14,7 +14,7 @@
     "test:e2e:flow": "maestro test",
     "storybook": "EXPO_PUBLIC_STORYBOOK_ENABLED='true' expo start",
     "storybook:ios": "EXPO_PUBLIC_STORYBOOK_ENABLED='true' expo start --ios",
-    "storybook:android": "EXPO_PUBLIC_STORYBOOK_ENABLED='true' expo start --android"
+    "storybook:android": "EXPO_PUBLIC_STORYBOOK_ENABLED='true' expo start --android",
     "storybook-generate": "sb-rn-get-stories"
   },
   "dependencies": {
