@@ -4,7 +4,8 @@ import { useAuth } from '@hooks/useAuth';
 import { useSubscription } from '@hooks/useSubscription';
 import { useReadings } from '@hooks/useReadings';
 import type { ReadingRow } from '@hooks/useReadings';
-import { ReadingListItem, ReadingDrawer, SkeletonRow } from '@/components/history';
+import { useFilteredReadings } from '@hooks/useFilteredReadings';
+import { ReadingListItem, ReadingDrawer, SearchFilterBar, SkeletonRow } from '@/components/history';
 import { theme } from '@theme';
 
 // ── Screen ────────────────────────────────────────────────────────────────────
@@ -28,6 +29,15 @@ export default function HistoryScreen() {
   const [selectedReading, setSelectedReading] = useState<ReadingRow | null>(null);
 
   const readings = useMemo(() => data?.pages.flat() ?? [], [data]);
+
+  const {
+    query,
+    onChangeSearch,
+    clearSearch,
+    spreadFilter,
+    setSpreadFilter,
+    filtered,
+  } = useFilteredReadings(readings);
 
   const openDrawer = useCallback((r: ReadingRow) => setSelectedReading(r), []);
   const closeDrawer = useCallback(() => setSelectedReading(null), []);
@@ -53,8 +63,21 @@ export default function HistoryScreen() {
           ? `${readings.length} reading${readings.length !== 1 ? 's' : ''}`
           : `${readings.length} of ${limits.maxReadingHistory}`}
       </Text>
+      {readings.length > 0 && (
+        <SearchFilterBar
+          query={query}
+          onChangeSearch={onChangeSearch}
+          clearSearch={clearSearch}
+          spreadFilter={spreadFilter}
+          setSpreadFilter={setSpreadFilter}
+          resultCount={filtered.length}
+          totalCount={readings.length}
+        />
+      )}
     </View>
   );
+
+  const isFilterActive = query.length > 0 || spreadFilter !== 'all';
 
   const ListEmpty = isLoading ? (
     <View style={screenStyles.skeletons}>
@@ -76,6 +99,22 @@ export default function HistoryScreen() {
         accessibilityLabel="Retry loading readings"
       >
         <Text style={screenStyles.errorRetryText}>Try Again</Text>
+      </TouchableOpacity>
+    </View>
+  ) : isFilterActive ? (
+    <View style={screenStyles.emptyState}>
+      <Text style={screenStyles.emptyIcon}>🔍</Text>
+      <Text style={screenStyles.emptyTitle}>No matching readings</Text>
+      <Text style={screenStyles.emptyBody}>
+        Try adjusting your search or filters to find what you're looking for.
+      </Text>
+      <TouchableOpacity
+        style={screenStyles.clearFiltersButton}
+        onPress={() => { clearSearch(); setSpreadFilter('all'); }}
+        accessibilityRole="button"
+        accessibilityLabel="Clear all filters"
+      >
+        <Text style={screenStyles.clearFiltersText}>Clear Filters</Text>
       </TouchableOpacity>
     </View>
   ) : (
@@ -109,7 +148,7 @@ export default function HistoryScreen() {
   return (
     <>
       <FlatList
-        data={readings}
+        data={filtered}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         style={screenStyles.list}
@@ -125,6 +164,8 @@ export default function HistoryScreen() {
         initialNumToRender={12}
         maxToRenderPerBatch={10}
         windowSize={5}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       />
 
       <ReadingDrawer reading={selectedReading} onClose={closeDrawer} />
@@ -182,6 +223,18 @@ const screenStyles = StyleSheet.create({
     fontSize: theme.typography.fontSize.sm, 
     color: theme.colors.text.muted, 
     paddingVertical: theme.spacing.lg 
+  },
+  clearFiltersButton: {
+    marginTop: theme.spacing.lg,
+    backgroundColor: theme.colors.brand.primary,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.radius.md,
+  },
+  clearFiltersText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 15,
   },
   errorState: {
     paddingTop: 80,

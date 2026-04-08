@@ -1,0 +1,25 @@
+# Flow: Sign In
+# Verifies the full sign-in path from cold launch to the Home screen.
+#
+# Run:
+#   maestro test .maestro/flows/01-sign-in.yaml \
+#     --env TEST_EMAIL=test@example.com \
+#     --env TEST_PASSWORD=secret123
+appId: com.edwardwieczorek.magicmystics
+---
+- launchApp:
+    clearState: true
+
+# Should land on sign-in (unauthenticated state)
+- assertVisible: "Welcome Back"
+
+- tapOn: "Email"
+- inputText: ${TEST_EMAIL}
+
+- tapOn: "Password"
+- inputText: ${TEST_PASSWORD}
+
+- tapOn: "Sign In"
+
+# Successful sign-in lands on the Home screen
+- assertVisible: "Draw Your Daily Card"
