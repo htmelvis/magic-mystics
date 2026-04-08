@@ -30,6 +30,10 @@ export const ANIMATION = {
   shuffleReturn: 420,
   /** Per-card stagger delay in ms */
   staggerDelay: 50,
+  /** Deck fade-out when a draw is initiated */
+  deckFadeOut: 300,
+  /** Card layer fade-in after shuffle completes */
+  cardFadeIn: 350,
 } as const;
 
 export const VISIBLE_DECK_SIZE = 5;

@@ -1,4 +1,4 @@
-import { View, StyleSheet, ViewStyle, Animated } from 'react-native';
+import { View, StyleSheet, StyleProp, ViewStyle, Animated } from 'react-native';
 import { theme } from '@theme';
 import { useEffect, useRef } from 'react';
 
@@ -55,7 +55,7 @@ export function LoadingState({
             height: height || defaultHeight,
             opacity,
           },
-        ] as any
+        ] as StyleProp<ViewStyle>
       }
     />
   );

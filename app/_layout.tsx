@@ -7,6 +7,7 @@ import { config } from '../gluestack-ui.config';
 import { useAuth } from '@hooks/useAuth';
 import { useOnboarding } from '@hooks/useOnboarding';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { ErrorBoundary } from '@components/ui/ErrorBoundary';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -66,7 +67,9 @@ export default function RootLayout() {
       <GluestackUIProvider config={config}>
         <SafeAreaProvider>
           <QueryClientProvider client={queryClient}>
-            <RootLayoutNav />
+            <ErrorBoundary>
+              <RootLayoutNav />
+            </ErrorBoundary>
           </QueryClientProvider>
         </SafeAreaProvider>
       </GluestackUIProvider>

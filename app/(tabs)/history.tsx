@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '@hooks/useAuth';
 import { useSubscription } from '@hooks/useSubscription';
 import { useReadings } from '@hooks/useReadings';
@@ -10,7 +10,7 @@ import { theme } from '@theme';
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 export default function HistoryScreen() {
-  const { user } = useAuth();
+  const { user, error: authError } = useAuth();
   const { limits, isPremium } = useSubscription(user?.id);
   const {
     data,
@@ -20,7 +20,10 @@ export default function HistoryScreen() {
     hasNextPage,
     refetch,
     isRefetching,
+    error: readingsError,
   } = useReadings(user?.id, limits.maxReadingHistory);
+
+  const error = authError || readingsError;
 
   const [selectedReading, setSelectedReading] = useState<ReadingRow | null>(null);
 
@@ -58,6 +61,22 @@ export default function HistoryScreen() {
       <SkeletonRow />
       <SkeletonRow />
       <SkeletonRow />
+    </View>
+  ) : error ? (
+    <View style={screenStyles.errorState}>
+      <Text style={screenStyles.errorIcon}>⚠️</Text>
+      <Text style={screenStyles.errorTitle}>Failed to load readings</Text>
+      <Text style={screenStyles.errorBody}>
+        {error.message || 'Something went wrong. Please try again.'}
+      </Text>
+      <TouchableOpacity
+        style={screenStyles.errorRetry}
+        onPress={() => refetch()}
+        accessibilityRole="button"
+        accessibilityLabel="Retry loading readings"
+      >
+        <Text style={screenStyles.errorRetryText}>Try Again</Text>
+      </TouchableOpacity>
     </View>
   ) : (
     <View style={screenStyles.emptyState}>
@@ -163,5 +182,35 @@ const screenStyles = StyleSheet.create({
     fontSize: theme.typography.fontSize.sm, 
     color: theme.colors.text.muted, 
     paddingVertical: theme.spacing.lg 
+  },
+  errorState: {
+    paddingTop: 80,
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  errorIcon: { fontSize: 48, marginBottom: theme.spacing.lg },
+  errorTitle: {
+    fontSize: theme.typography.fontSize.xl,
+    fontWeight: '700',
+    color: theme.colors.error.dark,
+    marginBottom: theme.spacing.sm,
+  },
+  errorBody: {
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.text.muted,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: theme.spacing.lg,
+  },
+  errorRetry: {
+    backgroundColor: theme.colors.error.main,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.radius.md,
+  },
+  errorRetryText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 15,
   },
 });

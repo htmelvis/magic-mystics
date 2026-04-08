@@ -55,6 +55,9 @@ export default function ProfileScreen() {
                 { backgroundColor: activeColorScheme === 'dark' ? theme.colors.brand.primary : theme.colors.gray[300] }
               ]}
               onPress={toggleColorScheme}
+              accessibilityRole="switch"
+              accessibilityLabel="Dark mode"
+              accessibilityState={{ checked: activeColorScheme === 'dark' }}
             >
               <View
                 style={[

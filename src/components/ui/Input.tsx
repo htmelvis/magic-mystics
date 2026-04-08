@@ -21,6 +21,7 @@ export function Input({
   ...textInputProps
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
+  const { accessibilityLabel, accessibilityHint, ...restInputProps } = textInputProps;
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -43,7 +44,9 @@ export function Input({
           placeholderTextColor={theme.colors.text.muted}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          {...textInputProps}
+          accessibilityLabel={accessibilityLabel ?? label}
+          accessibilityHint={error ? `Error: ${error}` : (accessibilityHint ?? hint)}
+          {...restInputProps}
         />
 
         {rightIcon && <View style={styles.iconRight}>{rightIcon}</View>}

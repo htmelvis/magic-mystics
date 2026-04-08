@@ -19,6 +19,8 @@ interface TarotCardProps {
   orientation?: TarotCardOrientation;
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 /**
@@ -38,6 +40,8 @@ export function TarotCard({
   orientation = 'upright',
   onPress,
   style,
+  accessibilityLabel,
+  accessibilityHint,
 }: TarotCardProps) {
   const flipAnim = useRef(new Animated.Value(0)).current;
 
@@ -69,7 +73,19 @@ export function TarotCard({
   });
 
   return (
-    <Pressable onPress={onPress} style={[styles.container, style]}>
+    <Pressable
+      onPress={onPress}
+      style={[styles.container, style]}
+      accessibilityRole="button"
+      accessibilityLabel={
+        accessibilityLabel ??
+        (isFlipped && card
+          ? `${card.name}, ${orientation === 'reversed' ? 'reversed' : 'upright'}`
+          : 'Tarot card, face down')
+      }
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled: !onPress }}
+    >
       {/* Back face */}
       <Animated.View
         style={[

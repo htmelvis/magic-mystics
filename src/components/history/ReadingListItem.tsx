@@ -28,6 +28,19 @@ interface ReadingListItemProps {
   onPress: (r: ReadingRow) => void;
 }
 
+function buildAccessibilityLabel(reading: ReadingRow): string {
+  const dateStr = formatDate(reading.created_at);
+  if (reading.spread_type === 'daily') {
+    const first = reading.drawn_cards[0];
+    if (first) {
+      return `Daily Draw, ${first.cardName}, ${first.orientation}, ${dateStr}`;
+    }
+    return `Daily Draw, ${dateStr}`;
+  }
+  const names = reading.drawn_cards.map((c) => c.cardName).join(', ');
+  return `3-Card Spread, ${names}, ${dateStr}`;
+}
+
 export function ReadingListItem({ reading, onPress }: ReadingListItemProps) {
   const isDaily = reading.spread_type === 'daily';
   const first = reading.drawn_cards[0];
@@ -36,6 +49,9 @@ export function ReadingListItem({ reading, onPress }: ReadingListItemProps) {
     <Pressable
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
       onPress={() => onPress(reading)}
+      accessibilityRole="button"
+      accessibilityLabel={buildAccessibilityLabel(reading)}
+      accessibilityHint="Double-tap to view full reading"
     >
       <View style={styles.header}>
         <View style={[styles.badge, !isDaily && styles.badgePPF]}>
@@ -93,8 +109,8 @@ export function ReadingListItem({ reading, onPress }: ReadingListItemProps) {
       )}
 
       {reading.ai_insight && (
-        <View style={styles.insightPill}>
-          <Text style={styles.insightText}>✦ AI Insight</Text>
+        <View style={styles.insightPill} accessible accessibilityLabel="AI Insight available">
+          <Text style={styles.insightText} accessible={false}>✦ AI Insight</Text>
         </View>
       )}
     </Pressable>

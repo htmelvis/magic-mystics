@@ -7,8 +7,9 @@ import { useInvalidateReadings } from '@hooks/useReadings';
 import { useInvalidateJourneyStats } from '@hooks/useJourneyStats';
 import { supabase } from '@lib/supabase/client';
 import { drawDailyCard, drawCard } from '@lib/tarot/draw';
-import type { DrawnCardRecord, TarotCardOrientation, TarotCard as TarotCardType } from '@/types/tarot';
+import type { DrawnCardRecord, TarotCardOrientation, TarotCard as TarotCardType, TarotCardRow } from '@/types/tarot';
 import { TarotCard, TarotDeck } from '@components/tarot';
+import { ANIMATION } from '@components/tarot/card-constants';
 
 function getTodayBounds() {
   const start = new Date();
@@ -25,7 +26,7 @@ export default function DrawScreen() {
   const invalidateReadings = useInvalidateReadings();
   const invalidateJourneyStats = useInvalidateJourneyStats();
 
-  const [card, setCard] = useState<Record<string, unknown> | null>(null);
+  const [card, setCard] = useState<TarotCardRow | null>(null);
   const [orientation, setOrientation] = useState<TarotCardOrientation | null>(null);
   const [readingId, setReadingId] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
@@ -65,7 +66,7 @@ export default function DrawScreen() {
     setShuffleComplete(true);
     Animated.timing(cardOpacity, {
       toValue: 1,
-      duration: 350,
+      duration: ANIMATION.cardFadeIn,
       useNativeDriver: true,
     }).start();
   }
@@ -94,7 +95,7 @@ export default function DrawScreen() {
           .eq('id', drawn.cardId)
           .single();
         if (cardError) throw cardError;
-        setCard(cardData as Record<string, unknown>);
+        setCard(cardData as TarotCardRow);
         setOrientation(drawn.orientation);
         setReadingId(data.id);
       }
@@ -111,7 +112,7 @@ export default function DrawScreen() {
     // Fade the deck out as the user initiates a draw
     Animated.timing(deckOpacity, {
       toValue: 0,
-      duration: 300,
+      duration: ANIMATION.deckFadeOut,
       useNativeDriver: true,
     }).start();
 
@@ -162,7 +163,7 @@ export default function DrawScreen() {
 
       if (insertError) throw insertError;
 
-      setCard(cardData as Record<string, unknown>);
+      setCard(cardData as TarotCardRow);
       setOrientation(result.orientation);
       setReadingId(reading.id);
       invalidateReadings(user.id);
@@ -181,7 +182,12 @@ export default function DrawScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
+        <Pressable
+          onPress={() => router.back()}
+          style={styles.backButton}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
           <Text style={styles.backText}>← Back</Text>
         </Pressable>
         <Text style={styles.title}>Daily Draw</Text>
@@ -212,6 +218,14 @@ export default function DrawScreen() {
                     orientation={orientation ?? 'upright'}
                     onPress={canDraw ? handleDraw : undefined}
                     style={[styles.card, canDraw && styles.cardTappable]}
+                    accessibilityLabel={
+                      isFlipped && card
+                        ? `${card.name}, ${orientation === 'reversed' ? 'reversed' : 'upright'}`
+                        : 'Tarot card, face down'
+                    }
+                    accessibilityHint={
+                      canDraw ? 'Double-tap to draw your daily card' : undefined
+                    }
                   />
                   {loading && (
                     <View style={styles.cardLoadingOverlay}>
@@ -224,7 +238,11 @@ export default function DrawScreen() {
           )}
         </View>
 
-        {canDraw && <Text style={styles.tapHint}>Tap to draw your card</Text>}
+        {canDraw && (
+          <Text style={styles.tapHint} accessibilityElementsHidden>
+            Tap to draw your card
+          </Text>
+        )}
 
         {deckError && (
           <View style={styles.errorBox}>
@@ -241,35 +259,162 @@ export default function DrawScreen() {
         )}
 
         {card && orientation && (
-          <>
-            {readingId && (
-              <Text style={styles.readingMeta}>Reading {readingId.slice(0, 8)}…</Text>
-            )}
-            <View style={styles.resultBox}>
-              <Text style={styles.orientationLabel}>
-                Orientation:{' '}
-                <Text style={styles.orientationValue}>{orientation}</Text>
-              </Text>
-              <Text style={styles.jsonLabel}>Raw Card Data</Text>
-              <Text style={styles.json}>
-                {JSON.stringify({ orientation, ...card }, null, 2)}
-              </Text>
-            </View>
-          </>
+          <CardDetail card={card} orientation={orientation} />
         )}
       </ScrollView>
     </View>
   );
 }
 
+// ── Card detail panel ─────────────────────────────────────────────────────────
+
+function CardDetail({
+  card,
+  orientation,
+}: {
+  card: TarotCardRow;
+  orientation: TarotCardOrientation;
+}) {
+  const isReversed = orientation === 'reversed';
+
+  const summary = isReversed ? (card.reversed_summary ?? '') : (card.upright_summary ?? '');
+  const meaning = isReversed ? (card.reversed_meaning_long ?? '') : (card.upright_meaning_long ?? '');
+  const keywords = isReversed ? (card.keywords_reversed ?? []) : (card.keywords_upright ?? []);
+
+  const { element, astrology_association: astrology, arcana, suit, number } = card;
+
+  return (
+    <View style={styles.resultBox}>
+      {/* Orientation + meta row */}
+      <View style={detailStyles.metaRow}>
+        <Text style={[detailStyles.orientText, isReversed && detailStyles.orientReversed]}>
+          {isReversed ? '↓ Reversed' : '↑ Upright'}
+        </Text>
+        {arcana && (
+          <View style={detailStyles.pill}>
+            <Text style={detailStyles.pillText}>
+              {arcana === 'Major' ? 'Major Arcana' : (suit ?? 'Minor Arcana')}
+              {number != null ? ` · ${number}` : ''}
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* Element / astrology */}
+      {(element || astrology) && (
+        <View style={detailStyles.metaRow}>
+          {element && (
+            <View style={detailStyles.pill}>
+              <Text style={detailStyles.pillText}>{element}</Text>
+            </View>
+          )}
+          {astrology && (
+            <View style={detailStyles.pill}>
+              <Text style={detailStyles.pillText}>{astrology}</Text>
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* Summary */}
+      {summary.length > 0 && (
+        <Text style={detailStyles.summary}>{summary}</Text>
+      )}
+
+      {/* Keywords */}
+      {keywords.length > 0 && (
+        <View style={detailStyles.keywordsRow}>
+          {keywords.map(kw => (
+            <View key={kw} style={[detailStyles.keyword, isReversed && detailStyles.keywordReversed]}>
+              <Text style={[detailStyles.keywordText, isReversed && detailStyles.keywordTextReversed]}>
+                {kw}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Long meaning */}
+      {meaning.length > 0 && (
+        <Text style={detailStyles.meaning}>{meaning}</Text>
+      )}
+    </View>
+  );
+}
+
+const detailStyles = StyleSheet.create({
+  metaRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  orientText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#8b5cf6',
+  },
+  orientReversed: { color: '#dc2626' },
+  pill: {
+    backgroundColor: '#f3f4f6',
+    borderRadius: 6,
+    paddingVertical: 3,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  pillText: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  summary: {
+    fontSize: 15,
+    color: '#374151',
+    lineHeight: 22,
+    fontStyle: 'italic',
+    marginBottom: 12,
+  },
+  keywordsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 16,
+  },
+  keyword: {
+    backgroundColor: '#ede9fe',
+    borderRadius: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#ddd6fe',
+  },
+  keywordReversed: {
+    backgroundColor: '#fef2f2',
+    borderColor: '#fca5a5',
+  },
+  keywordText: {
+    fontSize: 12,
+    color: '#7c3aed',
+    fontWeight: '600',
+  },
+  keywordTextReversed: { color: '#dc2626' },
+  meaning: {
+    fontSize: 14,
+    color: '#4b5563',
+    lineHeight: 21,
+  },
+});
+
 /** Maps a raw Supabase tarot_cards row to the TarotCard display type. */
-function toTarotCard(raw: Record<string, unknown>): TarotCardType {
+function toTarotCard(raw: TarotCardRow): TarotCardType {
   return {
-    id: String(raw.id ?? ''),
-    name: String(raw.name ?? ''),
+    id: String(raw.id),
+    name: raw.name,
     suit: (raw.suit ?? 'major') as TarotCardType['suit'],
-    number: typeof raw.number === 'number' ? raw.number : null,
-    imageUrl: String(raw.image_url ?? ''),
+    number: raw.number,
+    imageUrl: raw.image_url ?? '',
     keywords: { upright: [], reversed: [] },
     meaning: { upright: '', reversed: '' },
   };
@@ -375,42 +520,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: 'monospace',
   },
-  readingMeta: {
-    fontSize: 11,
-    color: '#9ca3af',
-    fontFamily: 'monospace',
-    marginBottom: 8,
-  },
   resultBox: {
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
     borderColor: '#e5e7eb',
-  },
-  orientationLabel: {
-    fontSize: 15,
-    color: '#6b7280',
-    marginBottom: 16,
-    textTransform: 'capitalize',
-  },
-  orientationValue: {
-    color: '#8b5cf6',
-    fontWeight: '700',
-  },
-  jsonLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#9ca3af',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    marginBottom: 8,
-  },
-  json: {
-    fontFamily: 'monospace',
-    fontSize: 12,
-    color: '#1f2937',
-    lineHeight: 18,
+    gap: 0,
   },
   stage: {
     height: 340,

@@ -6,15 +6,28 @@ export default function BirthLocationScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const [location, setLocation] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const validate = (value: string): string | null => {
+    const trimmed = value.trim();
+    if (!trimmed) return 'Please enter your birth location';
+    if (trimmed.length < 2) return 'Location must be at least 2 characters';
+    return null;
+  };
 
   const handleContinue = () => {
+    const validationError = validate(location);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     router.push({
       pathname: '/(onboarding)/calculating',
       params: {
         displayName: params.displayName as string,
         birthDate: params.birthDate as string,
         birthTime: params.birthTime as string,
-        birthLocation: location,
+        birthLocation: location.trim(),
       },
     });
   };
@@ -29,23 +42,27 @@ export default function BirthLocationScreen() {
         </Text>
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, error ? styles.inputError : null]}
           placeholder="e.g. Los Angeles, USA"
           placeholderTextColor="#9ca3af"
           value={location}
-          onChangeText={setLocation}
+          onChangeText={(text) => {
+            setLocation(text);
+            if (error) setError(validate(text));
+          }}
+          onBlur={() => setError(validate(location))}
           autoCapitalize="words"
           autoCorrect={false}
+          maxLength={200}
+          returnKeyType="done"
+          onSubmitEditing={handleContinue}
         />
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         <Text style={styles.hint}>This helps us calculate your rising sign more accurately</Text>
       </View>
 
-      <Pressable
-        style={[styles.button, !location && styles.buttonDisabled]}
-        onPress={handleContinue}
-        disabled={!location}
-      >
+      <Pressable style={styles.button} onPress={handleContinue}>
         <Text style={styles.buttonText}>Calculate My Signs</Text>
       </Pressable>
     </View>
@@ -89,6 +106,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1f2937',
   },
+  inputError: {
+    borderColor: '#dc2626',
+  },
+  errorText: {
+    marginTop: 6,
+    fontSize: 13,
+    color: '#dc2626',
+  },
   hint: {
     fontSize: 14,
     color: '#9ca3af',
@@ -101,9 +126,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     marginBottom: 20,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
   },
   buttonText: {
     color: '#fff',

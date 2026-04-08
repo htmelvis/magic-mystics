@@ -1,9 +1,11 @@
 import { Tabs } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '@theme';
+import { ErrorBoundary } from '@components/ui/ErrorBoundary';
 
 export default function TabsLayout() {
   return (
+    <ErrorBoundary>
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -27,6 +29,7 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: 'Home',
+          tabBarAccessibilityLabel: 'Home tab',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="home" size={size} color={color} />
           ),
@@ -36,6 +39,7 @@ export default function TabsLayout() {
         name="history"
         options={{
           title: 'History',
+          tabBarAccessibilityLabel: 'History tab',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="book-open-page-variant" size={size} color={color} />
           ),
@@ -45,11 +49,13 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: 'Profile',
+          tabBarAccessibilityLabel: 'Profile tab',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="account" size={size} color={color} />
           ),
         }}
       />
     </Tabs>
+    </ErrorBoundary>
   );
 }

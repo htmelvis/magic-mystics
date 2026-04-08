@@ -6,14 +6,25 @@ export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session }, error: sessionError }) => {
+        if (sessionError) {
+          setError(sessionError);
+        } else {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+        setLoading(false);
+      })
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err : new Error(String(err)));
+        setLoading(false);
+      });
 
     // Listen for auth changes
     const {
@@ -52,6 +63,7 @@ export function useAuth() {
     session,
     user,
     loading,
+    error,
     signUp,
     signIn,
     signOut,

@@ -33,13 +33,14 @@ export default function SignInScreen() {
     <Screen scroll={false} padding={false}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.emoji}>🔮</Text>
+          <Text style={styles.emoji} accessible={false}>🔮</Text>
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to continue your mystical journey</Text>
         </View>
 
         <View style={styles.form}>
           <Input
+            label="Email"
             placeholder="Email"
             value={email}
             onChangeText={setEmail}
@@ -49,6 +50,7 @@ export default function SignInScreen() {
           />
 
           <Input
+            label="Password"
             placeholder="Password"
             value={password}
             onChangeText={setPassword}
@@ -68,7 +70,7 @@ export default function SignInScreen() {
         <View style={styles.footer}>
           <Text style={styles.footerText}>Don't have an account? </Text>
           <Link href="/(auth)/sign-up" asChild>
-            <Pressable>
+            <Pressable accessibilityRole="link" accessibilityLabel="Sign up for a new account">
               <Text style={styles.link}>Sign Up</Text>
             </Pressable>
           </Link>

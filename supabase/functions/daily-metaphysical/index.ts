@@ -52,11 +52,11 @@ const SIGN_ELEMENTS: Record<ZodiacSign, Element> = {
   Pisces: 'Water',
 };
 
-const ELEMENT_COLORS: Record<Element, string[]> = {
-  Fire: ['Red', 'Orange', 'Gold'],
-  Earth: ['Green', 'Brown', 'Amber'],
-  Air: ['Yellow', 'Silver', 'Lavender'],
-  Water: ['Blue', 'Indigo', 'Pearl'],
+const ELEMENT_COLOR_POOLS: Record<Element, string[]> = {
+  Fire: ['Red', 'Orange', 'Gold', 'Crimson', 'Amber', 'Scarlet'],
+  Earth: ['Green', 'Brown', 'Amber', 'Emerald', 'Copper', 'Olive'],
+  Air: ['Yellow', 'Silver', 'Lavender', 'White', 'Cyan', 'Lilac'],
+  Water: ['Blue', 'Indigo', 'Teal', 'Violet', 'Pearl', 'Cobalt'],
 };
 
 // Planets to check for retrograde (outer planets only — Sun/Moon don't retrograde)
@@ -91,6 +91,26 @@ function getMoonPhaseName(angle: number): string {
 function eclipticLonToSign(lon: number): ZodiacSign {
   const normalized = ((lon % 360) + 360) % 360;
   return ZODIAC_SIGNS[Math.floor(normalized / 30)];
+}
+
+/**
+ * Picks 2 lucky colors from the element's pool seeded by date + moon degree.
+ * Using moon degree (0–30 within the sign) ensures the colors shift even when
+ * the sign and element stay the same across consecutive days.
+ */
+function generateLuckyColors(element: Element, date: Date, moonDegreeInSign: number): string[] {
+  const pool = ELEMENT_COLOR_POOLS[element];
+  const base =
+    date.getUTCFullYear() * 10000 +
+    (date.getUTCMonth() + 1) * 100 +
+    date.getUTCDate() +
+    Math.floor(moonDegreeInSign * 10);
+
+  const i1 = (base ^ 0x9e3779b9) % pool.length;
+  const i2 = (base ^ 0x6c62272e) % pool.length;
+  // Ensure two distinct colors
+  const second = i1 === i2 ? (i2 + 1) % pool.length : i2;
+  return [pool[Math.abs(i1)], pool[Math.abs(second)]];
 }
 
 /**
@@ -181,8 +201,22 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // Moon degree within its sign (0–30°) — key differentiator across days in the same sign
+    const moonDegreeInSign = moonEcl.elon % 30;
+
+    // Sun sign
+    const sunEcl = Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Sun, date, false));
+    const sunSignName = eclipticLonToSign(sunEcl.elon);
+
+    // Fast-moving planet signs (Mercury, Venus, Mars) for richer daily context
+    const innerPlanetSigns: Record<string, string> = {};
+    for (const body of [Astronomy.Body.Mercury, Astronomy.Body.Venus, Astronomy.Body.Mars] as const) {
+      const ecl = Astronomy.Ecliptic(Astronomy.GeoVector(body, date, false));
+      innerPlanetSigns[Astronomy.Body[body]] = eclipticLonToSign(ecl.elon);
+    }
+
     const luckyNumbers = generateLuckyNumbers(date, moonPhaseAngle);
-    const luckyColors = ELEMENT_COLORS[element];
+    const luckyColors = generateLuckyColors(element, date, moonDegreeInSign);
 
     // ── Fetch FK references ───────────────────────────────────────────────────
     const { data: moonSignRow } = await supabase
@@ -203,13 +237,18 @@ Deno.serve(async (req: Request) => {
     const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY')! });
 
     const prompt = `Cosmic snapshot for ${dateStr}:
-- Moon Phase: ${moonPhaseName} (${Math.round(moonPhaseAngle)}°)
-- Moon Sign: ${moonSignName} (${element})
+- Moon: ${Math.round(moonDegreeInSign)}° ${moonSignName} (${moonPhaseName}, phase angle ${Math.round(moonPhaseAngle)}°)
+- Sun: ${sunSignName}
+- Mercury: ${innerPlanetSigns['Mercury']}
+- Venus: ${innerPlanetSigns['Venus']}
+- Mars: ${innerPlanetSigns['Mars']}
 - Retrograde Planets: ${retrogradePlanets.length > 0 ? retrogradePlanets.join(', ') : 'None'}
 
+The moon's exact degree within ${moonSignName} is important — early degrees (0–10°) carry raw, initiating energy; middle degrees (10–20°) are settled and expressive; late degrees (20–30°) are culminating and releasing. Reflect this in both outputs.
+
 Return a JSON object with exactly two keys:
-- "energy_theme": 3–7 word evocative phrase capturing the day's energy (no punctuation, no sentence case)
-- "advice": One grounded, practical metaphysical sentence (25–40 words) on how to work with today's energy
+- "energy_theme": 3–7 word evocative phrase capturing THIS specific day's energy (no punctuation, no sentence case) — must be distinct from a generic moon phase/sign label
+- "advice": One grounded, practical metaphysical sentence (25–40 words) specific to today's planetary picture
 
 Respond with valid JSON only. No markdown fences, no extra text.`;
 
@@ -251,9 +290,12 @@ Respond with valid JSON only. No markdown fences, no extra text.`;
           metadata: {
             moon_phase_angle: Math.round(moonPhaseAngle * 100) / 100,
             moon_sign: moonSignName,
+            moon_degree_in_sign: Math.round(moonDegreeInSign * 100) / 100,
             element,
             moon_ecliptic_lon: Math.round(moonEcl.elon * 100) / 100,
-            generated_by: 'daily-metaphysical-v1',
+            sun_sign: sunSignName,
+            inner_planet_signs: innerPlanetSigns,
+            generated_by: 'daily-metaphysical-v2',
             generated_at: new Date().toISOString(),
           },
         },

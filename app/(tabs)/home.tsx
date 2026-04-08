@@ -1,4 +1,4 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@hooks/useAuth';
 import { useSubscription } from '@hooks/useSubscription';
@@ -10,12 +10,14 @@ import { CosmicWeatherCard } from '@/components/home/CosmicWeatherCard';
 import { theme } from '@theme';
 
 export default function HomeScreen() {
-  const { user } = useAuth();
+  const { user, error: authError } = useAuth();
   const { isPremium } = useSubscription(user?.id);
   const { userProfile } = useUserProfile(user?.id);
   const { data: cosmic, isLoading: cosmicLoading } = useDailyMetaphysical();
-  const { data: stats } = useJourneyStats(user?.id);
+  const { data: stats, error: statsError, refetch: refetchStats } = useJourneyStats(user?.id);
   const router = useRouter();
+
+  const error = authError || statsError;
 
   const handleDrawCard = () => {
     router.push('/draw');
@@ -39,6 +41,23 @@ export default function HomeScreen() {
 
   return (
     <Screen>
+      {/* Error Banner */}
+      {error && (
+        <View style={styles.errorBanner}>
+          <Text style={styles.errorText}>
+            {error.message || 'Something went wrong. Please try again.'}
+          </Text>
+          <TouchableOpacity
+            onPress={() => refetchStats()}
+            style={styles.errorRetry}
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading"
+          >
+            <Text style={styles.errorRetryText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.greeting}>{getGreeting()}</Text>
@@ -57,8 +76,14 @@ export default function HomeScreen() {
 
       {/* Main Actions */}
       <View style={styles.actionsContainer}>
-        <Pressable style={styles.primaryButton} onPress={handleDrawCard}>
-          <Text style={styles.primaryButtonIcon}>✨</Text>
+        <Pressable
+          style={styles.primaryButton}
+          onPress={handleDrawCard}
+          accessibilityRole="button"
+          accessibilityLabel="Draw Your Daily Card"
+          accessibilityHint="Discover today's tarot message"
+        >
+          <Text style={styles.primaryButtonIcon} accessible={false}>✨</Text>
           <Text style={styles.primaryButtonText}>Draw Your Daily Card</Text>
           <Text style={styles.primaryButtonSubtext}>Discover today's message</Text>
         </Pressable>
@@ -67,8 +92,12 @@ export default function HomeScreen() {
           style={[styles.secondaryButton, !isPremium && styles.disabledButton]}
           onPress={handlePPFSpread}
           disabled={!isPremium}
+          accessibilityRole="button"
+          accessibilityLabel={isPremium ? 'Past, Present, Future spread' : 'Past, Present, Future spread, Premium feature'}
+          accessibilityHint={isPremium ? 'Three-card spread reading' : 'Upgrade to Premium to unlock this feature'}
+          accessibilityState={{ disabled: !isPremium }}
         >
-          <Text style={styles.secondaryButtonIcon}>🔮</Text>
+          <Text style={styles.secondaryButtonIcon} accessible={false}>🔮</Text>
           <Text style={styles.secondaryButtonText}>
             Past/Present/Future {!isPremium && '(Premium)'}
           </Text>
@@ -91,7 +120,11 @@ export default function HomeScreen() {
           </View>
           <View style={styles.promoFooter}>
             <Text style={styles.promoPrice}>$49/year</Text>
-            <Pressable style={styles.upgradeButton}>
+            <Pressable
+              style={styles.upgradeButton}
+              accessibilityRole="button"
+              accessibilityLabel="Upgrade to Premium for $49 per year"
+            >
               <Text style={styles.upgradeButtonText}>Upgrade Now</Text>
             </Pressable>
           </View>
@@ -159,7 +192,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xxs,
   },
   primaryButtonSubtext: {
-    color: theme.colors.brand.primaryMuted,
+    color: theme.colors.text.inverse,
     fontSize: 14,
   },
   secondaryButton: {
@@ -262,8 +295,36 @@ const styles = StyleSheet.create({
     color: theme.colors.brand.primary,
     marginBottom: theme.spacing.xxs,
   },
-  statLabel: {
+  statsLabel: {
     ...theme.textStyles.bodySmall,
     color: theme.colors.text.secondary,
+  },
+  errorBanner: {
+    backgroundColor: theme.colors.error.light,
+    borderWidth: 1,
+    borderColor: theme.colors.error.main,
+    borderRadius: theme.borderRadius.card,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: theme.spacing.sm,
+  },
+  errorText: {
+    color: theme.colors.error.dark,
+    fontSize: 14,
+    flex: 1,
+  },
+  errorRetry: {
+    backgroundColor: theme.colors.error.main,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.md,
+  },
+  errorRetryText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 13,
   },
 });

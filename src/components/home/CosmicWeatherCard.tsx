@@ -1,6 +1,10 @@
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '@theme';
+import { resolveColor, buildGradientColors } from '@lib/colors/cosmicColors';
 import type { useDailyMetaphysical } from '@hooks/useDailyMetaphysical';
+
+const DEEP_SPACE = theme.colors.brand.cosmic.deepSpace;
 
 const PHASE_EMOJI: Record<string, string> = {
   'New Moon': '🌑',
@@ -21,13 +25,14 @@ interface CosmicWeatherCardProps {
 export function CosmicWeatherCard({ cosmic, isLoading }: CosmicWeatherCardProps) {
   if (isLoading) {
     return (
-      <View style={styles.card}>
+      <LinearGradient colors={[DEEP_SPACE, '#0d0d1a']} style={styles.card}>
         <ActivityIndicator
           color={theme.colors.brand.cosmic.moonlight}
           size="small"
           style={{ marginVertical: theme.spacing.lg }}
+          accessibilityLabel="Loading cosmic weather"
         />
-      </View>
+      </LinearGradient>
     );
   }
 
@@ -39,13 +44,19 @@ export function CosmicWeatherCard({ cosmic, isLoading }: CosmicWeatherCardProps)
       ? cosmic.retrograde_planets.map(p => `${p} ℞`).join('  ')
       : null;
   const luckyNums = cosmic.lucky_numbers?.slice(0, 4).join(' · ') ?? null;
+  const gradientColors = buildGradientColors(cosmic.lucky_colors);
 
   return (
-    <View style={styles.card}>
+    <LinearGradient
+      colors={gradientColors}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.card}
+    >
       {/* Header row */}
       <View style={styles.cardHeader}>
         <Text style={styles.cardLabel}>Cosmic Weather</Text>
-        <Text style={styles.cardPhase}>
+        <Text style={styles.cardPhase} accessibilityLabel={cosmic.moon_phase}>
           {phaseEmoji} {cosmic.moon_phase}
         </Text>
       </View>
@@ -79,22 +90,27 @@ export function CosmicWeatherCard({ cosmic, isLoading }: CosmicWeatherCardProps)
 
       {/* Lucky colors */}
       {cosmic.lucky_colors && cosmic.lucky_colors.length > 0 && (
-        <View style={styles.colorRow}>
-          <Text style={styles.colorLabel}>Today's colors </Text>
+        <View
+          style={styles.colorRow}
+          accessible
+          accessibilityLabel={`Today's colors: ${cosmic.lucky_colors.join(', ')}`}
+        >
+          <Text style={styles.colorLabel} accessible={false}>Today's colors </Text>
           {cosmic.lucky_colors.map(c => (
-            <View key={c} style={styles.colorDot}>
-              <Text style={styles.colorDotText}>{c}</Text>
-            </View>
+            <View
+              key={c}
+              style={[styles.colorSwatch, { backgroundColor: resolveColor(c) }]}
+              accessible={false}
+            />
           ))}
         </View>
       )}
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: theme.colors.brand.cosmic.deepSpace,
     borderRadius: theme.borderRadius.xxl,
     padding: theme.spacing.lg,
     marginBottom: theme.spacing.xl,
@@ -158,20 +174,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: 6,
+    marginTop: theme.spacing.xs,
   },
   colorLabel: {
     fontSize: 11,
     color: '#818cf8',
     fontWeight: '600',
   },
-  colorDot: {
-    backgroundColor: theme.colors.brand.cosmic.nebula,
-    paddingVertical: 3,
-    paddingHorizontal: theme.spacing.sm,
-    borderRadius: theme.borderRadius.sm,
-  },
-  colorDotText: {
-    fontSize: 11,
-    color: theme.colors.brand.cosmic.aurora,
+  colorSwatch: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
 });

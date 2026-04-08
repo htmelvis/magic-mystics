@@ -83,12 +83,22 @@ export function TarotDeck({
       </View>
 
       <View style={styles.controls}>
-        <Pressable style={styles.button} onPress={handleShuffle}>
+        <Pressable
+          style={styles.button}
+          onPress={handleShuffle}
+          accessibilityRole="button"
+          accessibilityLabel="Shuffle the deck"
+        >
           <Text style={styles.buttonText}>Shuffle</Text>
         </Pressable>
 
         {onDraw && (
-          <Pressable style={[styles.button, styles.drawButton]} onPress={onDraw}>
+          <Pressable
+            style={[styles.button, styles.drawButton]}
+            onPress={onDraw}
+            accessibilityRole="button"
+            accessibilityLabel="Draw a card"
+          >
             <Text style={styles.buttonText}>Draw</Text>
           </Pressable>
         )}
@@ -133,7 +143,13 @@ function DeckCard({ index, phase, onPress }: DeckCardProps) {
         { zIndex: index, transform: [{ translateX }, { translateY }, { rotate }] },
       ]}
     >
-      <Pressable onPress={onPress} style={styles.cardPressable}>
+      <Pressable
+        onPress={onPress}
+        style={styles.cardPressable}
+        accessibilityRole="button"
+        accessibilityLabel={`Deck card ${index + 1}`}
+        accessibilityHint={onPress ? 'Double-tap to draw this card' : undefined}
+      >
         <CardBackFace />
       </Pressable>
     </Animated.View>

@@ -15,6 +15,8 @@ export interface ButtonProps {
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right';
   style?: ViewStyle;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 export function Button({
@@ -28,6 +30,8 @@ export function Button({
   icon,
   iconPosition = 'left',
   style,
+  accessibilityLabel,
+  accessibilityHint,
 }: ButtonProps) {
   const isDisabled = disabled || loading;
 
@@ -55,6 +59,10 @@ export function Button({
       ]}
       onPress={onPress}
       disabled={isDisabled}
+      accessibilityRole="button"
+      accessibilityLabel={loading ? `${accessibilityLabel ?? title}, loading` : (accessibilityLabel ?? title)}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled: isDisabled }}
     >
       {loading ? (
         <ActivityIndicator

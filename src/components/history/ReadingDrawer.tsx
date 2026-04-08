@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  AccessibilityInfo,
   Animated,
+  findNodeHandle,
   Modal,
   PanResponder,
   Pressable,
@@ -45,6 +47,7 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
 
   // Stable ref so PanResponder never captures a stale dismiss.
   const dismissRef = useRef<() => void>(() => {});
+  const sheetRef = useRef<View>(null);
 
   const dismiss = useCallback(() => {
     Animated.parallel([
@@ -94,7 +97,11 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
         duration: 250,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(() => {
+      // Move VoiceOver focus into the drawer once it finishes opening
+      const node = findNodeHandle(sheetRef.current);
+      if (node) AccessibilityInfo.setAccessibilityFocus(node);
+    });
   }, [slideY, backdropOpacity]);
 
   // Drag-to-dismiss — onStartShouldSetPanResponder:true so the handle zone
@@ -154,16 +161,32 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
     >
       <View style={styles.root}>
         {/* Backdrop — covers only the area above the sheet */}
-        <Pressable style={StyleSheet.absoluteFill} onPress={() => dismissRef.current()}>
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={() => dismissRef.current()}
+          accessibilityRole="button"
+          accessibilityLabel="Close drawer"
+        >
           <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]} />
         </Pressable>
 
         {/* The sheet */}
         <Animated.View
+          ref={sheetRef}
           style={[styles.sheet, { transform: [{ translateY: slideY }] }]}
+          accessibilityViewIsModal
+          accessibilityRole="none"
         >
           {/* Drag handle — full-width touch target */}
-          <View {...panResponder.panHandlers} style={styles.handleZone}>
+          <View
+            {...panResponder.panHandlers}
+            style={styles.handleZone}
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel="Drag handle, swipe down to close"
+            accessibilityHint="Swipe down to dismiss this drawer"
+            hitSlop={{ top: 12, bottom: 12 }}
+          >
             <View style={styles.handle} />
           </View>
 
@@ -236,6 +259,8 @@ const styles = StyleSheet.create({
   handleZone: {
     alignItems: 'center',
     paddingVertical: theme.spacing.md,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   handle: {
     width: 36,

@@ -39,13 +39,14 @@ export default function SignUpScreen() {
     <Screen scroll={false} padding={false}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.emoji}>✨🔮✨</Text>
+          <Text style={styles.emoji} accessible={false}>✨🔮✨</Text>
           <Text style={styles.title}>Create Account</Text>
           <Text style={styles.subtitle}>Start your mystical journey today</Text>
         </View>
 
         <View style={styles.form}>
           <Input
+            label="Email"
             placeholder="Email"
             value={email}
             onChangeText={setEmail}
@@ -55,6 +56,7 @@ export default function SignUpScreen() {
           />
 
           <Input
+            label="Password"
             placeholder="Password (min 6 characters)"
             value={password}
             onChangeText={setPassword}
@@ -75,7 +77,7 @@ export default function SignUpScreen() {
         <View style={styles.footer}>
           <Text style={styles.footerText}>Already have an account? </Text>
           <Link href="/(auth)/sign-in" asChild>
-            <Pressable>
+            <Pressable accessibilityRole="link" accessibilityLabel="Sign in to existing account">
               <Text style={styles.link}>Sign In</Text>
             </Pressable>
           </Link>
