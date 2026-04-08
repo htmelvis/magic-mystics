@@ -1,0 +1,15 @@
+# Reusable sign-in helper — runFlow this from other flows to arrive at Home.
+# Requires TEST_EMAIL and TEST_PASSWORD env vars.
+#
+# Usage:
+#   - runFlow: ../utils/sign-in.yaml
+appId: com.edwardwieczorek.magicmystics
+---
+- tapOn: "Email"
+- clearText
+- inputText: ${TEST_EMAIL}
+- tapOn: "Password"
+- clearText
+- inputText: ${TEST_PASSWORD}
+- tapOn: "Sign In"
+- assertVisible: "Draw Your Daily Card"

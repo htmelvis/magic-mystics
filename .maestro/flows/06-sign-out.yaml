@@ -1,0 +1,29 @@
+# Flow: Sign Out
+# Signs in, navigates to Profile, signs out, and confirms redirect to Sign In.
+#
+# Run:
+#   maestro test .maestro/flows/06-sign-out.yaml \
+#     --env TEST_EMAIL=test@example.com \
+#     --env TEST_PASSWORD=secret123
+appId: com.edwardwieczorek.magicmystics
+---
+- launchApp:
+    clearState: true
+
+- runFlow: ../utils/sign-in.yaml
+
+# Navigate to Profile
+- tapOn:
+    accessibilityLabel: "Profile tab"
+
+- assertVisible: "Profile"
+
+# Initiate sign out
+- tapOn: "Sign Out"
+
+# Confirm in the native Alert
+- assertVisible: "Are you sure you want to sign out?"
+- tapOn: "Sign Out"
+
+# Should redirect to sign-in
+- assertVisible: "Welcome Back"

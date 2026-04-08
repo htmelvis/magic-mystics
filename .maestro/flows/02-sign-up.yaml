@@ -1,0 +1,37 @@
+# Flow: Sign Up
+# Verifies new account creation reaches the onboarding welcome screen.
+#
+# NOTE: Supabase sends a verification email before the account is active.
+# This flow tests the UI path only — use a real disposable email or a
+# Supabase test hook that bypasses email confirmation for E2E environments.
+#
+# Run:
+#   maestro test .maestro/flows/02-sign-up.yaml \
+#     --env TEST_NEW_EMAIL=newuser+e2e@example.com \
+#     --env TEST_NEW_PASSWORD=secret123
+appId: com.edwardwieczorek.magicmystics
+---
+- launchApp:
+    clearState: true
+
+- assertVisible: "Welcome Back"
+
+# Navigate to sign-up
+- tapOn:
+    accessibilityLabel: "Sign up for a new account"
+
+- assertVisible: "Create Account"
+
+- tapOn: "Email"
+- inputText: ${TEST_NEW_EMAIL}
+
+- tapOn: "Password"
+- inputText: ${TEST_NEW_PASSWORD}
+
+- tapOn: "Sign Up"
+
+# Dismiss the "Check your email" success alert
+- tapOn: "OK"
+
+# Should arrive at onboarding welcome
+- assertVisible: "Welcome to Magic Mystics"

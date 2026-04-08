@@ -1,0 +1,36 @@
+# Flow: Tab Navigation
+# Verifies all three tabs are reachable and show their expected content.
+#
+# Run:
+#   maestro test .maestro/flows/05-tab-navigation.yaml \
+#     --env TEST_EMAIL=test@example.com \
+#     --env TEST_PASSWORD=secret123
+appId: com.edwardwieczorek.magicmystics
+---
+- launchApp:
+    clearState: true
+
+- runFlow: ../utils/sign-in.yaml
+
+# ── Home tab (already here after sign-in) ────────────────────────────────────
+- assertVisible: "Draw Your Daily Card"
+
+# ── History tab ──────────────────────────────────────────────────────────────
+- tapOn:
+    accessibilityLabel: "History tab"
+
+- assertVisible: "Reading History"
+
+# ── Profile tab ──────────────────────────────────────────────────────────────
+- tapOn:
+    accessibilityLabel: "Profile tab"
+
+- assertVisible: "Profile"
+- assertVisible: "Zodiac Signs"
+- assertVisible: "Subscription"
+
+# ── Back to Home tab ─────────────────────────────────────────────────────────
+- tapOn:
+    accessibilityLabel: "Home tab"
+
+- assertVisible: "Draw Your Daily Card"
