@@ -6,6 +6,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { useTheme } from '@/context/ThemeContext';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { Screen, Card, Badge, Button, Skeleton, SkeletonCard } from '@components/ui';
+import { useUpgradeSheet } from '@/context/UpgradeSheetContext';
 
 export default function ProfileScreen() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -15,6 +16,7 @@ export default function ProfileScreen() {
   const isLoading = authLoading || profileLoading || subLoading;
   const { activeColorScheme, toggleColorScheme, setColorScheme, colorScheme } = useTheme();
   const theme = useAppTheme();
+  const { open: openUpgradeSheet } = useUpgradeSheet();
 
   const handleSignOut = async () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -111,23 +113,24 @@ export default function ProfileScreen() {
             </Text>
           )}
           {!isPremium && (
-            <Button 
+            <Button
               title="Upgrade to Premium"
               variant="primary"
-              onPress={() => console.warn('Upgrade pressed')}
+              onPress={openUpgradeSheet}
               style={{ marginTop: theme.spacing.sm }}
             />
           )}
         </Card>
       </View>
 
-      <Button 
+      <Button
         title="Sign Out"
         variant="destructive"
         onPress={handleSignOut}
         fullWidth
         style={{ marginTop: 'auto' }}
       />
+
     </Screen>
   );
 }

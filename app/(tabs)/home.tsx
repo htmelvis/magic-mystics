@@ -6,6 +6,7 @@ import { useUserProfile } from '@hooks/useUserProfile';
 import { useDailyMetaphysical } from '@hooks/useDailyMetaphysical';
 import { useJourneyStats } from '@hooks/useJourneyStats';
 import { Screen, Card, Button, Badge, Skeleton, SkeletonCard } from '@components/ui';
+import { useUpgradeSheet } from '@/context/UpgradeSheetContext';
 import { CosmicWeatherCard } from '@/components/home/CosmicWeatherCard';
 import { theme } from '@theme';
 
@@ -16,6 +17,7 @@ export default function HomeScreen() {
   const { data: cosmic, isLoading: cosmicLoading } = useDailyMetaphysical();
   const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useJourneyStats(user?.id);
   const router = useRouter();
+  const { open: openUpgradeSheet } = useUpgradeSheet();
 
   const isLoading = authLoading || profileLoading;
 
@@ -27,11 +29,10 @@ export default function HomeScreen() {
 
   const handlePPFSpread = () => {
     if (!isPremium) {
-      console.warn('Premium feature - upgrade to access PPF spread');
+      openUpgradeSheet();
       return;
     }
     // TODO: Implement PPF spread logic
-    console.warn('PPF spread functionality coming soon!');
   };
 
   const getGreeting = () => {
@@ -128,6 +129,7 @@ export default function HomeScreen() {
             <Text style={styles.promoPrice}>$49/year</Text>
             <Pressable
               style={styles.upgradeButton}
+              onPress={openUpgradeSheet}
               accessibilityRole="button"
               accessibilityLabel="Upgrade to Premium for $49 per year"
             >
