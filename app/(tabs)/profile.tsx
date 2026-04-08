@@ -5,13 +5,14 @@ import { useSubscription } from '@hooks/useSubscription';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useTheme } from '@/context/ThemeContext';
 import { useAppTheme } from '@/hooks/useAppTheme';
-import { Screen, Card, Badge, Button } from '@components/ui';
+import { Screen, Card, Badge, Button, Skeleton, SkeletonCard } from '@components/ui';
 
 export default function ProfileScreen() {
-  const { user, signOut } = useAuth();
-  const { subscription, isPremium } = useSubscription(user?.id);
-  const { userProfile } = useUserProfile(user?.id);
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { subscription, isPremium, loading: subLoading } = useSubscription(user?.id);
+  const { userProfile, loading: profileLoading } = useUserProfile(user?.id);
   const router = useRouter();
+  const isLoading = authLoading || profileLoading || subLoading;
   const { activeColorScheme, toggleColorScheme, setColorScheme, colorScheme } = useTheme();
   const theme = useAppTheme();
 
@@ -28,6 +29,14 @@ export default function ProfileScreen() {
       },
     ]);
   };
+
+  if (isLoading) {
+    return (
+      <Screen>
+        <ProfileSkeleton />
+      </Screen>
+    );
+  }
 
   return (
     <Screen>
@@ -120,6 +129,55 @@ export default function ProfileScreen() {
         style={{ marginTop: 'auto' }}
       />
     </Screen>
+  );
+}
+
+function ProfileSkeleton() {
+  const t = useAppTheme();
+  return (
+    <View style={{ paddingTop: 40, gap: t.spacing.xxl, flex: 1 }}>
+      {/* Title */}
+      <Skeleton width="35%" height={28} />
+
+      {/* Account */}
+      <View style={{ gap: t.spacing.sm }}>
+        <Skeleton width="25%" height={18} />
+        <Skeleton width="60%" height={15} />
+      </View>
+
+      {/* Zodiac Signs */}
+      <View style={{ gap: t.spacing.sm }}>
+        <Skeleton width="35%" height={18} />
+        <View
+          style={{
+            backgroundColor: t.colors.surface.card,
+            borderRadius: t.borderRadius.card,
+            borderWidth: 1,
+            borderColor: t.colors.border.main,
+            padding: t.spacing.cardPadding,
+            gap: t.spacing.sm,
+          }}
+        >
+          <Skeleton width="55%" height={15} />
+          <Skeleton width="50%" height={15} />
+          <Skeleton width="52%" height={15} />
+        </View>
+      </View>
+
+      {/* Subscription */}
+      <View style={{ gap: t.spacing.sm }}>
+        <Skeleton width="40%" height={18} />
+        <SkeletonCard />
+      </View>
+
+      {/* Sign out button */}
+      <Skeleton
+        width="100%"
+        height={48}
+        borderRadius={12}
+        style={{ marginTop: 'auto' }}
+      />
+    </View>
   );
 }
 

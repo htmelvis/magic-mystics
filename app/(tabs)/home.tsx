@@ -5,17 +5,19 @@ import { useSubscription } from '@hooks/useSubscription';
 import { useUserProfile } from '@hooks/useUserProfile';
 import { useDailyMetaphysical } from '@hooks/useDailyMetaphysical';
 import { useJourneyStats } from '@hooks/useJourneyStats';
-import { Screen, Card, Button, Badge } from '@components/ui';
+import { Screen, Card, Button, Badge, Skeleton, SkeletonCard } from '@components/ui';
 import { CosmicWeatherCard } from '@/components/home/CosmicWeatherCard';
 import { theme } from '@theme';
 
 export default function HomeScreen() {
-  const { user, error: authError } = useAuth();
+  const { user, loading: authLoading, error: authError } = useAuth();
   const { isPremium } = useSubscription(user?.id);
-  const { userProfile } = useUserProfile(user?.id);
+  const { userProfile, loading: profileLoading } = useUserProfile(user?.id);
   const { data: cosmic, isLoading: cosmicLoading } = useDailyMetaphysical();
-  const { data: stats, error: statsError, refetch: refetchStats } = useJourneyStats(user?.id);
+  const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useJourneyStats(user?.id);
   const router = useRouter();
+
+  const isLoading = authLoading || profileLoading;
 
   const error = authError || statsError;
 
@@ -58,6 +60,10 @@ export default function HomeScreen() {
         </View>
       )}
 
+      {isLoading ? (
+        <HomeSkeleton />
+      ) : (
+        <>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.greeting}>{getGreeting()}</Text>
@@ -135,26 +141,90 @@ export default function HomeScreen() {
       {isPremium && (
         <View style={styles.statsCard}>
           <Text style={styles.statsTitle}>Your Journey</Text>
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{stats?.readings ?? '—'}</Text>
-              <Text style={styles.statLabel}>Readings</Text>
+          {statsLoading ? (
+            <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+              <View style={{ alignItems: 'center', gap: theme.spacing.xs }}>
+                <Skeleton width={50} height={28} />
+                <Skeleton width={60} height={12} />
+              </View>
+              <View style={{ alignItems: 'center', gap: theme.spacing.xs }}>
+                <Skeleton width={50} height={28} />
+                <Skeleton width={70} height={12} />
+              </View>
+              <View style={{ alignItems: 'center', gap: theme.spacing.xs }}>
+                <Skeleton width={50} height={28} />
+                <Skeleton width={72} height={12} />
+              </View>
             </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{stats?.reflections ?? '—'}</Text>
-              <Text style={styles.statLabel}>Reflections</Text>
+          ) : (
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>{stats?.readings ?? '—'}</Text>
+                <Text style={styles.statsLabel}>Readings</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>{stats?.reflections ?? '—'}</Text>
+                <Text style={styles.statsLabel}>Reflections</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>{stats?.daysActive ?? '—'}</Text>
+                <Text style={styles.statsLabel}>Days Active</Text>
+              </View>
             </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{stats?.daysActive ?? '—'}</Text>
-              <Text style={styles.statLabel}>Days Active</Text>
-            </View>
-          </View>
+          )}
         </View>
+      )}
+        </>
       )}
     </Screen>
   );
 }
 
+/** Full-page skeleton shown while auth + profile data loads. */
+function HomeSkeleton() {
+  return (
+    <View style={{ marginTop: theme.spacing.lg, gap: theme.spacing.xl }}>
+      {/* Header skeleton */}
+      <View style={{ gap: theme.spacing.sm }}>
+        <Skeleton width="40%" height={16} />
+        <Skeleton width="65%" height={28} />
+        <Skeleton width="80%" height={24} borderRadius={12} />
+      </View>
+
+      {/* Cosmic card skeleton */}
+      <View
+        style={{
+          backgroundColor: theme.colors.brand.cosmic.deepSpace,
+          borderRadius: theme.borderRadius.xxl,
+          padding: theme.spacing.lg,
+          gap: theme.spacing.sm,
+        }}
+      >
+        <Skeleton width="45%" height={11} borderRadius={4} />
+        <Skeleton width="80%" height={22} borderRadius={6} />
+        <Skeleton width="100%" height={14} />
+        <Skeleton width="90%" height={14} />
+      </View>
+
+      {/* Action button skeletons */}
+      <View style={{ gap: theme.spacing.md }}>
+        <Skeleton
+          width="100%"
+          height={100}
+          borderRadius={theme.borderRadius.card}
+        />
+        <Skeleton
+          width="100%"
+          height={100}
+          borderRadius={theme.borderRadius.card}
+        />
+      </View>
+
+      {/* Stats / promo skeleton */}
+      <SkeletonCard />
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   header: {

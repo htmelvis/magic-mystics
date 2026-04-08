@@ -1,6 +1,7 @@
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '@theme';
+import { Skeleton } from '@components/ui/Skeleton';
 import { resolveColor, buildGradientColors } from '@lib/colors/cosmicColors';
 import type { useDailyMetaphysical } from '@hooks/useDailyMetaphysical';
 
@@ -26,12 +27,17 @@ export function CosmicWeatherCard({ cosmic, isLoading }: CosmicWeatherCardProps)
   if (isLoading) {
     return (
       <LinearGradient colors={[DEEP_SPACE, '#0d0d1a']} style={styles.card}>
-        <ActivityIndicator
-          color={theme.colors.brand.cosmic.moonlight}
-          size="small"
-          style={{ marginVertical: theme.spacing.lg }}
+        <View
+          style={{ gap: theme.spacing.sm }}
+          accessible
           accessibilityLabel="Loading cosmic weather"
-        />
+        >
+          <Skeleton width="45%" height={11} borderRadius={4} />
+          <Skeleton width="80%" height={22} borderRadius={6} />
+          <Skeleton width="100%" height={14} />
+          <Skeleton width="90%" height={14} />
+          <Skeleton width="50%" height={24} borderRadius={12} style={{ marginTop: 4 }} />
+        </View>
       </LinearGradient>
     );
   }

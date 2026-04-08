@@ -20,5 +20,14 @@ export type { InputProps } from './Input';
 export { Screen } from './Screen';
 export type { ScreenProps } from './Screen';
 
-export { LoadingState, SkeletonText, SkeletonCard, SkeletonProfile } from './LoadingState';
+export { LoadingState } from './LoadingState';
 export type { LoadingStateProps, LoadingVariant } from './LoadingState';
+
+export {
+  Skeleton,
+  SkeletonText,
+  SkeletonCircle,
+  SkeletonCard,
+  SkeletonRow,
+  SkeletonProfile,
+} from './Skeleton';
