@@ -5,7 +5,10 @@ import { useSubscription } from '@hooks/useSubscription';
 import { useReadings } from '@hooks/useReadings';
 import type { ReadingRow } from '@hooks/useReadings';
 import { useFilteredReadings } from '@hooks/useFilteredReadings';
+import { useReadingExpiry } from '@hooks/useReadingExpiry';
+import { useUpgradeSheet } from '@/context/UpgradeSheetContext';
 import { ReadingListItem, ReadingDrawer, SearchFilterBar, SkeletonRow } from '@/components/history';
+import { ExpiryWarningBanner } from '@components/ui/ExpiryWarningBanner';
 import { theme } from '@theme';
 
 // ── Screen ────────────────────────────────────────────────────────────────────
@@ -13,6 +16,7 @@ import { theme } from '@theme';
 export default function HistoryScreen() {
   const { user, error: authError } = useAuth();
   const { limits, isPremium } = useSubscription(user?.id);
+  const expiry = useReadingExpiry(user?.id, isPremium);
   const {
     data,
     isLoading,
@@ -55,6 +59,8 @@ export default function HistoryScreen() {
 
   const keyExtractor = useCallback((item: ReadingRow) => item.id, []);
 
+  const { open: openUpgradeSheet } = useUpgradeSheet();
+
   const ListHeader = (
     <View style={screenStyles.listHeader}>
       <Text style={screenStyles.title}>Reading History</Text>
@@ -63,6 +69,7 @@ export default function HistoryScreen() {
           ? `${readings.length} reading${readings.length !== 1 ? 's' : ''}`
           : `${readings.length} of ${limits.maxReadingHistory}`}
       </Text>
+      <ExpiryWarningBanner expiry={expiry} onUpgradePress={openUpgradeSheet} />
       {readings.length > 0 && (
         <SearchFilterBar
           query={query}

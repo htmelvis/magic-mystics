@@ -2,10 +2,12 @@ import { Tabs } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '@theme';
 import { ErrorBoundary } from '@components/ui/ErrorBoundary';
+import { UpgradeSheetProvider } from '@/context/UpgradeSheetContext';
 
 export default function TabsLayout() {
   return (
     <ErrorBoundary>
+    <UpgradeSheetProvider>
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -56,6 +58,7 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+    </UpgradeSheetProvider>
     </ErrorBoundary>
   );
 }
