@@ -1,27 +1,43 @@
 import { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+
+const MIN_DATE = new Date(1900, 0, 1);
 
 export default function BirthDateScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(Platform.OS === 'ios');
+  const [error, setError] = useState<string | null>(null);
+
+  const validate = (value: Date): string | null => {
+    if (isNaN(value.getTime())) return 'Please select a valid date';
+    if (value > new Date()) return 'Birth date cannot be in the future';
+    if (value < MIN_DATE) return 'Birth date must be after January 1, 1900';
+    return null;
+  };
 
   const handleContinue = () => {
+    const validationError = validate(date);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     router.push({
       pathname: '/(onboarding)/birth-time',
       params: { displayName: params.displayName as string, birthDate: date.toISOString() },
     });
   };
 
-  const onChange = (_event: any, selectedDate?: Date) => {
+  const onChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
       setShowPicker(false);
     }
     if (selectedDate) {
       setDate(selectedDate);
+      if (error) setError(validate(selectedDate));
     }
   };
 
@@ -29,14 +45,20 @@ export default function BirthDateScreen() {
     <View style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.progress}>Step 2 of 4</Text>
-        <Text style={styles.title}>When were you born?</Text>
+        <Text style={styles.title} accessibilityRole="header">When were you born?</Text>
         <Text style={styles.subtitle}>
           We'll use this to calculate your sun sign and other astrological placements
         </Text>
 
         <View style={styles.pickerContainer}>
           {Platform.OS === 'android' && !showPicker && (
-            <Pressable style={styles.dateButton} onPress={() => setShowPicker(true)}>
+            <Pressable
+              style={styles.dateButton}
+              onPress={() => setShowPicker(true)}
+              accessibilityRole="button"
+              accessibilityLabel={`Selected birth date: ${date.toLocaleDateString()}`}
+              accessibilityHint="Double-tap to open date picker"
+            >
               <Text style={styles.dateButtonText}>{date.toLocaleDateString()}</Text>
             </Pressable>
           )}
@@ -51,9 +73,16 @@ export default function BirthDateScreen() {
             />
           )}
         </View>
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
       </View>
 
-      <Pressable style={styles.button} onPress={handleContinue}>
+      <Pressable
+        style={styles.button}
+        onPress={handleContinue}
+        accessibilityRole="button"
+        accessibilityLabel="Continue"
+        accessibilityHint="Proceeds to birth time selection"
+      >
         <Text style={styles.buttonText}>Continue</Text>
       </Pressable>
     </View>
@@ -68,7 +97,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingTop: 60,
+    paddingTop: 16,
   },
   progress: {
     fontSize: 14,
@@ -106,6 +135,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#8b5cf6',
     fontWeight: '600',
+  },
+  errorText: {
+    marginTop: 6,
+    fontSize: 13,
+    color: '#dc2626',
+    textAlign: 'center',
   },
   button: {
     backgroundColor: '#8b5cf6',

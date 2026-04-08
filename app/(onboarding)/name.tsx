@@ -5,8 +5,19 @@ import { useRouter } from 'expo-router';
 export default function NameScreen() {
   const router = useRouter();
   const [displayName, setDisplayName] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const validate = (value: string): string | null => {
+    if (!value.trim()) return 'Please enter your name';
+    return null;
+  };
 
   const handleContinue = () => {
+    const validationError = validate(displayName);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     router.push({
       pathname: '/(onboarding)/birth-date',
       params: { displayName: displayName.trim() },
@@ -23,24 +34,25 @@ export default function NameScreen() {
         </Text>
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, error ? styles.inputError : null]}
           placeholder="Your name"
           placeholderTextColor="#9ca3af"
           value={displayName}
-          onChangeText={setDisplayName}
+          onChangeText={(text) => {
+            setDisplayName(text);
+            if (error) setError(validate(text));
+          }}
+          onBlur={() => setError(validate(displayName))}
           autoCapitalize="words"
           autoCorrect={false}
           maxLength={50}
           returnKeyType="done"
-          onSubmitEditing={displayName.trim() ? handleContinue : undefined}
+          onSubmitEditing={handleContinue}
         />
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
       </View>
 
-      <Pressable
-        style={[styles.button, !displayName.trim() && styles.buttonDisabled]}
-        onPress={handleContinue}
-        disabled={!displayName.trim()}
-      >
+      <Pressable style={styles.button} onPress={handleContinue}>
         <Text style={styles.buttonText}>Continue</Text>
       </Pressable>
     </View>
@@ -55,7 +67,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingTop: 60,
+    paddingTop: 16,
   },
   progress: {
     fontSize: 14,
@@ -84,15 +96,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1f2937',
   },
+  inputError: {
+    borderColor: '#dc2626',
+  },
+  errorText: {
+    marginTop: 6,
+    fontSize: 13,
+    color: '#dc2626',
+  },
   button: {
     backgroundColor: '#8b5cf6',
     padding: 18,
     borderRadius: 12,
     alignItems: 'center',
     marginBottom: 20,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
   },
   buttonText: {
     color: '#fff',

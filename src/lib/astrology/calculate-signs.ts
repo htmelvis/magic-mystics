@@ -40,8 +40,33 @@ export function calculateSunSign(birthDate: Date): ZodiacSign {
 }
 
 /**
- * Calculate moon sign (simplified approximation based on birth date)
- * Note: This is a basic calculation. For accurate moon sign, use ephemeris data
+ * Convert a calendar date to Julian Day Number.
+ * Algorithm from "Astronomical Algorithms" (Jean Meeus, 2nd ed.), Chapter 7.
+ */
+function toJulianDay(date: Date): number {
+  let Y = date.getUTCFullYear();
+  let M = date.getUTCMonth() + 1;
+  const D =
+    date.getUTCDate() +
+    (date.getUTCHours() + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600) / 24;
+
+  if (M <= 2) {
+    Y -= 1;
+    M += 12;
+  }
+  const A = Math.floor(Y / 100);
+  const B = 2 - A + Math.floor(A / 4);
+  return Math.floor(365.25 * (Y + 4716)) + Math.floor(30.6001 * (M + 1)) + D + B - 1524.5;
+}
+
+/**
+ * Calculate moon sign from birth date using Jean Meeus mean lunar longitude.
+ * Accuracy: ±1 sign at sign boundaries (moon near 0° or 30° of a sign).
+ * For exact results, use an ephemeris (e.g. the daily-metaphysical edge function).
+ *
+ * Reference: "Astronomical Algorithms" (Meeus), Chapter 47 — Moon's mean longitude:
+ *   L' = 218.3164477 + 481267.88123421·T
+ * where T = Julian centuries since J2000.0.
  */
 export function calculateMoonSign(birthDate: Date): ZodiacSign {
   const signs: ZodiacSign[] = [
@@ -59,14 +84,17 @@ export function calculateMoonSign(birthDate: Date): ZodiacSign {
     'Pisces',
   ];
 
-  // Simplified calculation: moon changes sign approximately every 2.5 days
-  const dayOfYear = Math.floor(
-    (birthDate.getTime() - new Date(birthDate.getFullYear(), 0, 0).getTime()) /
-      (1000 * 60 * 60 * 24)
-  );
-  const moonCycle = Math.floor(dayOfYear / 2.5) % 12;
+  const J2000 = 2451545.0;
+  const jd = toJulianDay(birthDate);
+  const T = (jd - J2000) / 36525.0;
 
-  return signs[moonCycle];
+  // Moon's mean longitude in degrees
+  const L = 218.3164477 + 481267.88123421 * T;
+
+  // Normalize to [0, 360)
+  const lon = ((L % 360) + 360) % 360;
+
+  return signs[Math.floor(lon / 30)];
 }
 
 /**

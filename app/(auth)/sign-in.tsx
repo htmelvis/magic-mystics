@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, Pressable } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAuth } from '@hooks/useAuth';
+import { Screen, Input, Button } from '@components/ui';
+import { theme } from '@theme';
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
@@ -28,53 +30,53 @@ export default function SignInScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.emoji}>🔮</Text>
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Sign in to continue your mystical journey</Text>
+    <Screen scroll={false} padding={false}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.emoji} accessible={false}>🔮</Text>
+          <Text style={styles.title}>Welcome Back</Text>
+          <Text style={styles.subtitle}>Sign in to continue your mystical journey</Text>
+        </View>
+
+        <View style={styles.form}>
+          <Input
+            label="Email"
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            editable={!loading}
+          />
+
+          <Input
+            label="Password"
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            editable={!loading}
+          />
+
+          <Button
+            title={loading ? 'Signing In...' : 'Sign In'}
+            onPress={handleSignIn}
+            loading={loading}
+            fullWidth
+            style={{ marginTop: theme.spacing.xs }}
+          />
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Don't have an account? </Text>
+          <Link href="/(auth)/sign-up" asChild>
+            <Pressable accessibilityRole="link" accessibilityLabel="Sign up for a new account">
+              <Text style={styles.link}>Sign Up</Text>
+            </Pressable>
+          </Link>
+        </View>
       </View>
-
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#9ca3af"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          editable={!loading}
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#9ca3af"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          editable={!loading}
-        />
-
-        <Pressable
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleSignIn}
-          disabled={loading}
-        >
-          <Text style={styles.buttonText}>{loading ? 'Signing In...' : 'Sign In'}</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Don't have an account? </Text>
-        <Link href="/(auth)/sign-up" asChild>
-          <Pressable>
-            <Text style={styles.link}>Sign Up</Text>
-          </Pressable>
-        </Link>
-      </View>
-    </View>
+    </Screen>
   );
 }
 
@@ -82,8 +84,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'space-between',
-    padding: 24,
-    backgroundColor: '#fff',
+    padding: theme.spacing.xl,
+    backgroundColor: theme.colors.surface.card,
   },
   header: {
     flex: 1,
@@ -92,65 +94,33 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: 64,
-    marginBottom: 24,
+    marginBottom: theme.spacing.xl,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    ...theme.textStyles.display,
+    marginBottom: theme.spacing.xs,
     textAlign: 'center',
-    color: '#8b5cf6',
+    color: theme.colors.brand.primary,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
+    ...theme.textStyles.body,
+    color: theme.colors.text.secondary,
     textAlign: 'center',
-    lineHeight: 24,
   },
   form: {
-    gap: 16,
-  },
-  input: {
-    backgroundColor: '#f9fafb',
-    borderWidth: 2,
-    borderColor: '#e5e7eb',
-    padding: 16,
-    borderRadius: 12,
-    fontSize: 16,
-    color: '#1f2937',
-  },
-  button: {
-    backgroundColor: '#8b5cf6',
-    padding: 18,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 8,
-    shadowColor: '#8b5cf6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+    gap: theme.spacing.md,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingBottom: 20,
+    paddingBottom: theme.spacing.lg,
   },
   footerText: {
-    color: '#666',
-    fontSize: 16,
+    ...theme.textStyles.body,
+    color: theme.colors.text.secondary,
   },
   link: {
-    color: '#8b5cf6',
-    fontWeight: '600',
-    fontSize: 16,
+    ...theme.textStyles.link,
+    color: theme.colors.text.link,
   },
 });

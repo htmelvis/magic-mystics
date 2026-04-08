@@ -1,20 +1,35 @@
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { GluestackUIProvider } from '@gluestack-ui/themed';
+import { config } from '../gluestack-ui.config';
 import { useAuth } from '@hooks/useAuth';
 import { useOnboarding } from '@hooks/useOnboarding';
+import { ThemeProvider } from '@/context/ThemeContext';
+import { ErrorBoundary } from '@components/ui/ErrorBoundary';
 
-export default function RootLayout() {
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
+
+function RootLayoutNav() {
+  const insets = useSafeAreaInsets();
   const { user, loading: authLoading } = useAuth();
   const { onboardingCompleted, loading: onboardingLoading } = useOnboarding(user?.id);
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
-    if (authLoading || onboardingLoading) return;
+    if (authLoading || (!!user && onboardingLoading)) return;
 
     const inAuthGroup = segments[0] === '(auth)';
     const inOnboardingGroup = segments[0] === '(onboarding)';
-    const inTabsGroup = segments[0] === '(tabs)';
 
     if (!user && !inAuthGroup) {
       // Redirect to sign in if not authenticated
@@ -35,16 +50,29 @@ export default function RootLayout() {
     }
   }, [user, authLoading, onboardingCompleted, onboardingLoading, segments]);
 
-  if (authLoading || onboardingLoading) {
-    return null; // Or a loading screen component
-  }
-
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack screenOptions={{ headerShown: false, contentStyle: { paddingTop: insets.top } }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(onboarding)" />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="draw" options={{ headerShown: false, presentation: 'card' }} />
     </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <GluestackUIProvider config={config}>
+        <SafeAreaProvider>
+          <QueryClientProvider client={queryClient}>
+            <ErrorBoundary>
+              <RootLayoutNav />
+            </ErrorBoundary>
+          </QueryClientProvider>
+        </SafeAreaProvider>
+      </GluestackUIProvider>
+    </ThemeProvider>
   );
 }
