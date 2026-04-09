@@ -6,6 +6,7 @@ import { GluestackUIProvider } from '@gluestack-ui/themed';
 import { config } from '../gluestack-ui.config';
 import { useAuth } from '@hooks/useAuth';
 import { useOnboarding } from '@hooks/useOnboarding';
+import { initRevenueCat } from '@hooks/useRevenueCat';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ErrorBoundary } from '@components/ui/ErrorBoundary';
 
@@ -22,6 +23,12 @@ function RootLayoutNav() {
   const insets = useSafeAreaInsets();
   const { user, loading: authLoading } = useAuth();
   const { onboardingCompleted, loading: onboardingLoading } = useOnboarding(user?.id);
+
+  // Initialise RevenueCat once the user is known. Using user.id as the
+  // appUserID keeps RevenueCat and Supabase identities in sync automatically.
+  useEffect(() => {
+    if (user?.id) initRevenueCat(user.id);
+  }, [user?.id]);
   const segments = useSegments();
   const router = useRouter();
 

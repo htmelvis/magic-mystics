@@ -1,0 +1,66 @@
+# Flow: Upgrade Sheet — UI Coverage
+#
+# Verifies the UpgradeSheet opens from all three entry points (home promo
+# card, PPF spread button, profile screen) and that core content and
+# dismiss behaviour are correct.
+#
+# Does NOT attempt a real purchase — native IAP sheets cannot be automated.
+# Sandbox purchase testing is done manually with a Sandbox Apple ID /
+# Google Play test account.
+#
+# Run:
+#   maestro test .maestro/flows/07-upgrade-sheet.yaml \
+#     --env TEST_EMAIL=test@example.com \
+#     --env TEST_PASSWORD=secret123
+appId: com.edwardwieczorek.magicmystics
+---
+- launchApp:
+    clearState: true
+
+- runFlow: ../utils/sign-in.yaml
+
+# ── Entry point 1: Home promo card ───────────────────────────────────────────
+- tapOn:
+    accessibilityLabel: "Home tab"
+
+- assertVisible: "Upgrade Now"
+- tapOn: "Upgrade Now"
+
+- assertVisible: "Keep Your Full History"
+- assertVisible: "$49"
+- assertVisible: "Upgrade Now"
+- assertVisible: "Maybe Later"
+
+# Dismiss via "Maybe Later"
+- tapOn: "Maybe Later"
+- assertNotVisible: "Keep Your Full History"
+
+# ── Entry point 2: PPF spread button (gated for free users) ──────────────────
+- tapOn:
+    accessibilityLabel: "Past, Present, Future spread, Premium feature"
+
+- assertVisible: "Keep Your Full History"
+
+# Dismiss via backdrop tap
+- tapOn:
+    accessibilityLabel: "Close upgrade sheet"
+- assertNotVisible: "Keep Your Full History"
+
+# ── Entry point 3: Profile screen ────────────────────────────────────────────
+- tapOn:
+    accessibilityLabel: "Profile tab"
+
+- tapOn: "Upgrade to Premium"
+
+- assertVisible: "Keep Your Full History"
+- assertVisible: "Unlimited reading history"
+- assertVisible: "Past / Present / Future spreads"
+- assertVisible: "AI insights with your personal context"
+- assertVisible: "Priority support"
+
+# Dismiss via drag handle (swipe down gesture)
+- swipe:
+    direction: DOWN
+    duration: 400
+
+- assertNotVisible: "Keep Your Full History"

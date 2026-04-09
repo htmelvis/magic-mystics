@@ -8,12 +8,13 @@ module.exports = {
     '^@hooks/(.*)$': '<rootDir>/src/hooks/$1',
     '^@types/(.*)$': '<rootDir>/src/types/$1',
     '^@theme$': '<rootDir>/src/theme',
+    '^react-native-purchases$': '<rootDir>/src/__mocks__/react-native-purchases.ts',
   },
   testMatch: [
     '**/__tests__/**/*.test.[jt]s?(x)',
   ],
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|react-native-purchases)',
   ],
   collectCoverageFrom: [
     'src/lib/**/*.ts',

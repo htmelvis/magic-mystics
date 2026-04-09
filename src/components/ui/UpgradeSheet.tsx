@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import {
   AccessibilityInfo,
+  ActivityIndicator,
   Animated,
   findNodeHandle,
   Modal,
@@ -22,11 +23,11 @@ const FEATURES = [
 interface UpgradeSheetProps {
   isVisible: boolean;
   onClose: () => void;
-  /** Called when the user taps "Upgrade Now". Wire to RevenueCat purchase. */
   onUpgradePress: () => void;
+  isPurchasing?: boolean;
 }
 
-export function UpgradeSheet({ isVisible, onClose, onUpgradePress }: UpgradeSheetProps) {
+export function UpgradeSheet({ isVisible, onClose, onUpgradePress, isPurchasing = false }: UpgradeSheetProps) {
   const slideY = useRef(new Animated.Value(900)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
   const sheetRef = useRef<View>(null);
@@ -163,12 +164,22 @@ export function UpgradeSheet({ isVisible, onClose, onUpgradePress }: UpgradeShee
 
             {/* Actions */}
             <Pressable
-              style={({ pressed }) => [styles.upgradeButton, pressed && styles.upgradeButtonPressed]}
+              style={({ pressed }) => [
+                styles.upgradeButton,
+                pressed && !isPurchasing && styles.upgradeButtonPressed,
+                isPurchasing && styles.upgradeButtonDisabled,
+              ]}
               onPress={onUpgradePress}
+              disabled={isPurchasing}
               accessibilityRole="button"
               accessibilityLabel="Upgrade to Premium for $49 per year"
+              accessibilityState={{ busy: isPurchasing }}
             >
-              <Text style={styles.upgradeButtonText}>Upgrade Now</Text>
+              {isPurchasing ? (
+                <ActivityIndicator color={theme.colors.text.inverse} size="small" />
+              ) : (
+                <Text style={styles.upgradeButtonText}>Upgrade Now</Text>
+              )}
             </Pressable>
 
             <Pressable
@@ -285,6 +296,9 @@ const styles = StyleSheet.create({
   },
   upgradeButtonPressed: {
     opacity: 0.85,
+  },
+  upgradeButtonDisabled: {
+    opacity: 0.7,
   },
   upgradeButtonText: {
     color: theme.colors.text.inverse,

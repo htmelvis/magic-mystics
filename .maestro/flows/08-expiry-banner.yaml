@@ -1,0 +1,63 @@
+# Flow: Expiry Warning Banner
+#
+# Verifies the banner appears for a free-tier user who has readings in the
+# 23–30 day warning window, and that the dismiss and upgrade CTAs work.
+#
+# Prerequisites: the test account (TEST_EXPIRY_EMAIL) must have at least one
+# reading with created_at between NOW()-30d and NOW()-23d. Seed this via:
+#   supabase/seeds/02_expiry_test_user.sql
+#
+# Run:
+#   maestro test .maestro/flows/08-expiry-banner.yaml \
+#     --env TEST_EXPIRY_EMAIL=expiry-test@example.com \
+#     --env TEST_PASSWORD=secret123
+appId: com.edwardwieczorek.magicmystics
+---
+- launchApp:
+    clearState: true
+
+- runFlow:
+    file: ../utils/sign-in.yaml
+    env:
+      TEST_EMAIL: ${TEST_EXPIRY_EMAIL}
+      TEST_PASSWORD: ${TEST_PASSWORD}
+
+# ── Navigate to History ──────────────────────────────────────────────────────
+- tapOn:
+    accessibilityLabel: "History tab"
+
+# Banner should be visible with expiry warning text
+- assertVisible:
+    text:
+      regexp: ".+ reading(s)? will be removed .+"
+
+- assertVisible: "Upgrade to keep forever"
+
+# ── Upgrade CTA opens the sheet ──────────────────────────────────────────────
+- tapOn: "Upgrade to keep forever"
+- assertVisible: "Keep Your Full History"
+- tapOn: "Maybe Later"
+- assertNotVisible: "Keep Your Full History"
+
+# Banner still visible after closing sheet
+- assertVisible:
+    text:
+      regexp: ".+ reading(s)? will be removed .+"
+
+# ── Dismiss banner ───────────────────────────────────────────────────────────
+- tapOn:
+    accessibilityLabel: "Dismiss expiry warning"
+
+- assertNotVisible:
+    text:
+      regexp: ".+ reading(s)? will be removed .+"
+
+# ── Dismissed state persists after navigating away and back ──────────────────
+- tapOn:
+    accessibilityLabel: "Home tab"
+- tapOn:
+    accessibilityLabel: "History tab"
+
+- assertNotVisible:
+    text:
+      regexp: ".+ reading(s)? will be removed .+"
