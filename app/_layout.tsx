@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, useNavigationContainerRef, useRouter, useSegments } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GluestackUIProvider } from '@gluestack-ui/themed';
@@ -24,8 +24,20 @@ function RootLayoutNav() {
   const { onboardingCompleted, loading: onboardingLoading } = useOnboarding(user?.id);
   const segments = useSegments();
   const router = useRouter();
+  const navigationRef = useNavigationContainerRef();
 
   useEffect(() => {
+    // Wait until the navigation container is ready before routing
+    if (!navigationRef.isReady()) return;
+
+    // When Storybook is enabled, skip all auth/onboarding routing
+    if (process.env.EXPO_PUBLIC_STORYBOOK_ENABLED === 'true') {
+      if (segments[0] !== 'storybook') {
+        router.replace('/storybook');
+      }
+      return;
+    }
+
     if (authLoading || (!!user && onboardingLoading)) return;
 
     const inAuthGroup = segments[0] === '(auth)';
@@ -57,6 +69,9 @@ function RootLayoutNav() {
       <Stack.Screen name="(onboarding)" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="draw" options={{ headerShown: false, presentation: 'card' }} />
+      <Stack.Protected guard={__DEV__}>
+        <Stack.Screen name="storybook" options={{ headerShown: false }} />
+      </Stack.Protected>
     </Stack>
   );
 }
