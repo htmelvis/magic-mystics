@@ -32,7 +32,7 @@ export default function HomeScreen() {
       openUpgradeSheet();
       return;
     }
-    // TODO: Implement PPF spread logic
+    router.push('/ppf');
   };
 
   const getGreeting = () => {
