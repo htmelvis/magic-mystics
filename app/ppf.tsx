@@ -10,6 +10,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
+  type ScrollView as ScrollViewType,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@hooks/useAuth';
@@ -50,6 +51,7 @@ export default function PPFScreen() {
   const deckOpacity = useRef(new Animated.Value(1)).current;
   const carouselOpacity = useRef(new Animated.Value(0)).current;
   const flipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scrollRef = useRef<ScrollViewType>(null);
 
   // Draw + save as soon as the deck is available
   useEffect(() => {
@@ -159,7 +161,17 @@ export default function PPFScreen() {
       {phase === 'reading' && (
         <View style={styles.progressRow}>
           {POSITION_LABELS.map((label, i) => (
-            <View key={i} style={styles.progressItem}>
+            <Pressable
+              key={i}
+              style={styles.progressItem}
+              onPress={() => {
+                scrollRef.current?.scrollTo({ x: i * screenWidth, animated: true });
+                setActiveIndex(i);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={`Go to ${label} card`}
+              accessibilityState={{ selected: i === activeIndex }}
+            >
               <View
                 style={[
                   styles.dot,
@@ -175,7 +187,7 @@ export default function PPFScreen() {
               >
                 {label}
               </Text>
-            </View>
+            </Pressable>
           ))}
         </View>
       )}
@@ -210,6 +222,7 @@ export default function PPFScreen() {
         {phase === 'reading' && (
           <Animated.View style={[StyleSheet.absoluteFill, { opacity: carouselOpacity }]}>
             <ScrollView
+              ref={scrollRef}
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
