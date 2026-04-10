@@ -4,13 +4,14 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@hooks/useAuth';
 import { supabase } from '@lib/supabase/client';
-import { calculateAstrologyData } from '@lib/astrology/calculate-signs';
+import { calculateAstrologyData, ZodiacSign } from '@lib/astrology/calculate-signs';
 import { geocodeLocation, getTimezone } from '@lib/geocoding/geocode';
 import {
   onboardingParamsSchema,
   astrologyDataSchema,
   userOnboardingUpdateSchema,
 } from '@lib/validation/onboarding';
+import { ZodiacAvatar } from '@components/ui';
 
 export default function CalculatingScreen() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function CalculatingScreen() {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState('Calculating your signs...');
   const [failed, setFailed] = useState(false);
+  const [sunSign, setSunSign] = useState<ZodiacSign | null>(null);
   const hasRun = useRef(false);
 
   const completeOnboarding = useCallback(async () => {
@@ -53,6 +55,7 @@ export default function CalculatingScreen() {
 
       // Validate calculated signs before writing to DB
       const astrologyData = astrologyDataSchema.parse(rawAstrologyData);
+      setSunSign(astrologyData.sunSign);
 
       // Geocode birth location and look up its IANA timezone — both non-blocking
       setStatus('Locating your birthplace...');
@@ -144,7 +147,16 @@ export default function CalculatingScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.emoji}>{failed ? '⚠️' : '✨🔮✨'}</Text>
+      {failed ? (
+        <Text style={styles.emoji}>⚠️</Text>
+      ) : sunSign ? (
+        <View style={styles.avatarReveal}>
+          <ZodiacAvatar sign={sunSign} size={120} />
+          <Text style={styles.sunSignLabel}>Your sun is in {sunSign}</Text>
+        </View>
+      ) : (
+        <Text style={styles.emoji}>✨🔮✨</Text>
+      )}
       {!failed && <ActivityIndicator size="large" color="#8b5cf6" />}
       <Text style={styles.status} accessibilityRole="text" accessibilityLiveRegion="polite">
         {status}
@@ -183,6 +195,17 @@ const styles = StyleSheet.create({
   emoji: {
     fontSize: 60,
     marginBottom: 32,
+  },
+  avatarReveal: {
+    alignItems: 'center',
+    marginBottom: 32,
+    gap: 16,
+  },
+  sunSignLabel: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#8b5cf6',
+    textAlign: 'center',
   },
   status: {
     fontSize: 18,

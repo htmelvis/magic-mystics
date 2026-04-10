@@ -7,7 +7,8 @@ import { useSubscription } from '@hooks/useSubscription';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useTheme } from '@/context/ThemeContext';
 import { useAppTheme } from '@/hooks/useAppTheme';
-import { Screen, Card, Badge, Button, Skeleton, SkeletonCard } from '@components/ui';
+import { Screen, Card, Badge, Button, Skeleton, SkeletonCard, ZodiacAvatar } from '@components/ui';
+import type { ZodiacSign } from '@lib/astrology/calculate-signs';
 import { useUpgradeSheet } from '@/context/UpgradeSheetContext';
 import { supabase } from '@lib/supabase/client';
 import { geocodeLocation, getTimezone } from '@lib/geocoding/geocode';
@@ -84,11 +85,16 @@ export default function ProfileScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Profile</Text>
-
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>Account</Text>
-        <Text style={[styles.email, { color: theme.colors.text.primary }]}>{user?.email}</Text>
+      <View style={styles.profileHeader}>
+        {userProfile?.sunSign && (
+          <ZodiacAvatar sign={userProfile.sunSign as ZodiacSign} size={56} />
+        )}
+        <View style={styles.profileHeaderText}>
+          <Text style={styles.title}>
+            {userProfile?.displayName || 'Profile'}
+          </Text>
+          <Text style={[styles.email, { color: theme.colors.text.secondary }]}>{user?.email}</Text>
+        </View>
       </View>
 
       {/* Theme Section */}
@@ -299,11 +305,19 @@ function ProfileSkeleton() {
 }
 
 const styles = StyleSheet.create({
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    marginTop: 40,
+    marginBottom: 32,
+  },
+  profileHeaderText: {
+    flex: 1,
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    marginTop: 40,
-    marginBottom: 32,
   },
   section: {
     marginBottom: 32,
@@ -316,6 +330,7 @@ const styles = StyleSheet.create({
   email: {
     fontSize: 15,
     fontWeight: '400',
+    marginTop: 2,
   },
   signText: {
     fontSize: 15,

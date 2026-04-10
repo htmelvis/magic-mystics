@@ -5,10 +5,11 @@ import { useSubscription } from '@hooks/useSubscription';
 import { useUserProfile } from '@hooks/useUserProfile';
 import { useDailyMetaphysical } from '@hooks/useDailyMetaphysical';
 import { useJourneyStats } from '@hooks/useJourneyStats';
-import { Screen, Card, Button, Badge, Skeleton, SkeletonCard } from '@components/ui';
+import { Screen, Card, Button, Badge, Skeleton, SkeletonCard, ZodiacAvatar } from '@components/ui';
 import { useUpgradeSheet } from '@/context/UpgradeSheetContext';
 import { CosmicWeatherCard } from '@/components/home/CosmicWeatherCard';
 import { theme } from '@theme';
+import type { ZodiacSign } from '@lib/astrology/calculate-signs';
 
 export default function HomeScreen() {
   const { user, loading: authLoading, error: authError } = useAuth();
@@ -67,15 +68,22 @@ export default function HomeScreen() {
         <>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.greeting}>{getGreeting()}</Text>
-        <Text style={styles.userName}>{userProfile?.displayName || user?.email}</Text>
-      {userProfile?.sunSign && (
-        <Badge 
-          label={`☀️ ${userProfile.sunSign} • 🌙 ${userProfile.moonSign} • ⬆️ ${userProfile.risingSign}`}
-          variant="primary"
-          size="md"
-        />
-      )}
+        <View style={styles.headerTop}>
+          {userProfile?.sunSign && (
+            <ZodiacAvatar sign={userProfile.sunSign as ZodiacSign} size={48} />
+          )}
+          <View style={styles.headerText}>
+            <Text style={styles.greeting}>{getGreeting()}</Text>
+            <Text style={styles.userName}>{userProfile?.displayName || user?.email}</Text>
+          </View>
+        </View>
+        {userProfile?.sunSign && (
+          <Badge
+            label={`☀️ ${userProfile.sunSign} • 🌙 ${userProfile.moonSign ?? '—'} • ⬆️ ${userProfile.risingSign ?? '—'}`}
+            variant="primary"
+            size="md"
+          />
+        )}
       </View>
 
       {/* Cosmic Weather */}
@@ -232,6 +240,15 @@ const styles = StyleSheet.create({
   header: {
     marginTop: theme.spacing.lg,
     marginBottom: theme.spacing.xxl,
+    gap: theme.spacing.sm,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.md,
+  },
+  headerText: {
+    flex: 1,
   },
   greeting: {
     ...theme.textStyles.body,
