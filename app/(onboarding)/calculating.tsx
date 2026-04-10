@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@hooks/useAuth';
 import { supabase } from '@lib/supabase/client';
 import { calculateAstrologyData } from '@lib/astrology/calculate-signs';
+import { geocodeLocation } from '@lib/geocoding/geocode';
 import {
   onboardingParamsSchema,
   astrologyDataSchema,
@@ -48,6 +49,10 @@ export default function CalculatingScreen() {
       // Validate calculated signs before writing to DB
       const astrologyData = astrologyDataSchema.parse(rawAstrologyData);
 
+      // Geocode birth location — non-blocking, null is acceptable
+      setStatus('Locating your birthplace...');
+      const coords = await geocodeLocation(validatedParams.birthLocation);
+
       // Format date for database (YYYY-MM-DD)
       const formattedDate = birthDate.toISOString().split('T')[0];
 
@@ -57,6 +62,8 @@ export default function CalculatingScreen() {
         birth_date: formattedDate,
         birth_time: validatedParams.birthTime,
         birth_location: validatedParams.birthLocation,
+        birth_lat: coords?.lat ?? null,
+        birth_lng: coords?.lng ?? null,
         sun_sign: astrologyData.sunSign,
         moon_sign: astrologyData.moonSign,
         rising_sign: astrologyData.risingSign,
@@ -74,6 +81,8 @@ export default function CalculatingScreen() {
           birth_date: updatePayload.birth_date,
           birth_time: updatePayload.birth_time,
           birth_location: updatePayload.birth_location,
+          birth_lat: updatePayload.birth_lat ?? null,
+          birth_lng: updatePayload.birth_lng ?? null,
           sun_sign: updatePayload.sun_sign,
           moon_sign: updatePayload.moon_sign,
           rising_sign: updatePayload.rising_sign,

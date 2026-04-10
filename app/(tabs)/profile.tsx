@@ -1,5 +1,7 @@
-import { View, Text, StyleSheet, Alert, Pressable } from 'react-native';
+import { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, Alert, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@hooks/useAuth';
 import { useSubscription } from '@hooks/useSubscription';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -7,16 +9,55 @@ import { useTheme } from '@/context/ThemeContext';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { Screen, Card, Badge, Button, Skeleton, SkeletonCard } from '@components/ui';
 import { useUpgradeSheet } from '@/context/UpgradeSheetContext';
+import { supabase } from '@lib/supabase/client';
+import { geocodeLocation } from '@lib/geocoding/geocode';
+
+function formatBirthDate(birthDate: string | null): string {
+  if (!birthDate) return '—';
+  const d = new Date(birthDate + 'T00:00:00');
+  if (isNaN(d.getTime())) return birthDate;
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function formatBirthTime(birthTime: string | null): string {
+  if (!birthTime) return '—';
+  const [h, m] = birthTime.split(':').map(Number);
+  if (isNaN(h) || isNaN(m)) return birthTime;
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
 
 export default function ProfileScreen() {
   const { user, loading: authLoading, signOut } = useAuth();
   const { subscription, isPremium, loading: subLoading } = useSubscription(user?.id);
   const { userProfile, loading: profileLoading } = useUserProfile(user?.id);
   const router = useRouter();
+  const queryClient = useQueryClient();
   const isLoading = authLoading || profileLoading || subLoading;
   const { activeColorScheme, toggleColorScheme, setColorScheme, colorScheme } = useTheme();
   const theme = useAppTheme();
   const { open: openUpgradeSheet } = useUpgradeSheet();
+  const [retryingGeocode, setRetryingGeocode] = useState(false);
+
+  const handleRetryGeocode = useCallback(async () => {
+    if (!user || !userProfile?.birthLocation) return;
+    setRetryingGeocode(true);
+    try {
+      const coords = await geocodeLocation(userProfile.birthLocation);
+      if (!coords) {
+        Alert.alert('Geocoding failed', 'Could not resolve your birth location. Please try again later.');
+        return;
+      }
+      await supabase
+        .from('users')
+        .update({ birth_lat: coords.lat, birth_lng: coords.lng })
+        .eq('id', user.id);
+      await queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] });
+    } finally {
+      setRetryingGeocode(false);
+    }
+  }, [user, userProfile, queryClient]);
 
   const handleSignOut = async () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -96,6 +137,56 @@ export default function ProfileScreen() {
           <Text style={styles.signText}>🌙 Moon: {userProfile?.moonSign || '—'}</Text>
           <Text style={styles.signText}>⬆️ Rising: {userProfile?.risingSign || '—'}</Text>
         </Card>
+      </View>
+
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary, marginBottom: 0 }]}>
+            Birth Details
+          </Text>
+          {!userProfile?.birthDetailsEditedAt && (
+            <Pressable
+              onPress={() => router.push('/(tabs)/edit-birth-details')}
+              accessibilityRole="button"
+              accessibilityLabel="Edit birth details"
+            >
+              <Text style={[styles.editLink, { color: theme.colors.brand.primary }]}>Edit</Text>
+            </Pressable>
+          )}
+        </View>
+        <Card variant="outlined">
+          <Text style={[styles.birthDetailText, { color: theme.colors.text.primary }]}>
+            Date: {formatBirthDate(userProfile?.birthDate ?? null)}
+          </Text>
+          <Text style={[styles.birthDetailText, { color: theme.colors.text.primary }]}>
+            Time: {formatBirthTime(userProfile?.birthTime ?? null)}
+          </Text>
+          <Text style={[styles.birthDetailText, { color: theme.colors.text.primary }]}>
+            Location: {userProfile?.birthLocation || '—'}
+          </Text>
+          {userProfile?.birthLocation && !userProfile?.birthLat && (
+            <Pressable
+              onPress={handleRetryGeocode}
+              disabled={retryingGeocode}
+              accessibilityRole="button"
+              accessibilityLabel="Retry location geocoding"
+              style={styles.retryRow}
+            >
+              {retryingGeocode ? (
+                <ActivityIndicator size="small" color={theme.colors.text.muted} />
+              ) : (
+                <Text style={[styles.retryText, { color: theme.colors.text.muted }]}>
+                  Location data missing — tap to retry
+                </Text>
+              )}
+            </Pressable>
+          )}
+        </Card>
+        {userProfile?.birthDetailsEditedAt && (
+          <Text style={[styles.editedNote, { color: theme.colors.text.muted }]}>
+            Birth details have already been edited once and cannot be changed again.
+          </Text>
+        )}
       </View>
 
       <View style={styles.section}>
@@ -238,6 +329,32 @@ const styles = StyleSheet.create({
   autoModeText: {
     fontSize: 12,
     marginTop: 12,
+    fontStyle: 'italic',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  editLink: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  birthDetailText: {
+    fontSize: 15,
+    marginBottom: 8,
+  },
+  retryRow: {
+    marginTop: 8,
+  },
+  retryText: {
+    fontSize: 13,
+    textDecorationLine: 'underline',
+  },
+  editedNote: {
+    fontSize: 12,
+    marginTop: 8,
     fontStyle: 'italic',
   },
 });

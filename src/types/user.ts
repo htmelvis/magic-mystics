@@ -8,6 +8,9 @@ export interface UserProfile {
   birthDate: string | null;
   birthTime: string | null;
   birthLocation: string | null;
+  birthLat: number | null;
+  birthLng: number | null;
+  birthDetailsEditedAt: string | null;
   sunSign: string | null;
   moonSign: string | null;
   risingSign: string | null;
