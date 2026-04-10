@@ -10,6 +10,7 @@ export interface UserProfile {
   birthLocation: string | null;
   birthLat: number | null;
   birthLng: number | null;
+  birthTimezone: string | null;
   birthDetailsEditedAt: string | null;
   sunSign: string | null;
   moonSign: string | null;

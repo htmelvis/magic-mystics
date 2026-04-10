@@ -77,6 +77,7 @@ export const userOnboardingUpdateSchema = z.object({
   birth_location: z.string().min(2).max(200),
   birth_lat: z.number().nullable().optional(),
   birth_lng: z.number().nullable().optional(),
+  birth_timezone: z.string().nullable().optional(),
   sun_sign: z.enum(ZODIAC_SIGNS),
   moon_sign: z.enum(ZODIAC_SIGNS),
   rising_sign: z.enum(ZODIAC_SIGNS),

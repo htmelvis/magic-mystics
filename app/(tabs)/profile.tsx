@@ -10,7 +10,7 @@ import { useAppTheme } from '@/hooks/useAppTheme';
 import { Screen, Card, Badge, Button, Skeleton, SkeletonCard } from '@components/ui';
 import { useUpgradeSheet } from '@/context/UpgradeSheetContext';
 import { supabase } from '@lib/supabase/client';
-import { geocodeLocation } from '@lib/geocoding/geocode';
+import { geocodeLocation, getTimezone } from '@lib/geocoding/geocode';
 
 function formatBirthDate(birthDate: string | null): string {
   if (!birthDate) return '—';
@@ -49,9 +49,10 @@ export default function ProfileScreen() {
         Alert.alert('Geocoding failed', 'Could not resolve your birth location. Please try again later.');
         return;
       }
+      const timezone = await getTimezone(coords.lat, coords.lng);
       await supabase
         .from('users')
-        .update({ birth_lat: coords.lat, birth_lng: coords.lng })
+        .update({ birth_lat: coords.lat, birth_lng: coords.lng, birth_timezone: timezone ?? null })
         .eq('id', user.id);
       await queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] });
     } finally {
@@ -160,6 +161,11 @@ export default function ProfileScreen() {
           </Text>
           <Text style={[styles.birthDetailText, { color: theme.colors.text.primary }]}>
             Time: {formatBirthTime(userProfile?.birthTime ?? null)}
+            {userProfile?.birthTimezone ? (
+              <Text style={{ color: theme.colors.text.muted, fontSize: 13 }}>
+                {' '}({userProfile.birthTimezone})
+              </Text>
+            ) : null}
           </Text>
           <Text style={[styles.birthDetailText, { color: theme.colors.text.primary }]}>
             Location: {userProfile?.birthLocation || '—'}
@@ -214,12 +220,29 @@ export default function ProfileScreen() {
         </Card>
       </View>
 
+      <View style={[styles.section, { marginTop: 'auto' }]}>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>Support</Text>
+        <Card variant="outlined">
+          <Pressable
+            style={styles.supportRow}
+            onPress={() => router.push('/(tabs)/support')}
+            accessibilityRole="button"
+            accessibilityLabel="Get help or send feedback"
+          >
+            <Text style={[styles.supportRowLabel, { color: theme.colors.text.primary }]}>
+              Get Help / Send Feedback
+            </Text>
+            <Text style={[styles.supportRowChevron, { color: theme.colors.text.muted }]}>›</Text>
+          </Pressable>
+        </Card>
+      </View>
+
       <Button
         title="Sign Out"
         variant="destructive"
         onPress={handleSignOut}
         fullWidth
-        style={{ marginTop: 'auto' }}
+        style={{ marginTop: 16 }}
       />
 
     </Screen>
@@ -356,5 +379,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 8,
     fontStyle: 'italic',
+  },
+  supportRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  supportRowLabel: {
+    fontSize: 15,
+  },
+  supportRowChevron: {
+    fontSize: 20,
+    lineHeight: 22,
   },
 });

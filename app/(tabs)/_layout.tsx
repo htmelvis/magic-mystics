@@ -61,6 +61,10 @@ export default function TabsLayout() {
         name="edit-birth-details"
         options={{ href: null }}
       />
+      <Tabs.Screen
+        name="support"
+        options={{ href: null }}
+      />
     </Tabs>
     </UpgradeSheetProvider>
     </ErrorBoundary>

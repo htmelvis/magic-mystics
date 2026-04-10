@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@hooks/useAuth';
 import { supabase } from '@lib/supabase/client';
 import { calculateAstrologyData } from '@lib/astrology/calculate-signs';
-import { geocodeLocation } from '@lib/geocoding/geocode';
+import { geocodeLocation, getTimezone } from '@lib/geocoding/geocode';
 import {
   onboardingParamsSchema,
   astrologyDataSchema,
@@ -36,7 +36,12 @@ export default function CalculatingScreen() {
         birthLocation: params.birthLocation,
       });
 
-      const birthDate = new Date(validatedParams.birthDate);
+      // Parse birth date as local noon to avoid UTC boundary issues.
+      // "YYYY-MM-DD" strings passed via router params are always local calendar
+      // dates — constructing at noon ensures the calendar date stays correct
+      // regardless of the device timezone.
+      const [year, month, day] = validatedParams.birthDate.split('-').map(Number);
+      const birthDate = new Date(year, month - 1, day, 12, 0, 0);
 
       // Calculate astrology signs
       setStatus('Calculating your astrological signs...');
@@ -49,21 +54,20 @@ export default function CalculatingScreen() {
       // Validate calculated signs before writing to DB
       const astrologyData = astrologyDataSchema.parse(rawAstrologyData);
 
-      // Geocode birth location — non-blocking, null is acceptable
+      // Geocode birth location and look up its IANA timezone — both non-blocking
       setStatus('Locating your birthplace...');
       const coords = await geocodeLocation(validatedParams.birthLocation);
-
-      // Format date for database (YYYY-MM-DD)
-      const formattedDate = birthDate.toISOString().split('T')[0];
+      const timezone = coords ? await getTimezone(coords.lat, coords.lng) : null;
 
       // Validate the full DB update payload
       const updatePayload = userOnboardingUpdateSchema.parse({
         display_name: validatedParams.displayName,
-        birth_date: formattedDate,
+        birth_date: validatedParams.birthDate,
         birth_time: validatedParams.birthTime,
         birth_location: validatedParams.birthLocation,
         birth_lat: coords?.lat ?? null,
         birth_lng: coords?.lng ?? null,
+        birth_timezone: timezone,
         sun_sign: astrologyData.sunSign,
         moon_sign: astrologyData.moonSign,
         rising_sign: astrologyData.risingSign,
@@ -83,6 +87,7 @@ export default function CalculatingScreen() {
           birth_location: updatePayload.birth_location,
           birth_lat: updatePayload.birth_lat ?? null,
           birth_lng: updatePayload.birth_lng ?? null,
+          birth_timezone: updatePayload.birth_timezone ?? null,
           sun_sign: updatePayload.sun_sign,
           moon_sign: updatePayload.moon_sign,
           rising_sign: updatePayload.rising_sign,

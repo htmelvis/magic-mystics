@@ -34,3 +34,20 @@ export async function geocodeLocation(location: string): Promise<Coordinates | n
     return null;
   }
 }
+
+/**
+ * Look up the IANA timezone for a set of coordinates using timeapi.io.
+ * Returns null on failure — callers must never block the user on this.
+ * Example return value: "America/New_York"
+ */
+export async function getTimezone(lat: number, lng: number): Promise<string | null> {
+  try {
+    const url = `https://timeapi.io/api/TimeZone/coordinate?latitude=${lat}&longitude=${lng}`;
+    const response = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return typeof data.timeZone === 'string' ? data.timeZone : null;
+  } catch {
+    return null;
+  }
+}

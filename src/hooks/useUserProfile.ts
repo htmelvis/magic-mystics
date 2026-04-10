@@ -17,6 +17,7 @@ async function fetchUserProfile(userId: string): Promise<UserProfile> {
     birthLocation: data.birth_location,
     birthLat: data.birth_lat ?? null,
     birthLng: data.birth_lng ?? null,
+    birthTimezone: data.birth_timezone ?? null,
     birthDetailsEditedAt: data.birth_details_edited_at ?? null,
     sunSign: data.sun_sign,
     moonSign: data.moon_sign,

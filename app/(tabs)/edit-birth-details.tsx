@@ -19,7 +19,7 @@ import { useAppTheme } from '@/hooks/useAppTheme';
 import { Screen } from '@components/ui';
 import { supabase } from '@lib/supabase/client';
 import { calculateAstrologyData } from '@lib/astrology/calculate-signs';
-import { geocodeLocation } from '@lib/geocoding/geocode';
+import { geocodeLocation, getTimezone } from '@lib/geocoding/geocode';
 
 const MIN_DATE = new Date(1900, 0, 1);
 
@@ -97,10 +97,18 @@ export default function EditBirthDetailsScreen() {
       const minutes = time.getMinutes().toString().padStart(2, '0');
       const birthTime = `${hours}:${minutes}`;
       const birthLocation = location.trim();
-      const formattedDate = date.toISOString().split('T')[0];
 
-      const astrologyData = calculateAstrologyData(date, birthTime, birthLocation);
+      // Use local date components — avoids UTC boundary issues from toISOString()
+      const y = date.getFullYear();
+      const mon = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      const formattedDate = `${y}-${mon}-${d}`;
+
+      // Reconstruct birth date at local noon for accurate sign calculation
+      const birthDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+      const astrologyData = calculateAstrologyData(birthDate, birthTime, birthLocation);
       const coords = await geocodeLocation(birthLocation);
+      const timezone = coords ? await getTimezone(coords.lat, coords.lng) : null;
 
       const { error } = await supabase
         .from('users')
@@ -110,6 +118,7 @@ export default function EditBirthDetailsScreen() {
           birth_location: birthLocation,
           birth_lat: coords?.lat ?? null,
           birth_lng: coords?.lng ?? null,
+          birth_timezone: timezone ?? null,
           sun_sign: astrologyData.sunSign,
           moon_sign: astrologyData.moonSign,
           rising_sign: astrologyData.risingSign,
@@ -117,7 +126,18 @@ export default function EditBirthDetailsScreen() {
         })
         .eq('id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        if (error.message?.includes('BIRTH_DETAILS_LOCKED')) {
+          await queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] });
+          Alert.alert(
+            'Already edited',
+            'Your birth details have already been updated once and cannot be changed again.',
+            [{ text: 'OK', onPress: () => router.back() }]
+          );
+          return;
+        }
+        throw error;
+      }
 
       await queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] });
       router.back();
