@@ -22,6 +22,7 @@ async function fetchUserProfile(userId: string): Promise<UserProfile> {
     sunSign: data.sun_sign,
     moonSign: data.moon_sign,
     risingSign: data.rising_sign,
+    natalChartData: (data as Record<string, unknown>).natal_chart_data as import('@lib/astrology/natal-chart').StoredNatalChart | null ?? null,
     onboardingCompleted: data.onboarding_completed,
     createdAt: data.created_at,
     updatedAt: data.updated_at,

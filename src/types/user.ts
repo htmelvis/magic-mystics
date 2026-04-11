@@ -1,3 +1,5 @@
+export type { StoredNatalChart, PlanetPosition, PlanetName } from '@lib/astrology/natal-chart';
+
 export type SubscriptionTier = 'free' | 'premium';
 
 export interface UserProfile {
@@ -15,6 +17,7 @@ export interface UserProfile {
   sunSign: string | null;
   moonSign: string | null;
   risingSign: string | null;
+  natalChartData: import('@lib/astrology/natal-chart').StoredNatalChart | null;
   onboardingCompleted: boolean;
   createdAt: string;
   updatedAt: string;

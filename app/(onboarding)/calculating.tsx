@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@hooks/useAuth';
 import { supabase } from '@lib/supabase/client';
 import { calculateAstrologyData, ZodiacSign } from '@lib/astrology/calculate-signs';
+import { computeNatalChart } from '@lib/astrology/natal-chart';
 import { geocodeLocation, getTimezone } from '@lib/geocoding/geocode';
 import {
   onboardingParamsSchema,
@@ -62,6 +63,15 @@ export default function CalculatingScreen() {
       const coords = await geocodeLocation(validatedParams.birthLocation);
       const timezone = coords ? await getTimezone(coords.lat, coords.lng) : null;
 
+      // Compute natal chart (coords may be null — chart degrades gracefully, no ASC/MC)
+      setStatus('Charting your sky...');
+      const natalChart = computeNatalChart(
+        birthDate,
+        validatedParams.birthTime,
+        coords?.lat ?? null,
+        coords?.lng ?? null,
+      );
+
       // Validate the full DB update payload
       const updatePayload = userOnboardingUpdateSchema.parse({
         display_name: validatedParams.displayName,
@@ -94,6 +104,7 @@ export default function CalculatingScreen() {
           sun_sign: updatePayload.sun_sign,
           moon_sign: updatePayload.moon_sign,
           rising_sign: updatePayload.rising_sign,
+          natal_chart_data: natalChart,
           onboarding_completed: updatePayload.onboarding_completed,
         }, {
           onConflict: 'id'

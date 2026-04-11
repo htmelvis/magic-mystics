@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Alert, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -7,8 +7,9 @@ import { useSubscription } from '@hooks/useSubscription';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useTheme } from '@/context/ThemeContext';
 import { useAppTheme } from '@/hooks/useAppTheme';
-import { Screen, Card, Badge, Button, Skeleton, SkeletonCard, ZodiacAvatar } from '@components/ui';
+import { Screen, Card, Badge, Button, Skeleton, SkeletonCard, ZodiacAvatar, NatalChartWheel } from '@components/ui';
 import type { ZodiacSign } from '@lib/astrology/calculate-signs';
+import { computeNatalChart } from '@lib/astrology/natal-chart';
 import { useUpgradeSheet } from '@/context/UpgradeSheetContext';
 import { supabase } from '@lib/supabase/client';
 import { geocodeLocation, getTimezone } from '@lib/geocoding/geocode';
@@ -40,6 +41,34 @@ export default function ProfileScreen() {
   const theme = useAppTheme();
   const { open: openUpgradeSheet } = useUpgradeSheet();
   const [retryingGeocode, setRetryingGeocode] = useState(false);
+  const hasComputedChart = useRef(false);
+
+  // Lazy-compute natal chart on first profile view for users who onboarded before this feature
+  useEffect(() => {
+    if (
+      hasComputedChart.current ||
+      !user ||
+      !userProfile ||
+      userProfile.natalChartData ||
+      !userProfile.birthDate ||
+      !userProfile.birthTime
+    ) return;
+
+    hasComputedChart.current = true;
+    const [year, month, day] = userProfile.birthDate.split('-').map(Number);
+    const birthDate = new Date(year, month - 1, day, 12, 0, 0);
+    const chart = computeNatalChart(
+      birthDate,
+      userProfile.birthTime,
+      userProfile.birthLat,
+      userProfile.birthLng,
+    );
+    supabase
+      .from('users')
+      .update({ natal_chart_data: chart } as never)
+      .eq('id', user.id)
+      .then(() => queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] }));
+  }, [user, userProfile, queryClient]);
 
   const handleRetryGeocode = useCallback(async () => {
     if (!user || !userProfile?.birthLocation) return;
@@ -137,14 +166,45 @@ export default function ProfileScreen() {
         </Card>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Zodiac Signs</Text>
+      {/* Natal Chart preview — taps to full-screen */}
+      <Pressable
+        style={styles.section}
+        onPress={() => router.push('/(tabs)/natal-chart')}
+        accessibilityRole="button"
+        accessibilityLabel="View your natal chart"
+        accessibilityHint="Opens full natal chart"
+      >
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>Natal Chart</Text>
+          <Text style={[styles.sectionChevron, { color: theme.colors.brand.primary }]}>View Full →</Text>
+        </View>
         <Card variant="outlined">
-          <Text style={styles.signText}>☀️ Sun: {userProfile?.sunSign || '—'}</Text>
-          <Text style={styles.signText}>🌙 Moon: {userProfile?.moonSign || '—'}</Text>
-          <Text style={styles.signText}>⬆️ Rising: {userProfile?.risingSign || '—'}</Text>
+          {userProfile?.natalChartData ? (
+            <View style={styles.chartPreviewRow}>
+              <NatalChartWheel
+                chart={userProfile.natalChartData}
+                size={120}
+                showOuterPlanets={false}
+              />
+              <View style={styles.chartPreviewSigns}>
+                <Text style={[styles.signText, { color: theme.colors.text.primary }]}>
+                  ☉ {userProfile.sunSign || '—'}
+                </Text>
+                <Text style={[styles.signText, { color: theme.colors.text.primary }]}>
+                  ☽ {userProfile.moonSign || '—'}
+                </Text>
+                <Text style={[styles.signText, { color: theme.colors.text.primary }]}>
+                  ↑ {userProfile.risingSign || '—'}
+                </Text>
+              </View>
+            </View>
+          ) : (
+            <Text style={[styles.signText, { color: theme.colors.text.muted }]}>
+              {userProfile?.birthDate ? 'Generating chart…' : 'Complete birth details to generate chart'}
+            </Text>
+          )}
         </Card>
-      </View>
+      </Pressable>
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
@@ -331,6 +391,25 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '400',
     marginTop: 2,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionChevron: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  chartPreviewRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  chartPreviewSigns: {
+    flex: 1,
+    gap: 6,
   },
   signText: {
     fontSize: 15,
