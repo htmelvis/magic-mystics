@@ -9,8 +9,8 @@ const DEBOUNCE_MS = 250;
  * Normalises a string for case-insensitive, accent-insensitive matching.
  * Using a shared helper avoids allocating inside the hot filter loop.
  */
-function norm(s: string): string {
-  return s.toLowerCase().trim();
+function norm(s: string | null | undefined): string {
+  return (s ?? '').toLowerCase().trim();
 }
 
 function matchesSearch(reading: ReadingRow, query: string): boolean {
