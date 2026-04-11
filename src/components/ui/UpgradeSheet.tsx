@@ -34,6 +34,7 @@ export function UpgradeSheet({ isVisible, onClose, onUpgradePress, isPurchasing 
   const dismissRef = useRef<() => void>(() => {});
 
   const dismiss = useCallback(() => {
+    onClose();
     Animated.parallel([
       Animated.timing(slideY, {
         toValue: 900,
@@ -45,7 +46,7 @@ export function UpgradeSheet({ isVisible, onClose, onUpgradePress, isPurchasing 
         duration: 220,
         useNativeDriver: true,
       }),
-    ]).start(() => onClose());
+    ]).start();
   }, [onClose, slideY, backdropOpacity]);
 
   useEffect(() => {

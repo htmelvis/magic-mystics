@@ -65,6 +65,16 @@ export default function SignInScreen() {
             fullWidth
             style={{ marginTop: theme.spacing.xs }}
           />
+
+          <Link href="/(auth)/forgot-password" asChild>
+            <Pressable
+              style={styles.forgotPassword}
+              accessibilityRole="link"
+              accessibilityLabel="Forgot password? Click here to reset"
+            >
+              <Text style={styles.forgotPasswordText}>Forgot password? Click here to reset</Text>
+            </Pressable>
+          </Link>
         </View>
 
         <View style={styles.footer}>
@@ -122,5 +132,14 @@ const styles = StyleSheet.create({
   link: {
     ...theme.textStyles.link,
     color: theme.colors.text.link,
+  },
+  forgotPassword: {
+    alignItems: 'center',
+    marginTop: theme.spacing.sm,
+  },
+  forgotPasswordText: {
+    ...theme.textStyles.caption,
+    color: theme.colors.text.secondary,
+    textDecorationLine: 'underline',
   },
 });

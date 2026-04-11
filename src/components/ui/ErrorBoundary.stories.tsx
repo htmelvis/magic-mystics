@@ -4,7 +4,7 @@ import { Text, View } from 'react-native';
 import { ErrorBoundary } from './ErrorBoundary';
 
 /** Helper that throws on first render to trigger the boundary */
-function BrokenComponent({ message }: { message?: string }) {
+function BrokenComponent({ message }: { message?: string }): React.ReactElement {
   throw new Error(message ?? 'Something went wrong in this component.');
 }
 

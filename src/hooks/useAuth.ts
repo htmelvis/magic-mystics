@@ -7,6 +7,7 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   useEffect(() => {
     // Get initial session
@@ -29,10 +30,15 @@ export function useAuth() {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsPasswordRecovery(true);
+      } else {
+        setIsPasswordRecovery(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -59,13 +65,29 @@ export function useAuth() {
     return { error };
   };
 
+  const forgotPassword = async (email: string) => {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'magic-mystics://reset-password',
+    });
+    return { data, error };
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+    if (!error) setIsPasswordRecovery(false);
+    return { data, error };
+  };
+
   return {
     session,
     user,
     loading,
     error,
+    isPasswordRecovery,
     signUp,
     signIn,
     signOut,
+    forgotPassword,
+    updatePassword,
   };
 }
