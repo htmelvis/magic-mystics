@@ -52,6 +52,7 @@ export default function PPFScreen() {
   const carouselOpacity = useRef(new Animated.Value(0)).current;
   const flipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<ScrollViewType>(null);
+  const hasDrawn = useRef(false);
 
   // Auto-flip the active card after arriving on it (reading phase only)
   useEffect(() => {
@@ -114,6 +115,8 @@ export default function PPFScreen() {
   // Fades the deck out and draws cards in parallel so the network round-trip
   // is hidden behind the ~300ms fade animation.
   const handleShuffleComplete = useCallback(async () => {
+    if (hasDrawn.current) return;
+    hasDrawn.current = true;
     setError(null);
 
     const fadeOut = new Promise<void>((resolve) => {
