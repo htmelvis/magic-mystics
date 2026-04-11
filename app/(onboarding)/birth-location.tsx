@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { LocationInput } from '@components/ui';
 
 export default function BirthLocationScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+
   const [location, setLocation] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -13,6 +15,11 @@ export default function BirthLocationScreen() {
     if (!trimmed) return 'Please enter your birth location';
     if (trimmed.length < 2) return 'Location must be at least 2 characters';
     return null;
+  };
+
+  const handleChangeValue = (value: string) => {
+    setLocation(value);
+    if (error) setError(validate(value));
   };
 
   const handleContinue = () => {
@@ -41,25 +48,13 @@ export default function BirthLocationScreen() {
           Enter your city and country to refine your astrological chart
         </Text>
 
-        <TextInput
-          style={[styles.input, error ? styles.inputError : null]}
-          placeholder="e.g. Los Angeles, USA"
-          placeholderTextColor="#9ca3af"
+        <LocationInput
           value={location}
-          onChangeText={(text) => {
-            setLocation(text);
-            if (error) setError(validate(text));
-          }}
+          onChangeValue={handleChangeValue}
+          error={error ?? undefined}
           onBlur={() => setError(validate(location))}
-          autoCapitalize="words"
-          autoCorrect={false}
-          maxLength={200}
-          returnKeyType="done"
-          onSubmitEditing={handleContinue}
+          hint="This helps us calculate your rising sign more accurately"
         />
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-        <Text style={styles.hint}>This helps us calculate your rising sign more accurately</Text>
       </View>
 
       <Pressable style={styles.button} onPress={handleContinue}>
@@ -96,29 +91,6 @@ const styles = StyleSheet.create({
     color: '#666',
     lineHeight: 24,
     marginBottom: 40,
-  },
-  input: {
-    backgroundColor: '#f9fafb',
-    borderWidth: 2,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#1f2937',
-  },
-  inputError: {
-    borderColor: '#dc2626',
-  },
-  errorText: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#dc2626',
-  },
-  hint: {
-    fontSize: 14,
-    color: '#9ca3af',
-    textAlign: 'center',
-    marginTop: 20,
   },
   button: {
     backgroundColor: '#8b5cf6',

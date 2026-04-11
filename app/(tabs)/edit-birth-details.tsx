@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react';
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   Pressable,
   Platform,
@@ -16,7 +15,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAppTheme } from '@/hooks/useAppTheme';
-import { Screen } from '@components/ui';
+import { Screen, LocationInput } from '@components/ui';
 import { supabase } from '@lib/supabase/client';
 import { calculateAstrologyData } from '@lib/astrology/calculate-signs';
 import { geocodeLocation, getTimezone } from '@lib/geocoding/geocode';
@@ -63,6 +62,11 @@ export default function EditBirthDetailsScreen() {
     if (!trimmed) return 'Please enter your birth location';
     if (trimmed.length < 2) return 'Location must be at least 2 characters';
     return null;
+  };
+
+  const handleLocationChangeValue = (value: string) => {
+    setLocation(value);
+    if (locationError) setLocationError(validateLocation(value));
   };
 
   const handleDateChange = (_event: DateTimePickerEvent, selected?: Date) => {
@@ -248,34 +252,13 @@ export default function EditBirthDetailsScreen() {
         </View>
 
         {/* Birth Location */}
-        <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.colors.text.secondary }]}>
-            Birth Location
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: theme.colors.surface.card,
-                borderColor: locationError ? '#dc2626' : theme.colors.border.main,
-                color: theme.colors.text.primary,
-              },
-            ]}
-            placeholder="e.g. Los Angeles, USA"
-            placeholderTextColor={theme.colors.text.muted}
-            value={location}
-            onChangeText={(text) => {
-              setLocation(text);
-              if (locationError) setLocationError(validateLocation(text));
-            }}
-            onBlur={() => setLocationError(validateLocation(location))}
-            autoCapitalize="words"
-            autoCorrect={false}
-            maxLength={200}
-            returnKeyType="done"
-          />
-          {locationError && <Text style={styles.errorText}>{locationError}</Text>}
-        </View>
+        <LocationInput
+          label="Birth Location"
+          value={location}
+          onChangeValue={handleLocationChangeValue}
+          error={locationError ?? undefined}
+          onBlur={() => setLocationError(validateLocation(location))}
+        />
 
         {saveError && <Text style={[styles.errorText, { textAlign: 'center' }]}>{saveError}</Text>}
 
@@ -346,12 +329,6 @@ const styles = StyleSheet.create({
   pickerButtonText: {
     fontSize: 16,
     fontWeight: '500',
-  },
-  input: {
-    borderWidth: 1.5,
-    borderRadius: 10,
-    padding: 14,
-    fontSize: 16,
   },
   errorText: {
     fontSize: 13,
