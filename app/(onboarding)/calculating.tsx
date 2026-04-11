@@ -6,7 +6,6 @@ import { useAuth } from '@hooks/useAuth';
 import { supabase } from '@lib/supabase/client';
 import { calculateAstrologyData, ZodiacSign } from '@lib/astrology/calculate-signs';
 import { computeNatalChart } from '@lib/astrology/natal-chart';
-import { geocodeLocation, getTimezone } from '@lib/geocoding/geocode';
 import {
   onboardingParamsSchema,
   astrologyDataSchema,
@@ -17,7 +16,7 @@ import { ZodiacAvatar } from '@components/ui';
 export default function CalculatingScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const [status, setStatus] = useState('Calculating your signs...');
   const [failed, setFailed] = useState(false);
@@ -58,19 +57,11 @@ export default function CalculatingScreen() {
       const astrologyData = astrologyDataSchema.parse(rawAstrologyData);
       setSunSign(astrologyData.sunSign);
 
-      // Geocode birth location and look up its IANA timezone — both non-blocking
-      setStatus('Locating your birthplace...');
-      const coords = await geocodeLocation(validatedParams.birthLocation);
-      const timezone = coords ? await getTimezone(coords.lat, coords.lng) : null;
-
-      // Compute natal chart (coords may be null — chart degrades gracefully, no ASC/MC)
+      // Compute natal chart without coords — ASC/MC will be null.
+      // The profile screen will geocode birth_location on first visit and
+      // recompute the chart with coordinates to fill in ASC/MC.
       setStatus('Charting your sky...');
-      const natalChart = computeNatalChart(
-        birthDate,
-        validatedParams.birthTime,
-        coords?.lat ?? null,
-        coords?.lng ?? null,
-      );
+      const natalChart = computeNatalChart(birthDate, validatedParams.birthTime, null, null);
 
       // Validate the full DB update payload
       const updatePayload = userOnboardingUpdateSchema.parse({
@@ -78,9 +69,9 @@ export default function CalculatingScreen() {
         birth_date: validatedParams.birthDate,
         birth_time: validatedParams.birthTime,
         birth_location: validatedParams.birthLocation,
-        birth_lat: coords?.lat ?? null,
-        birth_lng: coords?.lng ?? null,
-        birth_timezone: timezone,
+        birth_lat: null,
+        birth_lng: null,
+        birth_timezone: null,
         sun_sign: astrologyData.sunSign,
         moon_sign: astrologyData.moonSign,
         rising_sign: astrologyData.risingSign,
@@ -98,9 +89,9 @@ export default function CalculatingScreen() {
           birth_date: updatePayload.birth_date,
           birth_time: updatePayload.birth_time,
           birth_location: updatePayload.birth_location,
-          birth_lat: updatePayload.birth_lat ?? null,
-          birth_lng: updatePayload.birth_lng ?? null,
-          birth_timezone: updatePayload.birth_timezone ?? null,
+          birth_lat: null,
+          birth_lng: null,
+          birth_timezone: null,
           sun_sign: updatePayload.sun_sign,
           moon_sign: updatePayload.moon_sign,
           rising_sign: updatePayload.rising_sign,
@@ -145,11 +136,15 @@ export default function CalculatingScreen() {
   }, [user, params, queryClient]);
 
   useEffect(() => {
+    // Wait for auth to resolve before attempting — user is null during the
+    // initial render and would cause a silent early return, setting hasRun
+    // before the real work could run.
+    if (authLoading || !user) return;
     if (!hasRun.current) {
       hasRun.current = true;
       completeOnboarding();
     }
-  }, [completeOnboarding]);
+  }, [completeOnboarding, authLoading, user]);
 
   const handleRetry = () => {
     hasRun.current = false;

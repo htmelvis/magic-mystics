@@ -71,18 +71,29 @@ export default function ProfileScreen() {
   }, [user, userProfile, queryClient]);
 
   const handleRetryGeocode = useCallback(async () => {
-    if (!user || !userProfile?.birthLocation) return;
+    if (!user || !userProfile?.birthLocation || !userProfile?.birthDate || !userProfile?.birthTime) return;
     setRetryingGeocode(true);
     try {
       const coords = await geocodeLocation(userProfile.birthLocation);
       if (!coords) {
-        Alert.alert('Geocoding failed', 'Could not resolve your birth location. Please try again later.');
+        Alert.alert('Location not found', 'Could not resolve your birth location. Please try again later.');
         return;
       }
       const timezone = await getTimezone(coords.lat, coords.lng);
+
+      // Recompute natal chart with real coords so ASC/MC are filled in.
+      const [year, month, day] = userProfile.birthDate.split('-').map(Number);
+      const birthDate = new Date(year, month - 1, day, 12, 0, 0);
+      const natalChart = computeNatalChart(birthDate, userProfile.birthTime, coords.lat, coords.lng);
+
       await supabase
         .from('users')
-        .update({ birth_lat: coords.lat, birth_lng: coords.lng, birth_timezone: timezone ?? null })
+        .update({
+          birth_lat: coords.lat,
+          birth_lng: coords.lng,
+          birth_timezone: timezone ?? null,
+          natal_chart_data: natalChart,
+        })
         .eq('id', user.id);
       await queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] });
     } finally {

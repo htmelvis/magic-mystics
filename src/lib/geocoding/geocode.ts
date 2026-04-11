@@ -12,12 +12,16 @@ export async function geocodeLocation(location: string): Promise<Coordinates | n
   try {
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`;
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
     const response = await fetch(url, {
+      signal: controller.signal,
       headers: {
         'User-Agent': 'MagicMystics/1.0',
         Accept: 'application/json',
       },
     });
+    clearTimeout(timeout);
 
     if (!response.ok) return null;
 
@@ -43,7 +47,10 @@ export async function geocodeLocation(location: string): Promise<Coordinates | n
 export async function getTimezone(lat: number, lng: number): Promise<string | null> {
   try {
     const url = `https://timeapi.io/api/TimeZone/coordinate?latitude=${lat}&longitude=${lng}`;
-    const response = await fetch(url, { headers: { Accept: 'application/json' } });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const response = await fetch(url, { signal: controller.signal, headers: { Accept: 'application/json' } });
+    clearTimeout(timeout);
     if (!response.ok) return null;
     const data = await response.json();
     return typeof data.timeZone === 'string' ? data.timeZone : null;
