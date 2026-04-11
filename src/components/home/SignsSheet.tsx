@@ -21,23 +21,23 @@ const PLACEMENT_INTRO = {
   sun: {
     emoji: '☀️',
     title: 'Sun Sign',
-    role: 'Your core self — the radiant center of who you are.',
+    role: 'Your core self — the steady flame at the center of who you are.',
     description:
-      `The Sun was the most prominent body in the sky the moment you were born, and its sign shapes the essence of your personality. This is the sign most people know: your identity, your will, your life force. It describes the qualities you're here to develop and express most fully over your lifetime.`,
+      `The Sun is the steady flame at the center of your chart — the core of who you are when everything else falls away. It speaks to your life force, ego, purpose, and creative will: the part of you that says "I am" and insists on becoming itself. When you act from your Sun, you feel awake, decisive, and alive, as if the world is briefly orbiting around your essence. It is both your fuel and your trajectory, the story you came here to live on purpose.`,
   },
   moon: {
     emoji: '🌙',
     title: 'Moon Sign',
-    role: 'Your emotional world — what you feel, need, and instinctively reach for.',
+    role: 'Your inner tide — the hidden self that rises and falls beneath your public face.',
     description:
-      'The Moon moves faster than any other planet, shifting signs every 2–3 days. Where it landed at your birth governs your inner emotional landscape: how you process feelings, what makes you feel safe, and the instincts that surface before your mind has a chance to think. This is the you that only the people closest to you truly see.',
+      'The Moon is your inner tide — the hidden self that rises and falls beneath your public face. It governs your emotions, instincts, and how you seek comfort and safety, the part of you that reacts before you can explain why. Where your Sun describes how you shine in the open, your Moon describes how you feel in the dark: your private rituals, your emotional cravings, and the secret language of your heart. When you honor your Moon sign, life feels softer, more aligned, as if your nervous system recognizes itself and can finally exhale.',
   },
   rising: {
     emoji: '⬆️',
     title: 'Rising Sign',
-    role: 'Your social mask — the first impression you make on the world.',
+    role: 'Your mask and doorway — the energy people sense before they truly know you.',
     description:
-      'The Rising sign (or Ascendant) is the zodiac sign that was cresting the eastern horizon the exact moment you were born. It colors the lens through which you perceive the world — and shapes how others perceive you before they truly know you. Think of it as the chapter title before the full story of your Sun and Moon unfolds.',
+      'Your Rising sign is your mask and doorway: the energy people sense before they truly know you. It shows your style of approaching life, how you enter new spaces, and the aura you project without trying — the costume your soul chose for its first entrance on stage. While your Sun is the inner script and your Moon is the whisper behind the curtain, your Rising sign is the opening scene: the way you introduce yourself to fate, and the stance your spirit takes as it meets the world.',
   },
 } as const;
 
@@ -134,14 +134,11 @@ export function SignsSheet({ isVisible, onClose, sunSign, moonSign, risingSign }
     dismissRef.current = dismiss;
   });
 
-  useEffect(() => {
-    if (isVisible) {
-      slideY.setValue(900);
-      backdropOpacity.setValue(0);
-    }
-  }, [isVisible, slideY, backdropOpacity]);
-
   const handleShow = useCallback(() => {
+    // Reset position synchronously before starting the animation so there
+    // is no race between this callback and a useEffect that runs later.
+    slideY.setValue(900);
+    backdropOpacity.setValue(0);
     Animated.parallel([
       Animated.spring(slideY, {
         toValue: 0,
@@ -232,9 +229,11 @@ export function SignsSheet({ isVisible, onClose, sunSign, moonSign, risingSign }
             <Text style={styles.headerGlyph} accessible={false}>✦</Text>
             <Text style={styles.title}>The Big Three</Text>
             <Text style={styles.intro}>
-              In astrology, three placements form the core of your cosmic blueprint. Together, your
-              Sun, Moon, and Rising sign paint the most complete picture of who you are — your
-              identity, your emotional world, and the face you show the world.
+              Your birth chart is a snapshot of the sky at the exact moment you arrived — a map of
+              light, shadow, and possibility. Your Sun, Moon, and Rising are the three main gateways
+              into that map. The Sun shows how your light shines, the Moon reveals the tides of your
+              inner world, and the Rising sign is the mask, doorway, and first impression you carry
+              into the world.
             </Text>
 
             {/* Placement cards */}
@@ -260,7 +259,9 @@ export function SignsSheet({ isVisible, onClose, sunSign, moonSign, risingSign }
             })}
 
             <Text style={styles.footer}>
-              Your chart is uniquely yours. These three signs are just the beginning.
+              Together, your Sun, Moon, and Rising form a triad — your core story, your emotional
+              underworld, and your first approach to life. Explore each one, and you begin to see
+              not just who you are — but how you came here to move through this lifetime.
             </Text>
           </ScrollView>
         </Animated.View>
