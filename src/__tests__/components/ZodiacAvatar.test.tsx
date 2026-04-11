@@ -3,19 +3,30 @@ import { render } from '@testing-library/react-native';
 import { ZodiacAvatar } from '@components/ui/ZodiacAvatar';
 import { ZODIAC_THEMES } from '@lib/astrology/zodiac-themes';
 import type { ZodiacSign } from '@lib/astrology/calculate-signs';
+import { jest, describe, expect, it } from '@jest/globals';
 
 jest.mock('expo-linear-gradient', () => ({
   LinearGradient: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 const ALL_SIGNS: ZodiacSign[] = [
-  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+  'Aries',
+  'Taurus',
+  'Gemini',
+  'Cancer',
+  'Leo',
+  'Virgo',
+  'Libra',
+  'Scorpio',
+  'Sagittarius',
+  'Capricorn',
+  'Aquarius',
+  'Pisces',
 ];
 
 describe('ZodiacAvatar', () => {
   it('renders without error for every zodiac sign', () => {
-    ALL_SIGNS.forEach((sign) => {
+    ALL_SIGNS.forEach(sign => {
       expect(() => render(<ZodiacAvatar sign={sign} />)).not.toThrow();
     });
   });
@@ -26,9 +37,7 @@ describe('ZodiacAvatar', () => {
   });
 
   it('uses the default size of 48 when size is not specified', () => {
-    const { getByTestId } = render(
-      <ZodiacAvatar sign="Leo" />
-    );
+    const { getByTestId } = render(<ZodiacAvatar sign="Leo" />);
     // Component renders without crash at default size — smoke test
     expect(true).toBe(true);
   });
@@ -38,7 +47,7 @@ describe('ZodiacAvatar', () => {
   });
 
   it('displays the correct glyph for every sign', () => {
-    ALL_SIGNS.forEach((sign) => {
+    ALL_SIGNS.forEach(sign => {
       const { getByText } = render(<ZodiacAvatar sign={sign} />);
       expect(getByText(ZODIAC_THEMES[sign].glyph)).toBeTruthy();
     });
