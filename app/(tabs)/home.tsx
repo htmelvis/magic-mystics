@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@hooks/useAuth';
@@ -8,6 +9,7 @@ import { useJourneyStats } from '@hooks/useJourneyStats';
 import { Screen, Card, Button, Badge, Skeleton, SkeletonCard, ZodiacAvatar } from '@components/ui';
 import { useUpgradeSheet } from '@/context/UpgradeSheetContext';
 import { CosmicWeatherCard } from '@/components/home/CosmicWeatherCard';
+import { SignsSheet } from '@/components/home/SignsSheet';
 import { theme } from '@theme';
 import type { ZodiacSign } from '@lib/astrology/calculate-signs';
 
@@ -19,6 +21,7 @@ export default function HomeScreen() {
   const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useJourneyStats(user?.id);
   const router = useRouter();
   const { open: openUpgradeSheet } = useUpgradeSheet();
+  const [signsSheetVisible, setSignsSheetVisible] = useState(false);
 
   const isLoading = authLoading || profileLoading;
 
@@ -78,11 +81,18 @@ export default function HomeScreen() {
           </View>
         </View>
         {userProfile?.sunSign && (
-          <Badge
-            label={`☀️ ${userProfile.sunSign} • 🌙 ${userProfile.moonSign ?? '—'} • ⬆️ ${userProfile.risingSign ?? '—'}`}
-            variant="primary"
-            size="md"
-          />
+          <Pressable
+            onPress={() => setSignsSheetVisible(true)}
+            accessibilityRole="button"
+            accessibilityLabel={`Your signs: Sun ${userProfile.sunSign}, Moon ${userProfile.moonSign ?? 'unknown'}, Rising ${userProfile.risingSign ?? 'unknown'}. Tap to learn more.`}
+            accessibilityHint="Opens a guide explaining your sun, moon, and rising signs"
+          >
+            <Badge
+              label={`☀️ ${userProfile.sunSign} • 🌙 ${userProfile.moonSign ?? '—'} • ⬆️ ${userProfile.risingSign ?? '—'}`}
+              variant="primary"
+              size="md"
+            />
+          </Pressable>
         )}
       </View>
 
@@ -185,6 +195,16 @@ export default function HomeScreen() {
         </View>
       )}
         </>
+      )}
+
+      {userProfile?.sunSign && (
+        <SignsSheet
+          isVisible={signsSheetVisible}
+          onClose={() => setSignsSheetVisible(false)}
+          sunSign={userProfile.sunSign as ZodiacSign}
+          moonSign={(userProfile.moonSign ?? userProfile.sunSign) as ZodiacSign}
+          risingSign={(userProfile.risingSign ?? userProfile.sunSign) as ZodiacSign}
+        />
       )}
     </Screen>
   );
