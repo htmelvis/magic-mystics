@@ -23,6 +23,9 @@ export type { ScreenProps } from './Screen';
 export { LoadingState } from './LoadingState';
 export type { LoadingStateProps, LoadingVariant } from './LoadingState';
 
+export { ZodiacAvatar } from './ZodiacAvatar';
+export { NatalChartWheel } from './NatalChartWheel';
+
 export {
   Skeleton,
   SkeletonText,

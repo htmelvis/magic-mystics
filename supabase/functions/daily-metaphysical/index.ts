@@ -16,48 +16,20 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import Anthropic from 'npm:@anthropic-ai/sdk@0.35';
 import * as Astronomy from 'npm:astronomy-engine@2';
+import {
+  getMoonPhaseName,
+  eclipticLonToSign,
+  generateLuckyColors,
+  generateLuckyNumbers,
+  SIGN_ELEMENTS,
+  type DailyZodiacSign,
+  type ZodiacElement,
+} from '../../src/lib/metaphysical/daily-helpers.ts';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const ZODIAC_SIGNS = [
-  'Aries',
-  'Taurus',
-  'Gemini',
-  'Cancer',
-  'Leo',
-  'Virgo',
-  'Libra',
-  'Scorpio',
-  'Sagittarius',
-  'Capricorn',
-  'Aquarius',
-  'Pisces',
-] as const;
-
-type ZodiacSign = (typeof ZODIAC_SIGNS)[number];
-type Element = 'Fire' | 'Earth' | 'Air' | 'Water';
-
-const SIGN_ELEMENTS: Record<ZodiacSign, Element> = {
-  Aries: 'Fire',
-  Leo: 'Fire',
-  Sagittarius: 'Fire',
-  Taurus: 'Earth',
-  Virgo: 'Earth',
-  Capricorn: 'Earth',
-  Gemini: 'Air',
-  Libra: 'Air',
-  Aquarius: 'Air',
-  Cancer: 'Water',
-  Scorpio: 'Water',
-  Pisces: 'Water',
-};
-
-const ELEMENT_COLOR_POOLS: Record<Element, string[]> = {
-  Fire: ['Red', 'Orange', 'Gold', 'Crimson', 'Amber', 'Scarlet'],
-  Earth: ['Green', 'Brown', 'Amber', 'Emerald', 'Copper', 'Olive'],
-  Air: ['Yellow', 'Silver', 'Lavender', 'White', 'Cyan', 'Lilac'],
-  Water: ['Blue', 'Indigo', 'Teal', 'Violet', 'Pearl', 'Cobalt'],
-};
+type ZodiacSign = DailyZodiacSign;
+type Element = ZodiacElement;
 
 // Planets to check for retrograde (outer planets only — Sun/Moon don't retrograde)
 const PLANETS = [
@@ -71,71 +43,6 @@ const PLANETS = [
 ] as const;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-/**
- * Maps a moon phase angle [0, 360) to a human-readable phase name.
- * Phase angle from astronomy-engine: 0=New, 90=First Quarter, 180=Full, 270=Last Quarter.
- */
-function getMoonPhaseName(angle: number): string {
-  if (angle < 22.5 || angle >= 337.5) return 'New Moon';
-  if (angle < 67.5) return 'Waxing Crescent';
-  if (angle < 112.5) return 'First Quarter';
-  if (angle < 157.5) return 'Waxing Gibbous';
-  if (angle < 202.5) return 'Full Moon';
-  if (angle < 247.5) return 'Waning Gibbous';
-  if (angle < 292.5) return 'Last Quarter';
-  return 'Waning Crescent';
-}
-
-/** Converts an ecliptic longitude in degrees to the corresponding zodiac sign. */
-function eclipticLonToSign(lon: number): ZodiacSign {
-  const normalized = ((lon % 360) + 360) % 360;
-  return ZODIAC_SIGNS[Math.floor(normalized / 30)];
-}
-
-/**
- * Picks 2 lucky colors from the element's pool seeded by date + moon degree.
- * Using moon degree (0–30 within the sign) ensures the colors shift even when
- * the sign and element stay the same across consecutive days.
- */
-function generateLuckyColors(element: Element, date: Date, moonDegreeInSign: number): string[] {
-  const pool = ELEMENT_COLOR_POOLS[element];
-  const base =
-    date.getUTCFullYear() * 10000 +
-    (date.getUTCMonth() + 1) * 100 +
-    date.getUTCDate() +
-    Math.floor(moonDegreeInSign * 10);
-
-  const i1 = (base ^ 0x9e3779b9) % pool.length;
-  const i2 = (base ^ 0x6c62272e) % pool.length;
-  // Ensure two distinct colors
-  const second = i1 === i2 ? (i2 + 1) % pool.length : i2;
-  return [pool[Math.abs(i1)], pool[Math.abs(second)]];
-}
-
-/**
- * Generates 5 unique lucky numbers in [1, 44], seeded by date + moon phase.
- * Uses a minimal xorshift32 — deterministic but varied day-to-day.
- */
-function generateLuckyNumbers(date: Date, moonAngle: number): number[] {
-  let s =
-    ((date.getUTCFullYear() * 10000 +
-      (date.getUTCMonth() + 1) * 100 +
-      date.getUTCDate() +
-      Math.floor(moonAngle)) ^
-      0x9e3779b9) >>>
-    0;
-
-  const nums = new Set<number>();
-  while (nums.size < 5) {
-    s ^= s << 13;
-    s ^= s >>> 17;
-    s ^= s << 5;
-    s = s >>> 0;
-    nums.add((s % 44) + 1);
-  }
-  return [...nums].sort((a, b) => a - b);
-}
 
 /** Detects if a planet is retrograde by comparing today's vs yesterday's geocentric ecliptic longitude. */
 function isRetrograde(body: Astronomy.Body, today: Date, yesterday: Date): boolean {

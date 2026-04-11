@@ -103,4 +103,65 @@ describe('calculateAstrologyData', () => {
     const { sunSign } = calculateAstrologyData(date, '14:30');
     expect(sunSign).toBe(calculateSunSign(date));
   });
+
+  it('moonSign matches standalone calculateMoonSign', () => {
+    const date = new Date(1990, 5, 15);
+    const { moonSign } = calculateAstrologyData(date, '14:30');
+    expect(moonSign).toBe(calculateMoonSign(date));
+  });
+
+  it('risingSign matches standalone calculateRisingSign', () => {
+    const date = new Date(1990, 5, 15);
+    const { risingSign } = calculateAstrologyData(date, '14:30', 'New York, NY');
+    expect(risingSign).toBe(calculateRisingSign(date, '14:30', 'New York, NY'));
+  });
+
+  it('works without a birth location (risingSign uses simplified fallback)', () => {
+    const result = calculateAstrologyData(new Date(1990, 5, 15), '14:30');
+    expect(result).toHaveProperty('sunSign');
+    expect(result).toHaveProperty('moonSign');
+    expect(result).toHaveProperty('risingSign');
+  });
+
+  it('all returned signs are valid zodiac signs', () => {
+    const validSigns = [
+      'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+      'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+    ];
+    const result = calculateAstrologyData(new Date(1985, 10, 1), '08:00', 'London, UK');
+    expect(validSigns).toContain(result.sunSign);
+    expect(validSigns).toContain(result.moonSign);
+    expect(validSigns).toContain(result.risingSign);
+  });
+});
+
+// ── Noon-parsed date pattern (used in the calculating screen) ─────────────────
+//
+// The calculating screen parses "YYYY-MM-DD" router params as local noon to
+// avoid UTC boundary shifts. These tests document that the pattern gives correct
+// sun signs regardless of the device timezone.
+
+describe('noon-parsed birth date pattern', () => {
+  it('gives correct sun sign for a date parsed as local noon', () => {
+    // Simulates: const [y,m,d] = "1990-06-15".split('-').map(Number)
+    //            const date = new Date(y, m-1, d, 12, 0, 0)
+    const [year, month, day] = '1990-06-15'.split('-').map(Number);
+    const date = new Date(year, month - 1, day, 12, 0, 0);
+    expect(calculateSunSign(date)).toBe('Gemini');
+  });
+
+  it('noon-parsed date matches direct local Date constructor', () => {
+    const [year, month, day] = '2000-03-21'.split('-').map(Number);
+    const noonParsed = new Date(year, month - 1, day, 12, 0, 0);
+    const direct = new Date(2000, 2, 21, 12, 0, 0);
+    expect(calculateSunSign(noonParsed)).toBe(calculateSunSign(direct));
+  });
+
+  it('noon-parsed boundary date avoids UTC midnight sign slip', () => {
+    // March 21 is the Aries start boundary. A UTC midnight parse in a UTC-offset
+    // timezone would slip to March 20 (Pisces). Noon parse stays on March 21.
+    const [year, month, day] = '2000-03-21'.split('-').map(Number);
+    const date = new Date(year, month - 1, day, 12, 0, 0);
+    expect(calculateSunSign(date)).toBe('Aries');
+  });
 });

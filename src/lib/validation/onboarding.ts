@@ -75,6 +75,9 @@ export const userOnboardingUpdateSchema = z.object({
     .string()
     .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Birth time must be in HH:mm format'),
   birth_location: z.string().min(2).max(200),
+  birth_lat: z.number().nullable().optional(),
+  birth_lng: z.number().nullable().optional(),
+  birth_timezone: z.string().nullable().optional(),
   sun_sign: z.enum(ZODIAC_SIGNS),
   moon_sign: z.enum(ZODIAC_SIGNS),
   rising_sign: z.enum(ZODIAC_SIGNS),
