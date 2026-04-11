@@ -17,6 +17,9 @@ export type { BadgeProps, BadgeVariant, BadgeSize } from './Badge';
 export { Input } from './Input';
 export type { InputProps } from './Input';
 
+export { LocationInput } from './LocationInput';
+export type { LocationInputProps } from './LocationInput';
+
 export { Screen } from './Screen';
 export type { ScreenProps } from './Screen';
 
