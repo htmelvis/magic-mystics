@@ -41,6 +41,8 @@ export default function ProfileScreen() {
   const theme = useAppTheme();
   const { open: openUpgradeSheet } = useUpgradeSheet();
   const [retryingGeocode, setRetryingGeocode] = useState(false);
+  const [geocodeCoolingDown, setGeocodeCoolingDown] = useState(false);
+  const lastGeocodeAttempt = useRef<number>(0);
   const hasComputedChart = useRef(false);
 
   // Lazy-compute natal chart on first profile view for users who onboarded before this feature
@@ -70,8 +72,16 @@ export default function ProfileScreen() {
       .then(() => queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] }));
   }, [user, userProfile, queryClient]);
 
+  const GEOCODE_COOLDOWN_MS = 30_000;
+
   const handleRetryGeocode = useCallback(async () => {
     if (!user || !userProfile?.birthLocation || !userProfile?.birthDate || !userProfile?.birthTime) return;
+    if (retryingGeocode || geocodeCoolingDown) return;
+
+    const now = Date.now();
+    if (now - lastGeocodeAttempt.current < GEOCODE_COOLDOWN_MS) return;
+    lastGeocodeAttempt.current = now;
+
     setRetryingGeocode(true);
     try {
       const coords = await geocodeLocation(userProfile.birthLocation);
@@ -98,8 +108,10 @@ export default function ProfileScreen() {
       await queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] });
     } finally {
       setRetryingGeocode(false);
+      setGeocodeCoolingDown(true);
+      setTimeout(() => setGeocodeCoolingDown(false), GEOCODE_COOLDOWN_MS);
     }
-  }, [user, userProfile, queryClient]);
+  }, [user, userProfile, queryClient, retryingGeocode, geocodeCoolingDown]);
 
   const handleSignOut = async () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -247,19 +259,52 @@ export default function ProfileScreen() {
           <Text style={[styles.birthDetailText, { color: theme.colors.text.primary }]}>
             Location: {userProfile?.birthLocation || '—'}
           </Text>
+          {(userProfile?.sunSign || userProfile?.moonSign || userProfile?.risingSign) && (
+            <View style={styles.signsRow}>
+              {userProfile.sunSign ? (
+                <View style={[styles.signChip, { backgroundColor: theme.colors.surface.subtle }]}>
+                  <Text style={[styles.signChipText, { color: theme.colors.text.primary }]}>
+                    ☉ {userProfile.sunSign}
+                  </Text>
+                </View>
+              ) : null}
+              {userProfile.moonSign ? (
+                <View style={[styles.signChip, { backgroundColor: theme.colors.surface.subtle }]}>
+                  <Text style={[styles.signChipText, { color: theme.colors.text.primary }]}>
+                    ☽ {userProfile.moonSign}
+                  </Text>
+                </View>
+              ) : null}
+              {userProfile.risingSign ? (
+                <View style={[styles.signChip, { backgroundColor: theme.colors.surface.subtle }]}>
+                  <Text style={[styles.signChipText, { color: theme.colors.text.primary }]}>
+                    ↑ {userProfile.risingSign}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          )}
           {userProfile?.birthLocation && !userProfile?.birthLat && (
             <Pressable
               onPress={handleRetryGeocode}
-              disabled={retryingGeocode}
+              disabled={retryingGeocode || geocodeCoolingDown}
               accessibilityRole="button"
-              accessibilityLabel="Retry location geocoding"
-              style={styles.retryRow}
+              accessibilityLabel="Resolve birth location coordinates"
+              style={[
+                styles.geocodeButton,
+                {
+                  backgroundColor:
+                    retryingGeocode || geocodeCoolingDown
+                      ? theme.colors.gray[300]
+                      : theme.colors.brand.primary,
+                },
+              ]}
             >
               {retryingGeocode ? (
-                <ActivityIndicator size="small" color={theme.colors.text.muted} />
+                <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Text style={[styles.retryText, { color: theme.colors.text.muted }]}>
-                  Location data missing — tap to retry
+                <Text style={styles.geocodeButtonText}>
+                  {geocodeCoolingDown ? 'Resolving…' : 'Complete Location & Chart'}
                 </Text>
               )}
             </Pressable>
@@ -473,12 +518,31 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginBottom: 8,
   },
-  retryRow: {
-    marginTop: 8,
+  signsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 12,
   },
-  retryText: {
+  signChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  signChipText: {
     fontSize: 13,
-    textDecorationLine: 'underline',
+    fontWeight: '500',
+  },
+  geocodeButton: {
+    marginTop: 16,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  geocodeButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   editedNote: {
     fontSize: 12,

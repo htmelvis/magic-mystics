@@ -21,6 +21,7 @@ export default function CalculatingScreen() {
   const [status, setStatus] = useState('Calculating your signs...');
   const [failed, setFailed] = useState(false);
   const [sunSign, setSunSign] = useState<ZodiacSign | null>(null);
+  const [completed, setCompleted] = useState(false);
   const hasRun = useRef(false);
 
   const completeOnboarding = useCallback(async () => {
@@ -126,8 +127,8 @@ export default function CalculatingScreen() {
       // Update cache immediately so the layout's effect fires and navigates to home.
       // This avoids a race where router.replace runs while onboardingCompleted is
       // still false in cache, causing the layout to redirect back to onboarding.
-      setStatus('All set! Taking you to your dashboard...');
-      queryClient.setQueryData(['onboarding', user.id], true);
+      setStatus('Your cosmic profile is ready.');
+      setCompleted(true);
     } catch (err) {
       console.warn('Error completing onboarding:', err);
       setStatus('Something went wrong.');
@@ -163,10 +164,23 @@ export default function CalculatingScreen() {
       ) : (
         <Text style={styles.emoji}>✨🔮✨</Text>
       )}
-      {!failed && <ActivityIndicator size="large" color="#8b5cf6" />}
+      {!failed && !completed && <ActivityIndicator size="large" color="#8b5cf6" />}
       <Text style={styles.status} accessibilityRole="text" accessibilityLiveRegion="polite">
         {status}
       </Text>
+      {completed && (
+        <Pressable
+          style={styles.beginButton}
+          onPress={() => {
+            queryClient.setQueryData(['onboarding', user!.id], true);
+            router.replace('/(tabs)/home');
+          }}
+          accessibilityRole="button"
+          accessibilityLabel="Begin your journey"
+        >
+          <Text style={styles.beginButtonText}>Begin Journey ✨</Text>
+        </Pressable>
+      )}
       {failed && (
         <View style={styles.errorActions}>
           <Pressable
@@ -223,6 +237,20 @@ const styles = StyleSheet.create({
     marginTop: 32,
     gap: 12,
     alignItems: 'center',
+  },
+  beginButton: {
+    backgroundColor: '#8b5cf6',
+    paddingHorizontal: 40,
+    paddingVertical: 16,
+    borderRadius: 14,
+    marginTop: 32,
+    alignItems: 'center',
+  },
+  beginButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   retryButton: {
     backgroundColor: '#8b5cf6',

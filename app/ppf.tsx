@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   View,
@@ -31,7 +31,7 @@ import { ANIMATION } from '@components/tarot/card-constants';
 const POSITIONS = ['past', 'present', 'future'] as const;
 const POSITION_LABELS = ['Past', 'Present', 'Future'];
 
-type Phase = 'loading' | 'shuffle' | 'reading';
+type Phase = 'shuffle' | 'reading';
 
 export default function PPFScreen() {
   const { user } = useAuth();
@@ -41,7 +41,7 @@ export default function PPFScreen() {
   const invalidateReadings = useInvalidateReadings();
   const invalidateJourneyStats = useInvalidateJourneyStats();
 
-  const [phase, setPhase] = useState<Phase>('loading');
+  const [phase, setPhase] = useState<Phase>('shuffle');
   const [cards, setCards] = useState<TarotCardRow[]>([]);
   const [orientations, setOrientations] = useState<TarotCardOrientation[]>([]);
   const [flipped, setFlipped] = useState([false, false, false]);
@@ -53,19 +53,13 @@ export default function PPFScreen() {
   const flipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<ScrollViewType>(null);
 
-  // Draw + save as soon as the deck is available
-  useEffect(() => {
-    if (!user || deckLoading || !cardIds.length) return;
-    drawAndSave();
-  }, [user, deckLoading, cardIds.length]); // eslint-disable-line react-hooks/exhaustive-deps
-
   // Auto-flip the active card after arriving on it (reading phase only)
   useEffect(() => {
     if (phase !== 'reading') return;
 
     flipTimer.current = setTimeout(() => {
       setFlipped((prev) => {
-        if (prev[activeIndex]) return prev; // already flipped — no-op
+        if (prev[activeIndex]) return prev;
         const next = [...prev];
         next[activeIndex] = true;
         return next;
@@ -77,66 +71,77 @@ export default function PPFScreen() {
     };
   }, [activeIndex, phase]);
 
-  const drawAndSave = async () => {
+  // Fetches card data, saves the reading, and updates local state.
+  // Does not drive any phase transitions — the caller owns that.
+  const drawAndSave = useCallback(async () => {
+    const results = drawSpread(cardIds, 3);
+
+    const responses = await Promise.all(
+      results.map((r) =>
+        supabase.from('tarot_cards').select('*').eq('id', r.cardId).single()
+      )
+    );
+
+    const fetchedCards: TarotCardRow[] = responses.map(({ data, error: e }) => {
+      if (e) throw e;
+      return data as TarotCardRow;
+    });
+
+    const drawnCards: DrawnCardRecord[] = results.map((r, i) => ({
+      cardId: r.cardId as number,
+      cardName: fetchedCards[i].name,
+      arcana: fetchedCards[i].arcana as DrawnCardRecord['arcana'],
+      suit: (fetchedCards[i].suit ?? null) as DrawnCardRecord['suit'],
+      orientation: r.orientation,
+      position: POSITIONS[i],
+    }));
+
+    const { error: insertError } = await supabase.from('readings').insert({
+      user_id: user!.id,
+      spread_type: 'past-present-future',
+      drawn_cards: drawnCards,
+    });
+
+    if (insertError) throw insertError;
+
+    setCards(fetchedCards);
+    setOrientations(results.map((r) => r.orientation));
+    invalidateReadings(user!.id);
+    invalidateJourneyStats(user!.id);
+  }, [user, cardIds, invalidateReadings, invalidateJourneyStats]);
+
+  // Called once by TarotDeck's animation sequence — never by a reactive effect.
+  // Fades the deck out and draws cards in parallel so the network round-trip
+  // is hidden behind the ~300ms fade animation.
+  const handleShuffleComplete = useCallback(async () => {
     setError(null);
+
+    const fadeOut = new Promise<void>((resolve) => {
+      Animated.timing(deckOpacity, {
+        toValue: 0,
+        duration: ANIMATION.deckFadeOut,
+        useNativeDriver: true,
+      }).start(() => resolve());
+    });
+
     try {
-      const results = drawSpread(cardIds, 3);
-
-      // Fetch all 3 full card rows in parallel
-      const responses = await Promise.all(
-        results.map((r) =>
-          supabase.from('tarot_cards').select('*').eq('id', r.cardId).single()
-        )
-      );
-
-      const fetchedCards: TarotCardRow[] = responses.map(({ data, error: e }) => {
-        if (e) throw e;
-        return data as TarotCardRow;
-      });
-
-      const drawnCards: DrawnCardRecord[] = results.map((r, i) => ({
-        cardId: r.cardId as number,
-        cardName: fetchedCards[i].name,
-        arcana: fetchedCards[i].arcana as DrawnCardRecord['arcana'],
-        suit: (fetchedCards[i].suit ?? null) as DrawnCardRecord['suit'],
-        orientation: r.orientation,
-        position: POSITIONS[i],
-      }));
-
-      const { error: insertError } = await supabase.from('readings').insert({
-        user_id: user!.id,
-        spread_type: 'past-present-future',
-        drawn_cards: drawnCards,
-      });
-
-      if (insertError) throw insertError;
-
-      setCards(fetchedCards);
-      setOrientations(results.map((r) => r.orientation));
-      invalidateReadings(user!.id);
-      invalidateJourneyStats(user!.id);
-
-      // Data is ready — start the deck animation
-      setPhase('shuffle');
-    } catch (err) {
-      setError(extractMessage(err));
-    }
-  };
-
-  const handleShuffleComplete = () => {
-    Animated.timing(deckOpacity, {
-      toValue: 0,
-      duration: ANIMATION.deckFadeOut,
-      useNativeDriver: true,
-    }).start(() => {
+      await Promise.all([fadeOut, drawAndSave()]);
       setPhase('reading');
       Animated.timing(carouselOpacity, {
         toValue: 1,
         duration: ANIMATION.cardFadeIn,
         useNativeDriver: true,
       }).start();
-    });
-  };
+    } catch (err) {
+      setError(extractMessage(err));
+      // Fade the deck back in so the error is visible and the user can retry
+      Animated.timing(deckOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [drawAndSave, deckOpacity, carouselOpacity]);
 
   const handleScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const newIndex = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
@@ -193,12 +198,12 @@ export default function PPFScreen() {
       )}
 
       <View style={styles.main}>
-        {/* Loading state */}
-        {phase === 'loading' && !error && (
+        {/* Deck not ready yet */}
+        {(deckLoading || !cardIds.length) && !error && !deckError && (
           <ActivityIndicator color="#8b5cf6" size="large" />
         )}
 
-        {/* Deck load error */}
+        {/* Errors */}
         {(error ?? deckError) && (
           <View style={styles.errorBox}>
             <Text style={styles.errorLabel}>Error</Text>
@@ -208,8 +213,8 @@ export default function PPFScreen() {
           </View>
         )}
 
-        {/* Deck shuffle layer — visible during shuffle phase, fades out before carousel */}
-        {(phase === 'shuffle' || phase === 'reading') && (
+        {/* Deck shuffle layer — rendered once deck is ready, fades out after draw */}
+        {!deckLoading && !!cardIds.length && (
           <Animated.View
             style={[StyleSheet.absoluteFill, styles.deckLayer, { opacity: deckOpacity }]}
             pointerEvents={phase === 'shuffle' ? 'auto' : 'none'}
