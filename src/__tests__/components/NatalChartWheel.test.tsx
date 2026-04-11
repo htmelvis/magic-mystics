@@ -5,6 +5,7 @@ import type { StoredNatalChart } from '@lib/astrology/natal-chart';
 
 jest.mock('react-native-svg', () => {
   const React = require('react');
+  const { Text: RNText } = require('react-native');
   const passThrough = ({ children }: { children?: React.ReactNode }) =>
     React.createElement(React.Fragment, null, children ?? null);
   return {
@@ -15,7 +16,7 @@ jest.mock('react-native-svg', () => {
     Path: () => null,
     Line: () => null,
     Text: ({ children }: { children?: React.ReactNode }) =>
-      React.createElement(React.Fragment, null, children ?? null),
+      React.createElement(RNText, null, children ?? null),
     G: passThrough,
   };
 });

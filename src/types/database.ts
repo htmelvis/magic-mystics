@@ -18,9 +18,14 @@ export interface Database {
           birth_date: string | null;
           birth_time: string | null;
           birth_location: string | null;
+          birth_lat: number | null;
+          birth_lng: number | null;
+          birth_timezone: string | null;
+          birth_details_edited_at: string | null;
           sun_sign: string | null;
           moon_sign: string | null;
           rising_sign: string | null;
+          natal_chart_data: unknown;
           onboarding_completed: boolean;
           created_at: string;
           updated_at: string;
@@ -33,9 +38,14 @@ export interface Database {
           birth_date?: string | null;
           birth_time?: string | null;
           birth_location?: string | null;
+          birth_lat?: number | null;
+          birth_lng?: number | null;
+          birth_timezone?: string | null;
+          birth_details_edited_at?: string | null;
           sun_sign?: string | null;
           moon_sign?: string | null;
           rising_sign?: string | null;
+          natal_chart_data?: unknown;
           onboarding_completed?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -47,9 +57,14 @@ export interface Database {
           birth_date?: string | null;
           birth_time?: string | null;
           birth_location?: string | null;
+          birth_lat?: number | null;
+          birth_lng?: number | null;
+          birth_timezone?: string | null;
+          birth_details_edited_at?: string | null;
           sun_sign?: string | null;
           moon_sign?: string | null;
           rising_sign?: string | null;
+          natal_chart_data?: unknown;
           onboarding_completed?: boolean;
           updated_at?: string;
         };
@@ -272,6 +287,33 @@ export interface Database {
           energy_theme?: string | null;
           advice?: string | null;
           metadata?: unknown;
+        };
+        Relationships: [];
+      };
+      support_tickets: {
+        Row: {
+          id: string;
+          user_id: string;
+          category: string;
+          message: string;
+          app_version: string | null;
+          status: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          category: string;
+          message: string;
+          app_version?: string | null;
+          status?: string;
+          created_at?: string;
+        };
+        Update: {
+          category?: string;
+          message?: string;
+          app_version?: string | null;
+          status?: string;
         };
         Relationships: [];
       };

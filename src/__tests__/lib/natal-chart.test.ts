@@ -39,7 +39,7 @@ describe('PREMIUM_PLANETS', () => {
   });
 
   it('has no overlap with FREE_PLANETS', () => {
-    const freeSet = new Set(FREE_PLANETS);
+    const freeSet = new Set<PlanetName>(FREE_PLANETS);
     PREMIUM_PLANETS.forEach((p) => expect(freeSet.has(p)).toBe(false));
   });
 });

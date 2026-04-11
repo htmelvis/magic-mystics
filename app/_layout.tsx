@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Linking } from 'react-native';
 import { Stack, useNavigationContainerRef, useRouter, useSegments } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,6 +10,7 @@ import { useOnboarding } from '@hooks/useOnboarding';
 import { initRevenueCat } from '@hooks/useRevenueCat';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ErrorBoundary } from '@components/ui/ErrorBoundary';
+import { supabase } from '@lib/supabase/client';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,7 +23,7 @@ const queryClient = new QueryClient({
 
 function RootLayoutNav() {
   const insets = useSafeAreaInsets();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isPasswordRecovery } = useAuth();
   const { onboardingCompleted, loading: onboardingLoading } = useOnboarding(user?.id);
 
   // Initialise RevenueCat once the user is known. Using user.id as the
@@ -32,6 +34,24 @@ function RootLayoutNav() {
   const segments = useSegments();
   const router = useRouter();
   const navigationRef = useNavigationContainerRef();
+
+  // Handle deep links for password reset (magic-mystics://reset-password?code=...)
+  useEffect(() => {
+    const handleUrl = async ({ url }: { url: string }) => {
+      const parsed = new URL(url);
+      const code = parsed.searchParams.get('code');
+      if (code) {
+        await supabase.auth.exchangeCodeForSession(code);
+      }
+    };
+
+    const subscription = Linking.addEventListener('url', handleUrl);
+    Linking.getInitialURL().then((url) => {
+      if (url) handleUrl({ url });
+    });
+
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     // Wait until the navigation container is ready before routing
@@ -49,10 +69,16 @@ function RootLayoutNav() {
 
     const inAuthGroup = segments[0] === '(auth)';
     const inOnboardingGroup = segments[0] === '(onboarding)';
+    const onResetPassword = (segments as string[])[1] === 'reset-password';
 
     if (!user && !inAuthGroup) {
       // Redirect to sign in if not authenticated
       router.replace('/(auth)/sign-in');
+    } else if (user && isPasswordRecovery) {
+      // Deep link from password reset email — send to the new password screen
+      if (!onResetPassword) {
+        router.replace('/(auth)/reset-password');
+      }
     } else if (user && inAuthGroup) {
       // User just signed in, check if they need onboarding
       if (onboardingCompleted) {
@@ -67,7 +93,7 @@ function RootLayoutNav() {
       // User completed onboarding but is still in onboarding group
       router.replace('/(tabs)/home');
     }
-  }, [user, authLoading, onboardingCompleted, onboardingLoading, segments]);
+  }, [user, authLoading, onboardingCompleted, onboardingLoading, isPasswordRecovery, segments]);
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { paddingTop: insets.top } }}>
