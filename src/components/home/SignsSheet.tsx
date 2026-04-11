@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface.card,
     borderTopLeftRadius: theme.radius['2xl'],
     borderTopRightRadius: theme.radius['2xl'],
-    maxHeight: '88%',
+    height: '88%',
     ...theme.shadows.xl,
     overflow: 'hidden',
   },
