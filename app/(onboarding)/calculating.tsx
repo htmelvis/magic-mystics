@@ -172,13 +172,15 @@ export default function CalculatingScreen() {
         <Pressable
           style={styles.beginButton}
           onPress={() => {
-            queryClient.setQueryData(['onboarding', user!.id], true);
-            router.replace('/(tabs)/home');
+            router.replace({
+              pathname: '/(onboarding)/tarot-reveal',
+              params: { sunSign: sunSign! },
+            });
           }}
           accessibilityRole="button"
-          accessibilityLabel="Begin your journey"
+          accessibilityLabel="See your tarot card"
         >
-          <Text style={styles.beginButtonText}>Begin Journey ✨</Text>
+          <Text style={styles.beginButtonText}>Continue ✨</Text>
         </Pressable>
       )}
       {failed && (

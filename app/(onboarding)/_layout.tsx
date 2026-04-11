@@ -16,6 +16,7 @@ export default function OnboardingLayout() {
       <Stack.Screen name="birth-time" />
       <Stack.Screen name="birth-location" />
       <Stack.Screen name="calculating" />
+      <Stack.Screen name="tarot-reveal" />
       </Stack>
     </ErrorBoundary>
   );
