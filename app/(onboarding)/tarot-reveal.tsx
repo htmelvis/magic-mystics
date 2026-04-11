@@ -21,11 +21,11 @@ export default function TarotRevealScreen() {
 
   const [association, setAssociation] = useState<TarotAssociation | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!sunSign) {
-      setError(true);
+      setError('No sun sign param received');
       setLoading(false);
       return;
     }
@@ -38,15 +38,23 @@ export default function TarotRevealScreen() {
           .ilike('name', sunSign as string)
           .single();
 
-        if (zodiacError || !zodiacData) throw zodiacError ?? new Error('Zodiac sign not found');
+        if (zodiacError || !zodiacData) {
+          const msg = `zodiac_signs lookup failed for "${sunSign}": ${zodiacError?.message ?? 'no row'}`;
+          console.warn(msg);
+          throw new Error(msg);
+        }
 
         const { data, error: assocError } = await supabase
           .from('zodiac_tarot_associations')
-          .select('description, tarot_cards(name)')
+          .select('description, tarot_cards!tarot_card_id(name)')
           .eq('zodiac_sign_id', zodiacData.id)
           .single();
 
-        if (assocError || !data) throw assocError ?? new Error('Association not found');
+        if (assocError || !data) {
+          const msg = `zodiac_tarot_associations lookup failed for zodiac_sign_id=${zodiacData.id}: ${assocError?.message ?? 'no row'}`;
+          console.warn(msg);
+          throw new Error(msg);
+        }
 
         const tarotCards = data.tarot_cards as { name: string } | null;
 
@@ -55,8 +63,10 @@ export default function TarotRevealScreen() {
           zodiacName: zodiacData.name,
           description: data.description,
         });
-      } catch {
-        setError(true);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.warn('TarotReveal fetch error:', msg);
+        setError(msg);
       } finally {
         setLoading(false);
       }
@@ -81,7 +91,7 @@ export default function TarotRevealScreen() {
       {loading ? (
         <ActivityIndicator size="large" color="#8b5cf6" style={styles.loader} />
       ) : error || !association ? (
-        <Text style={styles.errorText}>Could not load your tarot card. You can still begin your journey.</Text>
+        <Text style={styles.errorText}>{error ?? 'Could not load your tarot card.'}</Text>
       ) : (
         <View style={styles.cardContainer}>
           <Text style={styles.cardTitle}>
