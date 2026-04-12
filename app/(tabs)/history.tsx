@@ -44,6 +44,7 @@ export default function HistoryScreen() {
     setDateRangeFilter,
     clearAllFilters,
     filtered,
+    isDebouncing,
   } = useFilteredReadings(readings);
 
   const openDrawer = useCallback((r: ReadingRow) => setSelectedReading(r), []);
@@ -114,6 +115,8 @@ export default function HistoryScreen() {
         <Text style={screenStyles.errorRetryText}>Try Again</Text>
       </TouchableOpacity>
     </View>
+  ) : isDebouncing ? (
+    <ActivityIndicator color={theme.colors.brand.primary} style={{ marginTop: 48 }} />
   ) : isFilterActive ? (
     <View style={screenStyles.emptyState}>
       <Text style={screenStyles.emptyIcon}>🔍</Text>
