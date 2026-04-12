@@ -40,6 +40,9 @@ export default function HistoryScreen() {
     clearSearch,
     spreadFilter,
     setSpreadFilter,
+    dateRangeFilter,
+    setDateRangeFilter,
+    clearAllFilters,
     filtered,
   } = useFilteredReadings(readings);
 
@@ -77,6 +80,9 @@ export default function HistoryScreen() {
           clearSearch={clearSearch}
           spreadFilter={spreadFilter}
           setSpreadFilter={setSpreadFilter}
+          dateRangeFilter={dateRangeFilter}
+          setDateRangeFilter={setDateRangeFilter}
+          clearAllFilters={clearAllFilters}
           resultCount={filtered.length}
           totalCount={readings.length}
         />
@@ -84,7 +90,7 @@ export default function HistoryScreen() {
     </View>
   );
 
-  const isFilterActive = query.length > 0 || spreadFilter !== 'all';
+  const isFilterActive = query.length > 0 || spreadFilter !== 'all' || dateRangeFilter !== 'all';
 
   const ListEmpty = isLoading ? (
     <View style={screenStyles.skeletons}>
@@ -117,7 +123,7 @@ export default function HistoryScreen() {
       </Text>
       <TouchableOpacity
         style={screenStyles.clearFiltersButton}
-        onPress={() => { clearSearch(); setSpreadFilter('all'); }}
+        onPress={() => { clearSearch(); clearAllFilters(); }}
         accessibilityRole="button"
         accessibilityLabel="Clear all filters"
       >
