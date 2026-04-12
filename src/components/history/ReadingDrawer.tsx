@@ -231,7 +231,7 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
                 card={card}
                 cardDetail={cardDetails[card.cardId] ?? null}
                 showPosition={!isDaily}
-                divider={i < cards.length - 1 || !!reading?.ai_insight}
+                divider={i < cards.length - 1 || !!reading?.ai_insight || !!reflection}
               />
             ))}
 

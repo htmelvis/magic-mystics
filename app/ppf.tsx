@@ -10,6 +10,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
+  TouchableOpacity,
   type ScrollView as ScrollViewType,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -17,6 +18,8 @@ import { useAuth } from '@hooks/useAuth';
 import { useTarotDeck } from '@hooks/useTarotDeck';
 import { useInvalidateReadings } from '@hooks/useReadings';
 import { useInvalidateJourneyStats } from '@hooks/useJourneyStats';
+import { useReflection } from '@hooks/useReflection';
+import type { Reflection, ReflectionSentiment } from '@hooks/useReflection';
 import { supabase } from '@lib/supabase/client';
 import { drawSpread } from '@lib/tarot/draw';
 import type {
@@ -27,6 +30,7 @@ import type {
 } from '@/types/tarot';
 import { TarotCard, TarotDeck } from '@components/tarot';
 import { ANIMATION } from '@components/tarot/card-constants';
+import { ReflectionSheet } from '@components/history';
 
 const POSITIONS = ['past', 'present', 'future'] as const;
 const POSITION_LABELS = ['Past', 'Present', 'Future'];
@@ -47,6 +51,21 @@ export default function PPFScreen() {
   const [flipped, setFlipped] = useState([false, false, false]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [readingId, setReadingId] = useState<string | null>(null);
+  const [reflectionSheetOpen, setReflectionSheetOpen] = useState(false);
+
+  const { reflection, isSaving: isReflectionSaving, save: saveReflection } = useReflection(
+    readingId,
+    user?.id ?? null
+  );
+
+  const handleReflectionSave = useCallback(
+    async (feeling: ReflectionSentiment, alignment: ReflectionSentiment, content: string) => {
+      await saveReflection({ feeling, alignment, content });
+      setReflectionSheetOpen(false);
+    },
+    [saveReflection]
+  );
 
   const deckOpacity = useRef(new Animated.Value(1)).current;
   const carouselOpacity = useRef(new Animated.Value(0)).current;
@@ -97,16 +116,17 @@ export default function PPFScreen() {
       position: POSITIONS[i],
     }));
 
-    const { error: insertError } = await supabase.from('readings').insert({
+    const { data: reading, error: insertError } = await supabase.from('readings').insert({
       user_id: user!.id,
       spread_type: 'past-present-future',
       drawn_cards: drawnCards,
-    });
+    }).select('id').single();
 
     if (insertError) throw insertError;
 
     setCards(fetchedCards);
     setOrientations(results.map((r) => r.orientation));
+    setReadingId(reading.id);
     invalidateReadings(user!.id);
     invalidateJourneyStats(user!.id);
   }, [user, cardIds, invalidateReadings, invalidateJourneyStats]);
@@ -249,12 +269,25 @@ export default function PPFScreen() {
                   isActive={i === activeIndex}
                   isLast={i === 2}
                   screenWidth={screenWidth}
+                  reflection={i === 2 ? reflection : undefined}
+                  onAddReflection={i === 2 ? () => setReflectionSheetOpen(true) : undefined}
+                  onEditReflection={i === 2 ? () => setReflectionSheetOpen(true) : undefined}
                 />
               ))}
             </ScrollView>
           </Animated.View>
         )}
       </View>
+
+      <ReflectionSheet
+        visible={reflectionSheetOpen}
+        initialFeeling={reflection?.feeling ?? null}
+        initialAlignment={reflection?.alignment ?? null}
+        initialContent={reflection?.content ?? ''}
+        isSaving={isReflectionSaving}
+        onSave={handleReflectionSave}
+        onClose={() => setReflectionSheetOpen(false)}
+      />
     </View>
   );
 }
@@ -269,6 +302,9 @@ interface CardPageProps {
   isActive: boolean;
   isLast: boolean;
   screenWidth: number;
+  reflection?: Reflection | null;
+  onAddReflection?: () => void;
+  onEditReflection?: () => void;
 }
 
 function CardPage({
@@ -279,6 +315,9 @@ function CardPage({
   isActive,
   isLast,
   screenWidth,
+  reflection,
+  onAddReflection,
+  onEditReflection,
 }: CardPageProps) {
   const detailOpacity = useRef(new Animated.Value(0)).current;
 
@@ -382,11 +421,191 @@ function CardPage({
           {isActive && !isLast && (
             <Text style={styles.swipeHint}>Swipe left for {nextLabel} →</Text>
           )}
+
+          {/* Reflection — only on the last card once it's revealed */}
+          {isLast && onAddReflection && onEditReflection && (
+            <ReflectionSection
+              reflection={reflection ?? null}
+              onAdd={onAddReflection}
+              onEdit={onEditReflection}
+            />
+          )}
         </Animated.View>
       )}
     </ScrollView>
   );
 }
+
+// ── Reflection section ────────────────────────────────────────────────────────
+
+const SENTIMENT_ICON: Record<string, string> = {
+  positive: '👍',
+  neutral: '😐',
+  negative: '👎',
+};
+
+function ReflectionSection({
+  reflection,
+  onAdd,
+  onEdit,
+}: {
+  reflection: Reflection | null;
+  onAdd: () => void;
+  onEdit: () => void;
+}) {
+  if (!reflection) {
+    return (
+      <View style={reflectionStyles.addBox}>
+        <Text style={reflectionStyles.addIcon}>🪞</Text>
+        <Text style={reflectionStyles.addTitle}>Reflect on this Spread</Text>
+        <Text style={reflectionStyles.addBody}>
+          How did these three cards land? Capture your thoughts while they're fresh.
+        </Text>
+        <TouchableOpacity
+          style={reflectionStyles.addBtn}
+          onPress={onAdd}
+          accessibilityRole="button"
+          accessibilityLabel="Add reflection"
+        >
+          <Text style={reflectionStyles.addBtnText}>Add a Reflection</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return (
+    <View style={reflectionStyles.viewBox}>
+      <View style={reflectionStyles.viewHeader}>
+        <Text style={reflectionStyles.viewLabel}>✦ Your Reflection</Text>
+        <TouchableOpacity
+          onPress={onEdit}
+          accessibilityRole="button"
+          accessibilityLabel="Edit reflection"
+        >
+          <Text style={reflectionStyles.editLink}>Edit</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={reflectionStyles.sentimentRow}>
+        <View style={reflectionStyles.sentimentItem}>
+          <Text style={reflectionStyles.sentimentCaption}>Feeling</Text>
+          <Text style={reflectionStyles.sentimentIcon}>
+            {reflection.feeling ? SENTIMENT_ICON[reflection.feeling] : '—'}
+          </Text>
+        </View>
+        <View style={reflectionStyles.sentimentDivider} />
+        <View style={reflectionStyles.sentimentItem}>
+          <Text style={reflectionStyles.sentimentCaption}>Alignment</Text>
+          <Text style={reflectionStyles.sentimentIcon}>
+            {reflection.alignment ? SENTIMENT_ICON[reflection.alignment] : '—'}
+          </Text>
+        </View>
+      </View>
+
+      {reflection.content.length > 0 && (
+        <Text style={reflectionStyles.viewContent}>{reflection.content}</Text>
+      )}
+    </View>
+  );
+}
+
+const reflectionStyles = StyleSheet.create({
+  addBox: {
+    marginTop: 16,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    alignItems: 'center',
+    gap: 8,
+  },
+  addIcon: { fontSize: 28, marginBottom: 4 },
+  addTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1f2937',
+  },
+  addBody: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 4,
+  },
+  addBtn: {
+    marginTop: 8,
+    backgroundColor: '#8b5cf6',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+  },
+  addBtnText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 15,
+  },
+  viewBox: {
+    marginTop: 16,
+    backgroundColor: '#f5f3ff',
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#ddd6fe',
+  },
+  viewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  viewLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#7c3aed',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  editLink: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#8b5cf6',
+  },
+  sentimentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#ede9fe',
+    overflow: 'hidden',
+  },
+  sentimentItem: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    gap: 4,
+  },
+  sentimentDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: '#ede9fe',
+  },
+  sentimentCaption: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#9ca3af',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  sentimentIcon: { fontSize: 22 },
+  viewContent: {
+    fontSize: 14,
+    color: '#4b5563',
+    lineHeight: 21,
+  },
+});
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
