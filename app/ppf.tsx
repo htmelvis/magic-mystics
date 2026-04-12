@@ -136,6 +136,7 @@ export default function PPFScreen() {
         useNativeDriver: true,
       }).start();
     } catch (err) {
+      hasDrawn.current = false;
       setError(extractMessage(err));
       // Fade the deck back in so the error is visible and the user can retry
       Animated.timing(deckOpacity, {
@@ -217,7 +218,7 @@ export default function PPFScreen() {
         )}
 
         {/* Deck shuffle layer — rendered once deck is ready, fades out after draw */}
-        {!deckLoading && !!cardIds.length && (
+        {!deckLoading && !!cardIds.length && !!user && (
           <Animated.View
             style={[StyleSheet.absoluteFill, styles.deckLayer, { opacity: deckOpacity }]}
             pointerEvents={phase === 'shuffle' ? 'auto' : 'none'}
