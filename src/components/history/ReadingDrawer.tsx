@@ -12,9 +12,17 @@ import {
   View,
 } from 'react-native';
 import type { ReadingRow } from '@hooks/useReadings';
+import { useReflection } from '@hooks/useReflection';
+import { useAuth } from '@hooks/useAuth';
 import { supabase } from '@lib/supabase/client';
 import { DrawerCardSection } from './DrawerCardSection';
 import { theme } from '@theme';
+
+const SENTIMENT_ICON: Record<string, string> = {
+  positive: '👍',
+  neutral: '😐',
+  negative: '👎',
+};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -38,6 +46,8 @@ interface ReadingDrawerProps {
 }
 
 export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
+  const { user } = useAuth();
+
   // Keep the modal mounted through the close animation.
   // isVisible drives Modal.visible; reading is kept until the sheet is gone.
   const [isVisible, setIsVisible] = useState(false);
@@ -126,6 +136,8 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
       },
     })
   ).current;
+
+  const { reflection } = useReflection(reading?.id ?? null, user?.id ?? null);
 
   // Fetch full tarot_cards rows for all cards in this reading.
   const [cardDetails, setCardDetails] = useState<Record<number, Record<string, unknown>>>({});
@@ -230,6 +242,31 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
                 <Text style={styles.insightBody}>{reading.ai_insight}</Text>
               </View>
             )}
+
+            {/* Reflection (read-only) */}
+            {reflection && (
+              <View style={styles.reflectionBox}>
+                <Text style={styles.reflectionLabel}>✦ Your Reflection</Text>
+                <View style={styles.sentimentRow}>
+                  <View style={styles.sentimentItem}>
+                    <Text style={styles.sentimentCaption}>Feeling</Text>
+                    <Text style={styles.sentimentIcon}>
+                      {reflection.feeling ? SENTIMENT_ICON[reflection.feeling] : '—'}
+                    </Text>
+                  </View>
+                  <View style={styles.sentimentDivider} />
+                  <View style={styles.sentimentItem}>
+                    <Text style={styles.sentimentCaption}>Alignment</Text>
+                    <Text style={styles.sentimentIcon}>
+                      {reflection.alignment ? SENTIMENT_ICON[reflection.alignment] : '—'}
+                    </Text>
+                  </View>
+                </View>
+                {reflection.content.length > 0 && (
+                  <Text style={styles.reflectionContent}>{reflection.content}</Text>
+                )}
+              </View>
+            )}
           </ScrollView>
         </Animated.View>
       </View>
@@ -313,9 +350,59 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: theme.spacing.sm,
   },
-  insightBody: { 
-    fontSize: theme.typography.fontSize.base, 
-    color: theme.colors.tarot.insight.text, 
-    lineHeight: 23 
+  insightBody: {
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.tarot.insight.text,
+    lineHeight: 23,
+  },
+  reflectionBox: {
+    marginTop: theme.spacing.sm,
+    backgroundColor: theme.colors.brand.purple[50],
+    borderRadius: theme.radius.lg,
+    padding: theme.spacing.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.brand.purple[200],
+  },
+  reflectionLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: theme.colors.brand.primaryDark,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    marginBottom: theme.spacing.md,
+  },
+  sentimentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface.card,
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.brand.purple[100],
+    overflow: 'hidden',
+    marginBottom: theme.spacing.md,
+  },
+  sentimentItem: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: theme.spacing.md,
+    gap: 4,
+  },
+  sentimentDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: theme.colors.brand.purple[100],
+  },
+  sentimentCaption: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: theme.colors.text.muted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  sentimentIcon: { fontSize: 22 },
+  reflectionContent: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text.secondary,
+    lineHeight: 21,
   },
 });

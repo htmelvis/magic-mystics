@@ -6,7 +6,7 @@ import { useSubscription } from '@hooks/useSubscription';
 import { useUserProfile } from '@hooks/useUserProfile';
 import { useDailyMetaphysical } from '@hooks/useDailyMetaphysical';
 import { useJourneyStats } from '@hooks/useJourneyStats';
-import { Screen, Card, Button, Badge, Skeleton, SkeletonCard, ZodiacAvatar } from '@components/ui';
+import { Screen, Card, Button, Badge, Skeleton, SkeletonCard, ZodiacAvatar, ZodiacAvatarPlaceholder } from '@components/ui';
 import { useUpgradeSheet } from '@/context/UpgradeSheetContext';
 import { CosmicWeatherCard } from '@/components/home/CosmicWeatherCard';
 import { SignsSheet } from '@/components/home/SignsSheet';
@@ -72,8 +72,10 @@ export default function HomeScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          {userProfile?.sunSign && (
+          {userProfile?.sunSign ? (
             <ZodiacAvatar sign={userProfile.sunSign as ZodiacSign} size={48} />
+          ) : (
+            <ZodiacAvatarPlaceholder size={48} />
           )}
           <View style={styles.headerText}>
             <Text style={styles.greeting}>{getGreeting()}</Text>
@@ -214,10 +216,15 @@ export default function HomeScreen() {
 function HomeSkeleton() {
   return (
     <View style={{ marginTop: theme.spacing.lg, gap: theme.spacing.xl }}>
-      {/* Header skeleton */}
+      {/* Header skeleton — avatar circle + greeting/name lines, mirroring header layout */}
       <View style={{ gap: theme.spacing.sm }}>
-        <Skeleton width="40%" height={16} />
-        <Skeleton width="65%" height={28} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md }}>
+          <ZodiacAvatarPlaceholder size={48} />
+          <View style={{ flex: 1, gap: theme.spacing.xs }}>
+            <Skeleton width="40%" height={14} />
+            <Skeleton width="65%" height={24} />
+          </View>
+        </View>
         <Skeleton width="80%" height={24} borderRadius={12} />
       </View>
 

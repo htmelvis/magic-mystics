@@ -124,7 +124,30 @@ export default function CalculatingScreen() {
           });
       }
 
-      // Update cache immediately so the layout's effect fires and navigates to home.
+      // Pre-populate the userProfile cache so the home screen renders the avatar
+      // instantly without a second Supabase round-trip after navigation.
+      queryClient.setQueryData(['userProfile', user.id], {
+        id: user.id,
+        email: user.email ?? '',
+        displayName: updatePayload.display_name,
+        avatarUrl: null,
+        birthDate: updatePayload.birth_date,
+        birthTime: updatePayload.birth_time,
+        birthLocation: updatePayload.birth_location,
+        birthLat: null,
+        birthLng: null,
+        birthTimezone: null,
+        birthDetailsEditedAt: null,
+        sunSign: astrologyData.sunSign,
+        moonSign: astrologyData.moonSign,
+        risingSign: astrologyData.risingSign,
+        natalChartData: natalChart,
+        onboardingCompleted: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
+      // Update onboarding cache so the layout's effect fires and navigates to home.
       // This avoids a race where router.replace runs while onboardingCompleted is
       // still false in cache, causing the layout to redirect back to onboarding.
       setStatus('Your cosmic profile is ready.');
