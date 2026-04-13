@@ -17,13 +17,13 @@ appId: com.edwardwieczorek.magicmystics
 
 # ── History tab ──────────────────────────────────────────────────────────────
 - tapOn:
-    accessibilityLabel: "History tab"
+    label: "History tab"
 
 - assertVisible: "Reading History"
 
 # ── Profile tab ──────────────────────────────────────────────────────────────
 - tapOn:
-    accessibilityLabel: "Profile tab"
+    label: "Profile tab"
 
 - assertVisible: "Profile"
 - assertVisible: "Zodiac Signs"
@@ -31,6 +31,6 @@ appId: com.edwardwieczorek.magicmystics
 
 # ── Back to Home tab ─────────────────────────────────────────────────────────
 - tapOn:
-    accessibilityLabel: "Home tab"
+    label: "Home tab"
 
 - assertVisible: "Draw Your Daily Card"

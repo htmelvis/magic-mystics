@@ -5,11 +5,13 @@
 #   - runFlow: ../utils/sign-in.yaml
 appId: com.edwardwieczorek.magicmystics
 ---
-- tapOn: "Email"
-- clearText
-- inputText: ${TEST_EMAIL}
-- tapOn: "Password"
-- clearText
-- inputText: ${TEST_PASSWORD}
-- tapOn: "Sign In"
-- assertVisible: "Draw Your Daily Card"
+- tapOn:
+    id: 'email'
+- inputText: 'ed@htmelvis.com' # ${TEST_EMAIL}
+- pressKey: enter
+- tapOn:
+    id: 'password'
+- inputText: 'password1234' # ${TEST_PASSWORD}
+- pressKey: enter
+- tapOn: 'Sign In'
+- assertVisible: 'Draw Your Daily Card'

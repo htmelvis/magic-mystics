@@ -33,7 +33,9 @@ export default function SignInScreen() {
     <Screen scroll={false} padding={false}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.emoji} accessible={false}>🔮</Text>
+          <Text style={styles.emoji} accessible={false}>
+            🔮
+          </Text>
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to continue your mystical journey</Text>
         </View>
@@ -46,7 +48,9 @@ export default function SignInScreen() {
             onChangeText={setEmail}
             autoCapitalize="none"
             keyboardType="email-address"
+            returnKeyType="next"
             editable={!loading}
+            testID="email"
           />
 
           <Input
@@ -55,7 +59,9 @@ export default function SignInScreen() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            returnKeyType="done"
             editable={!loading}
+            testID="password"
           />
 
           <Button

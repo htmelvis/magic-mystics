@@ -18,15 +18,16 @@ appId: com.edwardwieczorek.magicmystics
 
 # Navigate to sign-up
 - tapOn:
-    accessibilityLabel: "Sign up for a new account"
+    label: "Sign up for a new account"
 
 - assertVisible: "Create Account"
 
 - tapOn: "Email"
 - inputText: ${TEST_NEW_EMAIL}
-
+- hideKeyboard
 - tapOn: "Password"
 - inputText: ${TEST_NEW_PASSWORD}
+- hideKeyboard
 
 - tapOn: "Sign Up"
 

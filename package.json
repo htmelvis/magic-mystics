@@ -4,18 +4,19 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:e2e": "maestro test .maestro/flows/ --env-file .maestro/.env",
+    "test:e2e": "maestro test .maestro/flows/ $(grep -v '^#' .maestro/.env | grep -v '^$' | sed 's/^/-e /')",
     "test:e2e:flow": "maestro test",
     "storybook": "EXPO_PUBLIC_STORYBOOK_ENABLED='true' expo start",
     "storybook:ios": "EXPO_PUBLIC_STORYBOOK_ENABLED='true' expo start --ios",
     "storybook:android": "EXPO_PUBLIC_STORYBOOK_ENABLED='true' expo start --android",
-    "storybook-generate": "sb-rn-get-stories"
+    "storybook-generate": "sb-rn-get-stories",
+    "install:sim": "npx expo run:ios"
   },
   "dependencies": {
     "@babel/core": "^7.29.0",
