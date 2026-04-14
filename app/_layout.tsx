@@ -4,13 +4,16 @@ import { Stack, useNavigationContainerRef, useRouter, useSegments } from 'expo-r
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GluestackUIProvider } from '@gluestack-ui/themed';
+import { PostHogProvider, useNavigationTracker } from 'posthog-react-native';
 import { config } from '../gluestack-ui.config';
 import { useAuth } from '@hooks/useAuth';
 import { useOnboarding } from '@hooks/useOnboarding';
 import { initRevenueCat } from '@hooks/useRevenueCat';
+import { useAnalytics } from '@hooks/useAnalytics';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ErrorBoundary } from '@components/ui/ErrorBoundary';
 import { supabase } from '@lib/supabase/client';
+import { posthog } from '@lib/analytics/posthog';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,15 +28,28 @@ function RootLayoutNav() {
   const insets = useSafeAreaInsets();
   const { user, loading: authLoading, isPasswordRecovery } = useAuth();
   const { onboardingCompleted, loading: onboardingLoading } = useOnboarding(user?.id);
+  const { identify, reset } = useAnalytics();
+  const segments = useSegments();
+  const router = useRouter();
+  const navigationRef = useNavigationContainerRef();
+
+  // Track screen views automatically via the navigation container ref.
+  useNavigationTracker(undefined, navigationRef);
 
   // Initialise RevenueCat once the user is known. Using user.id as the
   // appUserID keeps RevenueCat and Supabase identities in sync automatically.
   useEffect(() => {
     if (user?.id) initRevenueCat(user.id);
   }, [user?.id]);
-  const segments = useSegments();
-  const router = useRouter();
-  const navigationRef = useNavigationContainerRef();
+
+  // Identify or reset the PostHog user whenever auth state changes.
+  useEffect(() => {
+    if (user?.id) {
+      identify(user.id, { email: user.email });
+    } else {
+      reset();
+    }
+  }, [user?.id]);
 
   // Handle deep links for password reset (magic-mystics://reset-password?code=...)
   useEffect(() => {
@@ -111,16 +127,18 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   return (
-    <ThemeProvider>
-      <GluestackUIProvider config={config}>
-        <SafeAreaProvider>
-          <QueryClientProvider client={queryClient}>
-            <ErrorBoundary>
-              <RootLayoutNav />
-            </ErrorBoundary>
-          </QueryClientProvider>
-        </SafeAreaProvider>
-      </GluestackUIProvider>
-    </ThemeProvider>
+    <PostHogProvider client={posthog} autocapture={{ captureScreens: false }}>
+      <ThemeProvider>
+        <GluestackUIProvider config={config}>
+          <SafeAreaProvider>
+            <QueryClientProvider client={queryClient}>
+              <ErrorBoundary>
+                <RootLayoutNav />
+              </ErrorBoundary>
+            </QueryClientProvider>
+          </SafeAreaProvider>
+        </GluestackUIProvider>
+      </ThemeProvider>
+    </PostHogProvider>
   );
 }
