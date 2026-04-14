@@ -40,7 +40,11 @@ export default function HistoryScreen() {
     clearSearch,
     spreadFilter,
     setSpreadFilter,
+    dateRangeFilter,
+    setDateRangeFilter,
+    clearAllFilters,
     filtered,
+    isDebouncing,
   } = useFilteredReadings(readings);
 
   const openDrawer = useCallback((r: ReadingRow) => setSelectedReading(r), []);
@@ -77,6 +81,9 @@ export default function HistoryScreen() {
           clearSearch={clearSearch}
           spreadFilter={spreadFilter}
           setSpreadFilter={setSpreadFilter}
+          dateRangeFilter={dateRangeFilter}
+          setDateRangeFilter={setDateRangeFilter}
+          clearAllFilters={clearAllFilters}
           resultCount={filtered.length}
           totalCount={readings.length}
         />
@@ -84,7 +91,7 @@ export default function HistoryScreen() {
     </View>
   );
 
-  const isFilterActive = query.length > 0 || spreadFilter !== 'all';
+  const isFilterActive = query.length > 0 || spreadFilter !== 'all' || dateRangeFilter !== 'all';
 
   const ListEmpty = isLoading ? (
     <View style={screenStyles.skeletons}>
@@ -108,6 +115,8 @@ export default function HistoryScreen() {
         <Text style={screenStyles.errorRetryText}>Try Again</Text>
       </TouchableOpacity>
     </View>
+  ) : isDebouncing ? (
+    <ActivityIndicator color={theme.colors.brand.primary} style={{ marginTop: 48 }} />
   ) : isFilterActive ? (
     <View style={screenStyles.emptyState}>
       <Text style={screenStyles.emptyIcon}>🔍</Text>
@@ -117,7 +126,7 @@ export default function HistoryScreen() {
       </Text>
       <TouchableOpacity
         style={screenStyles.clearFiltersButton}
-        onPress={() => { clearSearch(); setSpreadFilter('all'); }}
+        onPress={() => { clearSearch(); clearAllFilters(); }}
         accessibilityRole="button"
         accessibilityLabel="Clear all filters"
       >

@@ -14,7 +14,7 @@ appId: com.edwardwieczorek.magicmystics
 
 # Navigate to Profile
 - tapOn:
-    accessibilityLabel: "Profile tab"
+    label: "Profile tab"
 
 - assertVisible: "Profile"
 

@@ -21,7 +21,7 @@ appId: com.edwardwieczorek.magicmystics
 
 # ── Entry point 1: Home promo card ───────────────────────────────────────────
 - tapOn:
-    accessibilityLabel: "Home tab"
+    label: "Home tab"
 
 - assertVisible: "Upgrade Now"
 - tapOn: "Upgrade Now"
@@ -37,18 +37,18 @@ appId: com.edwardwieczorek.magicmystics
 
 # ── Entry point 2: PPF spread button (gated for free users) ──────────────────
 - tapOn:
-    accessibilityLabel: "Past, Present, Future spread, Premium feature"
+    label: "Past, Present, Future spread, Premium feature"
 
 - assertVisible: "Keep Your Full History"
 
 # Dismiss via backdrop tap
 - tapOn:
-    accessibilityLabel: "Close upgrade sheet"
+    label: "Close upgrade sheet"
 - assertNotVisible: "Keep Your Full History"
 
 # ── Entry point 3: Profile screen ────────────────────────────────────────────
 - tapOn:
-    accessibilityLabel: "Profile tab"
+    label: "Profile tab"
 
 - tapOn: "Upgrade to Premium"
 

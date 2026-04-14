@@ -15,9 +15,9 @@ appId: com.edwardwieczorek.magicmystics
 
 # ── Navigate to Draw ─────────────────────────────────────────────────────────
 - tapOn:
-    accessibilityLabel: "Draw Your Daily Card"
+    label: 'Draw Your Daily Card'
 
-- assertVisible: "Daily Draw"
+- assertVisible: 'Daily Draw'
 
 # Wait for the TarotDeck shuffle animation to complete before interacting.
 # The deck fades out, then the face-down card becomes tappable.
@@ -25,19 +25,18 @@ appId: com.edwardwieczorek.magicmystics
 
 # ── Draw the card ────────────────────────────────────────────────────────────
 - tapOn:
-    accessibilityLabel: "Tarot card, face down"
+    label: 'Tarot card, face down'
 
 # The card flips and the detail panel appears. Because this hits Supabase,
 # give it a moment to resolve.
 - waitForAnimationToEnd
 - extendedWaitUntil:
     visible:
-      accessibilityLabel:
-        regexp: ".+, (upright|reversed)"
+      label: 'regexp:.+, (upright|reversed)'
     timeout: 10000
 
 # ── Return to Home ───────────────────────────────────────────────────────────
 - tapOn:
-    accessibilityLabel: "Go back"
+    label: 'Go back'
 
-- assertVisible: "Draw Your Daily Card"
+- assertVisible: 'Draw Your Daily Card'

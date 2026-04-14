@@ -25,12 +25,20 @@ jest.mock('@components/tarot', () => ({
 // ── Supabase mock ─────────────────────────────────────────────────────────────
 
 const mockInsert = jest.fn();
+const mockInsertSingle = jest.fn();
 const mockCardSingle = jest.fn();
 
 jest.mock('@lib/supabase/client', () => ({
   supabase: {
     from: (table: string) => {
-      if (table === 'readings') return { insert: mockInsert };
+      if (table === 'readings') {
+        return {
+          insert: (payload: unknown) => {
+            mockInsert(payload);
+            return { select: () => ({ single: mockInsertSingle }) };
+          },
+        };
+      }
       if (table === 'tarot_cards') {
         return { select: () => ({ eq: () => ({ single: mockCardSingle }) }) };
       }
@@ -92,6 +100,14 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ back: jest.fn() }),
 }));
 
+jest.mock('@hooks/useReflection', () => ({
+  useReflection: () => ({
+    reflection: null,
+    isSaving: false,
+    save: jest.fn(),
+  }),
+}));
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 import PPFScreen from '../../../app/ppf';
@@ -111,7 +127,7 @@ describe('PPFScreen', () => {
       reset: jest.fn(),
     } as never);
 
-    mockInsert.mockResolvedValue({ error: null });
+    mockInsertSingle.mockResolvedValue({ data: { id: 'reading-id-test' }, error: null });
     mockCardSingle.mockResolvedValue({ data: MOCK_CARD_ROW, error: null });
   });
 
@@ -199,16 +215,13 @@ describe('PPFScreen', () => {
       capturedOnShuffleComplete?.();
     });
 
-    expect(drawSpread).toHaveBeenCalledWith(
-      expect.arrayContaining([1, 2, 78]),
-      3
-    );
+    expect(drawSpread).toHaveBeenCalledWith(expect.arrayContaining([1, 2, 78]), 3);
   });
 
   // ── Error handling ───────────────────────────────────────────────────────────
 
   it('shows an error when the reading insert fails', async () => {
-    mockInsert.mockResolvedValue({ error: { message: 'DB connection failed' } });
+    mockInsertSingle.mockResolvedValue({ data: null, error: { message: 'DB connection failed' } });
 
     const { getByText } = render(<PPFScreen />);
 

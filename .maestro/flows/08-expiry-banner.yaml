@@ -24,12 +24,11 @@ appId: com.edwardwieczorek.magicmystics
 
 # ── Navigate to History ──────────────────────────────────────────────────────
 - tapOn:
-    accessibilityLabel: "History tab"
+    label: "History tab"
 
 # Banner should be visible with expiry warning text
 - assertVisible:
-    text:
-      regexp: ".+ reading(s)? will be removed .+"
+    text: "regexp:.+ reading(s)? will be removed .+"
 
 - assertVisible: "Upgrade to keep forever"
 
@@ -41,23 +40,20 @@ appId: com.edwardwieczorek.magicmystics
 
 # Banner still visible after closing sheet
 - assertVisible:
-    text:
-      regexp: ".+ reading(s)? will be removed .+"
+    text: "regexp:.+ reading(s)? will be removed .+"
 
 # ── Dismiss banner ───────────────────────────────────────────────────────────
 - tapOn:
-    accessibilityLabel: "Dismiss expiry warning"
+    label: "Dismiss expiry warning"
 
 - assertNotVisible:
-    text:
-      regexp: ".+ reading(s)? will be removed .+"
+    text: "regexp:.+ reading(s)? will be removed .+"
 
 # ── Dismissed state persists after navigating away and back ──────────────────
 - tapOn:
-    accessibilityLabel: "Home tab"
+    label: "Home tab"
 - tapOn:
-    accessibilityLabel: "History tab"
+    label: "History tab"
 
 - assertNotVisible:
-    text:
-      regexp: ".+ reading(s)? will be removed .+"
+    text: "regexp:.+ reading(s)? will be removed .+"
