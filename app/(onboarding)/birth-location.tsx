@@ -2,10 +2,14 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { LocationInput } from '@components/ui';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 export default function BirthLocationScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { capture } = useAnalytics();
+
+  capture('screen_viewed', { screen: 'onboarding birth location' });
 
   const [location, setLocation] = useState('');
   const [error, setError] = useState<string | null>(null);

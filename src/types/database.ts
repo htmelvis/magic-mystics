@@ -317,6 +317,101 @@ export interface Database {
         };
         Relationships: [];
       };
+      zodiac_signs: {
+        Row: {
+          id: number;
+          name: string;
+          symbol: string;
+          element: 'Fire' | 'Earth' | 'Air' | 'Water';
+          modality: 'Cardinal' | 'Fixed' | 'Mutable';
+          ruling_planet: string | null;
+          date_range_start: string;
+          date_range_end: string;
+          description: string | null;
+          keywords: string[] | null;
+          strengths: string[] | null;
+          weaknesses: string[] | null;
+          metadata: unknown;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          name: string;
+          symbol: string;
+          element: 'Fire' | 'Earth' | 'Air' | 'Water';
+          modality: 'Cardinal' | 'Fixed' | 'Mutable';
+          ruling_planet?: string | null;
+          date_range_start: string;
+          date_range_end: string;
+          description?: string | null;
+          keywords?: string[] | null;
+          strengths?: string[] | null;
+          weaknesses?: string[] | null;
+          metadata?: unknown;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          name?: string;
+          symbol?: string;
+          element?: 'Fire' | 'Earth' | 'Air' | 'Water';
+          modality?: 'Cardinal' | 'Fixed' | 'Mutable';
+          ruling_planet?: string | null;
+          date_range_start?: string;
+          date_range_end?: string;
+          description?: string | null;
+          keywords?: string[] | null;
+          strengths?: string[] | null;
+          weaknesses?: string[] | null;
+          metadata?: unknown;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      zodiac_tarot_associations: {
+        Row: {
+          id: number;
+          zodiac_sign_id: number;
+          tarot_card_id: number;
+          association_type: string;
+          strength: number | null;
+          description: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          zodiac_sign_id: number;
+          tarot_card_id: number;
+          association_type: string;
+          strength?: number | null;
+          description?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          zodiac_sign_id?: number;
+          tarot_card_id?: number;
+          association_type?: string;
+          strength?: number | null;
+          description?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'zodiac_tarot_associations_tarot_card_id_fkey';
+            columns: ['tarot_card_id'];
+            isOneToOne: false;
+            referencedRelation: 'tarot_cards';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'zodiac_tarot_associations_zodiac_sign_id_fkey';
+            columns: ['zodiac_sign_id'];
+            isOneToOne: false;
+            referencedRelation: 'zodiac_signs';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };
