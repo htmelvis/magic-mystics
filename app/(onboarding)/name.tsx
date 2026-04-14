@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useAnalytics } from '@/hooks/useAnalytics';
+
 
 export default function NameScreen() {
   const router = useRouter();
+  const { capture } = useAnalytics();
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -12,6 +15,7 @@ export default function NameScreen() {
     return null;
   };
 
+  capture('screen_viewed', { screen: 'onboarding name' });
   const handleContinue = () => {
     const validationError = validate(displayName);
     if (validationError) {
@@ -29,16 +33,14 @@ export default function NameScreen() {
       <View style={styles.content}>
         <Text style={styles.progress}>Step 1 of 4</Text>
         <Text style={styles.title}>What should we call you?</Text>
-        <Text style={styles.subtitle}>
-          This is how your name will appear throughout the app
-        </Text>
+        <Text style={styles.subtitle}>This is how your name will appear throughout the app</Text>
 
         <TextInput
           style={[styles.input, error ? styles.inputError : null]}
           placeholder="Your name"
           placeholderTextColor="#9ca3af"
           value={displayName}
-          onChangeText={(text) => {
+          onChangeText={text => {
             setDisplayName(text);
             if (error) setError(validate(text));
           }}

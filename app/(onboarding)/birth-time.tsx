@@ -2,13 +2,17 @@ import { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 export default function BirthTimeScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { capture } = useAnalytics();
   const [time, setTime] = useState(new Date());
   const [showPicker, setShowPicker] = useState(Platform.OS === 'ios');
   const [error, setError] = useState<string | null>(null);
+
+  capture('screen_viewed', { screen: 'onboarding birth time' });
 
   const validate = (value: Date): string | null => {
     if (isNaN(value.getTime())) return 'Please select a valid time';
@@ -50,7 +54,9 @@ export default function BirthTimeScreen() {
     <View style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.progress}>Step 3 of 4</Text>
-        <Text style={styles.title} accessibilityRole="header">What time were you born?</Text>
+        <Text style={styles.title} accessibilityRole="header">
+          What time were you born?
+        </Text>
         <Text style={styles.subtitle}>
           Your birth time helps us calculate your rising sign (ascendant)
         </Text>

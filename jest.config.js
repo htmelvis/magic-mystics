@@ -9,6 +9,7 @@ module.exports = {
     '^@types/(.*)$': '<rootDir>/src/types/$1',
     '^@theme$': '<rootDir>/src/theme',
     '^react-native-purchases$': '<rootDir>/src/__mocks__/react-native-purchases.ts',
+    '^posthog-react-native$': '<rootDir>/src/__mocks__/posthog-react-native.ts',
   },
   testMatch: [
     '**/__tests__/**/*.test.[jt]s?(x)',

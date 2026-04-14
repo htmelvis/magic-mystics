@@ -6,6 +6,7 @@ import { useAuth } from '@hooks/useAuth';
 import { supabase } from '@lib/supabase/client';
 import { ZodiacSign } from '@lib/astrology/calculate-signs';
 import { ZodiacAvatar } from '@components/ui';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface TarotAssociation {
   cardName: string;
@@ -15,6 +16,7 @@ interface TarotAssociation {
 
 export default function TarotRevealScreen() {
   const router = useRouter();
+  const { capture } = useAnalytics();
   const { sunSign } = useLocalSearchParams<{ sunSign: string }>();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -22,6 +24,8 @@ export default function TarotRevealScreen() {
   const [association, setAssociation] = useState<TarotAssociation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  capture('screen_viewed', { screen: 'onboarding tarot reveal' });
 
   useEffect(() => {
     if (!sunSign) {

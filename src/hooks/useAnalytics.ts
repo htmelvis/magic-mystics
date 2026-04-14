@@ -23,7 +23,8 @@ export type AnalyticsEvent =
   | 'subscription_upgraded'
   // History
   | 'history_searched'
-  | 'history_filtered';
+  | 'history_filtered'
+  | 'screen_viewed';
 
 export type AnalyticsProperties = Record<string, string | number | boolean | null>;
 

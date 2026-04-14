@@ -2,15 +2,19 @@ import { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 const MIN_DATE = new Date(1900, 0, 1);
 
 export default function BirthDateScreen() {
   const router = useRouter();
+  const { capture } = useAnalytics();
   const params = useLocalSearchParams();
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(Platform.OS === 'ios');
   const [error, setError] = useState<string | null>(null);
+
+  capture('screen_viewed', { screen: 'onboarding birth date' });
 
   const validate = (value: Date): string | null => {
     if (isNaN(value.getTime())) return 'Please select a valid date';

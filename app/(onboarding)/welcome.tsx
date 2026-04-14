@@ -2,9 +2,14 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Screen, Button } from '@components/ui';
 import { theme } from '@theme';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const { capture } = useAnalytics();
+
+  // Capture an analytics event for screen views — useful for understanding drop-off in the onboarding funnel
+  capture('screen_viewed', { screen: 'onboarding welcome' });
 
   const handleGetStarted = () => {
     router.push('/(onboarding)/name');
