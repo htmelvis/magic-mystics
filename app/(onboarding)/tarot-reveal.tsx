@@ -9,8 +9,10 @@ import { ZodiacAvatar } from '@components/ui';
 import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface TarotAssociation {
+  cardId: number;
   cardName: string;
   zodiacName: string;
+  associationType: string | null;
   description: string | null;
 }
 
@@ -50,7 +52,7 @@ export default function TarotRevealScreen() {
 
         const { data, error: assocError } = await supabase
           .from('zodiac_tarot_associations')
-          .select('description, tarot_cards!tarot_card_id(name)')
+          .select('description, association_type, tarot_card_id, tarot_cards!tarot_card_id(id, name)')
           .eq('zodiac_sign_id', zodiacData.id)
           .single();
 
@@ -60,13 +62,29 @@ export default function TarotRevealScreen() {
           throw new Error(msg);
         }
 
-        const tarotCards = data.tarot_cards as { name: string } | null;
+        const tarotCards = data.tarot_cards as { id: number; name: string } | null;
 
         setAssociation({
+          cardId: tarotCards?.id ?? data.tarot_card_id,
           cardName: tarotCards?.name ?? '',
           zodiacName: zodiacData.name,
+          associationType: data.association_type ?? null,
           description: data.description,
         });
+
+        // Persist tarot card fields to the user row so the profile page reads
+        // everything from the existing user query — no extra round trip needed.
+        if (user && (tarotCards?.id ?? data.tarot_card_id)) {
+          supabase
+            .from('users')
+            .update({
+              tarot_card_id: tarotCards?.id ?? data.tarot_card_id,
+              tarot_association_type: data.association_type ?? null,
+              tarot_association_description: data.description ?? null,
+            })
+            .eq('id', user.id)
+            .then(() => queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] }));
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.warn('TarotReveal fetch error:', msg);
@@ -103,6 +121,9 @@ export default function TarotRevealScreen() {
             <Text style={styles.separator}>&lt;&gt;</Text>{' '}
             {association.zodiacName}
           </Text>
+          {association.associationType ? (
+            <Text style={styles.associationType}>{association.associationType}</Text>
+          ) : null}
           {association.description ? (
             <Text style={styles.description}>{association.description}</Text>
           ) : null}
@@ -166,6 +187,14 @@ const styles = StyleSheet.create({
   separator: {
     color: '#8b5cf6',
     fontWeight: '400',
+  },
+  associationType: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#8b5cf6',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    textAlign: 'center',
   },
   description: {
     fontSize: 16,

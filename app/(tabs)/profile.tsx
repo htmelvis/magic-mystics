@@ -32,6 +32,14 @@ export default function ProfileScreen() {
   const { userProfile, loading: profileLoading } = useUserProfile(user?.id);
   const router = useRouter();
   const queryClient = useQueryClient();
+
+  // Invalidate on mount so the tarot card join is always fresh —
+  // the onboarding cache pre-population sets tarotCard: null.
+  useEffect(() => {
+    if (user?.id) {
+      queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] });
+    }
+  }, [user?.id, queryClient]);
   const isLoading = authLoading || profileLoading;
   const theme = useAppTheme();
   const [retryingGeocode, setRetryingGeocode] = useState(false);
@@ -142,6 +150,28 @@ export default function ProfileScreen() {
           <Text style={[styles.email, { color: theme.colors.text.secondary }]}>{user?.email}</Text>
         </View>
       </View>
+
+      {/* Tarot card associated with sun sign */}
+      {userProfile?.tarotCard && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Your Tarot Card</Text>
+          <Card variant="outlined">
+            <Text style={[styles.tarotCardName, { color: theme.colors.brand.primary }]}>
+              {userProfile.tarotCard.name}
+            </Text>
+            {userProfile.tarotCard.associationType && (
+              <Text style={[styles.tarotCardType, { color: theme.colors.brand.primary }]}>
+                {userProfile.tarotCard.associationType}
+              </Text>
+            )}
+            {userProfile.tarotCard.associationDescription && (
+              <Text style={[styles.tarotCardSummary, { color: theme.colors.text.secondary }]}>
+                {userProfile.tarotCard.associationDescription}
+              </Text>
+            )}
+          </Card>
+        </View>
+      )}
 
       {/* Natal Chart preview — taps to full-screen */}
       <Pressable
@@ -385,6 +415,22 @@ const styles = StyleSheet.create({
   signChipText: {
     fontSize: 13,
     fontWeight: '500',
+  },
+  tarotCardName: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  tarotCardType: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  tarotCardSummary: {
+    fontSize: 14,
+    lineHeight: 20,
   },
   geocodeButton: {
     marginTop: 16,

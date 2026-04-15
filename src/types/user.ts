@@ -2,6 +2,14 @@ export type { StoredNatalChart, PlanetPosition, PlanetName } from '@lib/astrolog
 
 export type SubscriptionTier = 'free' | 'premium';
 
+export interface TarotCardSummary {
+  id: number;
+  name: string;
+  uprightSummary: string | null;
+  associationType: string | null;
+  associationDescription: string | null;
+}
+
 export interface UserProfile {
   id: string;
   email: string;
@@ -18,6 +26,7 @@ export interface UserProfile {
   moonSign: string | null;
   risingSign: string | null;
   natalChartData: import('@lib/astrology/natal-chart').StoredNatalChart | null;
+  tarotCard: TarotCardSummary | null;
   onboardingCompleted: boolean;
   createdAt: string;
   updatedAt: string;

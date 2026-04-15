@@ -142,6 +142,7 @@ export default function CalculatingScreen() {
         moonSign: astrologyData.moonSign,
         risingSign: astrologyData.risingSign,
         natalChartData: natalChart,
+        tarotCard: null, // populated by tarot-reveal step
         onboardingCompleted: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
