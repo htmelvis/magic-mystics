@@ -27,18 +27,6 @@ export default function HomeScreen() {
 
   const error = authError || statsError;
 
-  const handleDrawCard = () => {
-    router.push('/draw');
-  };
-
-  const handlePPFSpread = () => {
-    if (!isPremium) {
-      openUpgradeSheet();
-      return;
-    }
-    router.push('/ppf');
-  };
-
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good Morning';
@@ -48,7 +36,6 @@ export default function HomeScreen() {
 
   return (
     <Screen>
-      {/* Error Banner */}
       {error && (
         <View style={styles.errorBanner}>
           <Text style={styles.errorText}>
@@ -101,38 +88,21 @@ export default function HomeScreen() {
       {/* Cosmic Weather */}
       <CosmicWeatherCard cosmic={cosmic} isLoading={cosmicLoading} />
 
-      {/* Main Actions */}
-      <View style={styles.actionsContainer}>
-        <Pressable
-          style={styles.primaryButton}
-          onPress={handleDrawCard}
-          accessibilityRole="button"
-          accessibilityLabel="Draw Your Daily Card"
-          accessibilityHint="Discover today's tarot message"
-        >
-          <Text style={styles.primaryButtonIcon} accessible={false}>✨</Text>
-          <Text style={styles.primaryButtonText}>Draw Your Daily Card</Text>
-          <Text style={styles.primaryButtonSubtext}>Discover today's message</Text>
-        </Pressable>
-
-        <Pressable
-          style={[styles.secondaryButton, !isPremium && styles.disabledButton]}
-          onPress={handlePPFSpread}
-          disabled={!isPremium}
-          accessibilityRole="button"
-          accessibilityLabel={isPremium ? 'Past, Present, Future spread' : 'Past, Present, Future spread, Premium feature'}
-          accessibilityHint={isPremium ? 'Three-card spread reading' : 'Upgrade to Premium to unlock this feature'}
-          accessibilityState={{ disabled: !isPremium }}
-        >
-          <Text style={styles.secondaryButtonIcon} accessible={false}>🔮</Text>
-          <Text style={styles.secondaryButtonText}>
-            Past/Present/Future {!isPremium && '(Premium)'}
-          </Text>
-          <Text style={styles.secondaryButtonSubtext}>
-            {isPremium ? 'Three-card spread' : 'Upgrade to unlock'}
-          </Text>
-        </Pressable>
-      </View>
+      {/* Draw Now */}
+      <Pressable
+        style={styles.drawNowCard}
+        onPress={() => router.push('/(tabs)/draw')}
+        accessibilityRole="button"
+        accessibilityLabel="Go to Draw"
+        accessibilityHint="Opens the Draw tab to start a reading"
+      >
+        <Text style={styles.drawNowIcon} accessible={false}>✨</Text>
+        <View style={styles.drawNowText}>
+          <Text style={styles.drawNowTitle}>Ready for your reading?</Text>
+          <Text style={styles.drawNowSubtitle}>Daily card, spreads, and more</Text>
+        </View>
+        <Text style={styles.drawNowChevron}>›</Text>
+      </Pressable>
 
       {/* Premium Promo */}
       {!isPremium && (
@@ -211,8 +181,6 @@ export default function HomeScreen() {
     </Screen>
   );
 }
-
-/** Full-page skeleton shown while auth + profile data loads. */
 function HomeSkeleton() {
   return (
     <View style={{ marginTop: theme.spacing.lg, gap: theme.spacing.xl }}>
@@ -286,55 +254,38 @@ const styles = StyleSheet.create({
     ...theme.textStyles.h1,
     marginBottom: theme.spacing.sm,
   },
-  actionsContainer: {
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing.xl,
-  },
-  primaryButton: {
+  drawNowCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: theme.colors.brand.primary,
     padding: theme.spacing.xl,
     borderRadius: theme.borderRadius.card,
-    alignItems: 'center',
+    marginBottom: theme.spacing.xl,
+    gap: theme.spacing.md,
     ...theme.shadows.button,
   },
-  primaryButtonIcon: {
+  drawNowIcon: {
     fontSize: 32,
-    marginBottom: theme.spacing.xs,
   },
-  primaryButtonText: {
+  drawNowText: {
+    flex: 1,
+  },
+  drawNowTitle: {
     color: theme.colors.text.inverse,
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: theme.spacing.xxs,
   },
-  primaryButtonSubtext: {
+  drawNowSubtitle: {
     color: theme.colors.text.inverse,
     fontSize: 14,
+    opacity: 0.85,
   },
-  secondaryButton: {
-    backgroundColor: theme.colors.surface.card,
-    padding: theme.spacing.xl,
-    borderRadius: theme.borderRadius.card,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: theme.colors.border.main,
-  },
-  secondaryButtonIcon: {
-    fontSize: 32,
-    marginBottom: theme.spacing.xs,
-  },
-  secondaryButtonText: {
-    color: theme.colors.text.primary,
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: theme.spacing.xxs,
-  },
-  secondaryButtonSubtext: {
-    color: theme.colors.text.secondary,
-    fontSize: 14,
-  },
-  disabledButton: {
-    opacity: 0.5,
+  drawNowChevron: {
+    color: theme.colors.text.inverse,
+    fontSize: 24,
+    lineHeight: 26,
+    opacity: 0.7,
   },
   promoCard: {
     backgroundColor: theme.colors.surface.card,

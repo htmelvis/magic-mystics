@@ -3,14 +3,11 @@ import { View, Text, StyleSheet, Alert, Pressable, ActivityIndicator } from 'rea
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@hooks/useAuth';
-import { useSubscription } from '@hooks/useSubscription';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { useTheme } from '@/context/ThemeContext';
 import { useAppTheme } from '@/hooks/useAppTheme';
-import { Screen, Card, Badge, Button, Skeleton, SkeletonCard, ZodiacAvatar, NatalChartWheel } from '@components/ui';
+import { Screen, Card, Button, Skeleton, SkeletonCard, ZodiacAvatar, NatalChartWheel } from '@components/ui';
 import type { ZodiacSign } from '@lib/astrology/calculate-signs';
 import { computeNatalChart } from '@lib/astrology/natal-chart';
-import { useUpgradeSheet } from '@/context/UpgradeSheetContext';
 import { supabase } from '@lib/supabase/client';
 import { geocodeLocation, getTimezone } from '@lib/geocoding/geocode';
 
@@ -32,14 +29,11 @@ function formatBirthTime(birthTime: string | null): string {
 
 export default function ProfileScreen() {
   const { user, loading: authLoading, signOut } = useAuth();
-  const { subscription, isPremium, loading: subLoading } = useSubscription(user?.id);
   const { userProfile, loading: profileLoading } = useUserProfile(user?.id);
   const router = useRouter();
   const queryClient = useQueryClient();
-  const isLoading = authLoading || profileLoading || subLoading;
-  const { activeColorScheme, toggleColorScheme, setColorScheme, colorScheme } = useTheme();
+  const isLoading = authLoading || profileLoading;
   const theme = useAppTheme();
-  const { open: openUpgradeSheet } = useUpgradeSheet();
   const [retryingGeocode, setRetryingGeocode] = useState(false);
   const [geocodeCoolingDown, setGeocodeCoolingDown] = useState(false);
   const lastGeocodeAttempt = useRef<number>(0);
@@ -149,46 +143,6 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* Theme Section */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>Appearance</Text>
-        <Card variant="outlined">
-          <View style={styles.themeRow}>
-            <View>
-              <Text style={[styles.themeTitle, { color: theme.colors.text.primary }]}>Dark Mode</Text>
-              <Text style={[styles.themeSubtitle, { color: theme.colors.text.muted }]}>
-                {activeColorScheme === 'dark' ? 'On' : 'Off'}
-              </Text>
-            </View>
-            <Pressable
-              style={[
-                styles.toggle,
-                { backgroundColor: activeColorScheme === 'dark' ? theme.colors.brand.primary : theme.colors.gray[300] }
-              ]}
-              onPress={toggleColorScheme}
-              accessibilityRole="switch"
-              accessibilityLabel="Dark mode"
-              accessibilityState={{ checked: activeColorScheme === 'dark' }}
-            >
-              <View
-                style={[
-                  styles.toggleKnob,
-                  { 
-                    backgroundColor: theme.colors.surface.card,
-                    transform: [{ translateX: activeColorScheme === 'dark' ? 24 : 2 }]
-                  }
-                ]}
-              />
-            </Pressable>
-          </View>
-          {colorScheme === 'auto' && (
-            <Text style={[styles.autoModeText, { color: theme.colors.text.muted }]}>
-              Following system preference
-            </Text>
-          )}
-        </Card>
-      </View>
-
       {/* Natal Chart preview — taps to full-screen */}
       <Pressable
         style={styles.section}
@@ -230,20 +184,9 @@ export default function ProfileScreen() {
       </Pressable>
 
       <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary, marginBottom: 0 }]}>
-            Birth Details
-          </Text>
-          {!userProfile?.birthDetailsEditedAt && (
-            <Pressable
-              onPress={() => router.push('/(tabs)/edit-birth-details')}
-              accessibilityRole="button"
-              accessibilityLabel="Edit birth details"
-            >
-              <Text style={[styles.editLink, { color: theme.colors.brand.primary }]}>Edit</Text>
-            </Pressable>
-          )}
-        </View>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>
+          Birth Details
+        </Text>
         <Card variant="outlined">
           <Text style={[styles.birthDetailText, { color: theme.colors.text.primary }]}>
             Date: {formatBirthDate(userProfile?.birthDate ?? null)}
@@ -309,53 +252,6 @@ export default function ProfileScreen() {
               )}
             </Pressable>
           )}
-        </Card>
-        {userProfile?.birthDetailsEditedAt && (
-          <Text style={[styles.editedNote, { color: theme.colors.text.muted }]}>
-            Birth details have already been edited once and cannot be changed again.
-          </Text>
-        )}
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Subscription</Text>
-        <Card variant="filled">
-          <Badge 
-            label={isPremium ? '✨ Premium Member' : '🌙 Free Tier'}
-            variant={isPremium ? 'primary' : 'default'}
-            size="lg"
-            style={{ marginBottom: theme.spacing.sm }}
-          />
-          {isPremium && subscription?.expiry_date && (
-            <Text style={styles.expiryText}>
-              Expires: {new Date(subscription.expiry_date).toLocaleDateString()}
-            </Text>
-          )}
-          {!isPremium && (
-            <Button
-              title="Upgrade to Premium"
-              variant="primary"
-              onPress={openUpgradeSheet}
-              style={{ marginTop: theme.spacing.sm }}
-            />
-          )}
-        </Card>
-      </View>
-
-      <View style={[styles.section, { marginTop: 'auto' }]}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>Support</Text>
-        <Card variant="outlined">
-          <Pressable
-            style={styles.supportRow}
-            onPress={() => router.push('/(tabs)/support')}
-            accessibilityRole="button"
-            accessibilityLabel="Get help or send feedback"
-          >
-            <Text style={[styles.supportRowLabel, { color: theme.colors.text.primary }]}>
-              Get Help / Send Feedback
-            </Text>
-            <Text style={[styles.supportRowChevron, { color: theme.colors.text.muted }]}>›</Text>
-          </Pressable>
         </Card>
       </View>
 
@@ -471,49 +367,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginBottom: 8,
   },
-  expiryText: {
-    fontSize: 13,
-  },
-  themeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  themeTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  themeSubtitle: {
-    fontSize: 13,
-  },
-  toggle: {
-    width: 52,
-    height: 32,
-    borderRadius: 16,
-    padding: 2,
-    justifyContent: 'center',
-  },
-  toggleKnob: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-  },
-  autoModeText: {
-    fontSize: 12,
-    marginTop: 12,
-    fontStyle: 'italic',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  editLink: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
   birthDetailText: {
     fontSize: 15,
     marginBottom: 8,
@@ -543,22 +396,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
-  },
-  editedNote: {
-    fontSize: 12,
-    marginTop: 8,
-    fontStyle: 'italic',
-  },
-  supportRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  supportRowLabel: {
-    fontSize: 15,
-  },
-  supportRowChevron: {
-    fontSize: 20,
-    lineHeight: 22,
   },
 });

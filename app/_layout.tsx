@@ -44,8 +44,9 @@ function RootLayoutNav() {
 
   // Identify or reset the PostHog user whenever auth state changes.
   useEffect(() => {
+    if(!user) return
     if (user?.id) {
-      identify(user.id, { email: user.email });
+      identify(user.id, { email: user.email ?? null });
     } else {
       reset();
     }
