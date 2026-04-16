@@ -26,6 +26,7 @@ export interface Database {
           moon_sign: string | null;
           rising_sign: string | null;
           natal_chart_data: unknown;
+          tarot_card_id: number | null;
           onboarding_completed: boolean;
           created_at: string;
           updated_at: string;
@@ -46,6 +47,7 @@ export interface Database {
           moon_sign?: string | null;
           rising_sign?: string | null;
           natal_chart_data?: unknown;
+          tarot_card_id?: number | null;
           onboarding_completed?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -65,6 +67,7 @@ export interface Database {
           moon_sign?: string | null;
           rising_sign?: string | null;
           natal_chart_data?: unknown;
+          tarot_card_id?: number | null;
           onboarding_completed?: boolean;
           updated_at?: string;
         };

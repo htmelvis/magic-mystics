@@ -12,6 +12,7 @@ import {
   userOnboardingUpdateSchema,
 } from '@lib/validation/onboarding';
 import { ZodiacAvatar } from '@components/ui';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 export default function CalculatingScreen() {
   const router = useRouter();
@@ -23,6 +24,7 @@ export default function CalculatingScreen() {
   const [sunSign, setSunSign] = useState<ZodiacSign | null>(null);
   const [completed, setCompleted] = useState(false);
   const hasRun = useRef(false);
+  const theme = useAppTheme();
 
   const completeOnboarding = useCallback(async () => {
     if (!user) return;
@@ -177,24 +179,30 @@ export default function CalculatingScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
       {failed ? (
         <Text style={styles.emoji}>⚠️</Text>
       ) : sunSign ? (
         <View style={styles.avatarReveal}>
           <ZodiacAvatar sign={sunSign} size={120} />
-          <Text style={styles.sunSignLabel}>Your sun is in {sunSign}</Text>
+          <Text style={[styles.sunSignLabel, { color: theme.colors.brand.primary }]}>
+            Your sun is in {sunSign}
+          </Text>
         </View>
       ) : (
         <Text style={styles.emoji}>✨🔮✨</Text>
       )}
-      {!failed && !completed && <ActivityIndicator size="large" color="#8b5cf6" />}
-      <Text style={styles.status} accessibilityRole="text" accessibilityLiveRegion="polite">
+      {!failed && !completed && <ActivityIndicator size="large" color={theme.colors.brand.primary} />}
+      <Text
+        style={[styles.status, { color: theme.colors.text.secondary }]}
+        accessibilityRole="text"
+        accessibilityLiveRegion="polite"
+      >
         {status}
       </Text>
       {completed && (
         <Pressable
-          style={styles.beginButton}
+          style={[styles.beginButton, { backgroundColor: theme.colors.brand.primary }]}
           onPress={() => {
             router.replace({
               pathname: '/(onboarding)/tarot-reveal',
@@ -210,7 +218,7 @@ export default function CalculatingScreen() {
       {failed && (
         <View style={styles.errorActions}>
           <Pressable
-            style={styles.retryButton}
+            style={[styles.retryButton, { backgroundColor: theme.colors.brand.primary }]}
             onPress={handleRetry}
             accessibilityRole="button"
             accessibilityLabel="Try again"
@@ -223,7 +231,9 @@ export default function CalculatingScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Text style={styles.backButtonText}>Go Back</Text>
+            <Text style={[styles.backButtonText, { color: theme.colors.brand.primary }]}>
+              Go Back
+            </Text>
           </Pressable>
         </View>
       )}
@@ -250,12 +260,10 @@ const styles = StyleSheet.create({
   sunSignLabel: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#8b5cf6',
     textAlign: 'center',
   },
   status: {
     fontSize: 18,
-    color: '#666',
     textAlign: 'center',
     marginTop: 24,
   },
@@ -265,7 +273,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   beginButton: {
-    backgroundColor: '#8b5cf6',
     paddingHorizontal: 40,
     paddingVertical: 16,
     borderRadius: 14,
@@ -279,7 +286,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   retryButton: {
-    backgroundColor: '#8b5cf6',
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 12,
@@ -296,7 +302,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   backButtonText: {
-    color: '#8b5cf6',
     fontSize: 16,
     fontWeight: '600',
   },

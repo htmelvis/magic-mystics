@@ -39,7 +39,9 @@ export default function SettingsScreen() {
 
       {/* Appearance */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>Appearance</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>
+          Appearance
+        </Text>
         <Card variant="outlined">
           <View style={styles.row}>
             <View>
@@ -51,7 +53,12 @@ export default function SettingsScreen() {
             <Pressable
               style={[
                 styles.toggle,
-                { backgroundColor: activeColorScheme === 'dark' ? theme.colors.brand.primary : theme.colors.gray[300] },
+                {
+                  backgroundColor:
+                    activeColorScheme === 'dark'
+                      ? theme.colors.brand.primary
+                      : theme.colors.gray[300],
+                },
               ]}
               onPress={toggleColorScheme}
               accessibilityRole="switch"
@@ -111,13 +118,14 @@ export default function SettingsScreen() {
 
       {/* Subscription */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>Subscription</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>
+          Subscription
+        </Text>
         <Card variant="filled">
           <Badge
             label={isPremium ? '✨ Premium Member' : '🌙 Free Tier'}
             variant={isPremium ? 'primary' : 'default'}
             size="lg"
-            style={{ marginBottom: theme.spacing.sm }}
           />
           {isPremium && subscription?.expiry_date && (
             <Text style={[styles.expiryText, { color: theme.colors.text.secondary }]}>
@@ -155,8 +163,15 @@ export default function SettingsScreen() {
 
       {/* Danger Zone */}
       <View style={[styles.section, { marginTop: 'auto' }]}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>Danger Zone</Text>
-        <Card variant="outlined">
+        <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>
+          Danger Zone
+        </Text>
+        <Card
+          variant="outlined"
+          style={{
+            marginBottom: 32,
+          }}
+        >
           <Pressable
             style={styles.row}
             onPress={handleDeleteAccount}

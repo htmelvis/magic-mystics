@@ -1,10 +1,16 @@
 import { Tabs } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '@theme';
+import { useTheme } from '@/context/ThemeContext';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { ErrorBoundary } from '@components/ui/ErrorBoundary';
 import { UpgradeSheetProvider } from '@/context/UpgradeSheetContext';
 
 export default function TabsLayout() {
+  const { activeColorScheme } = useTheme();
+  const theme = useAppTheme();
+  const tabBarBg =
+    activeColorScheme === 'dark' ? 'rgba(26, 26, 26, 0.92)' : 'rgba(255, 255, 255, 0.85)';
+
   return (
     <ErrorBoundary>
       <UpgradeSheetProvider>
@@ -14,16 +20,23 @@ export default function TabsLayout() {
             tabBarActiveTintColor: theme.colors.brand.primary,
             tabBarInactiveTintColor: theme.colors.text.muted,
             tabBarStyle: {
-              backgroundColor: theme.colors.surface.card,
+              position: 'absolute',
               borderTopColor: theme.colors.border.light,
               borderTopWidth: 1,
               height: 60,
               paddingBottom: 8,
-              paddingTop: 8,
+              paddingTop: 2,
+              marginBottom: 24,
+              marginHorizontal: theme.spacing.md,
+              borderRadius: theme.borderRadius.full,
+              backgroundColor: tabBarBg,
+            },
+            tabBarItemStyle: {
+              padding: 0,
             },
             tabBarLabelStyle: {
-              fontSize: 12,
-              fontWeight: '600',
+              fontSize: 10,
+              fontWeight: '400',
             },
           }}
         >

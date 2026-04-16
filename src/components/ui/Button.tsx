@@ -1,5 +1,6 @@
-import { Pressable, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
-import { theme } from '@theme';
+import { Pressable, Text, StyleSheet, ActivityIndicator, ViewStyle } from 'react-native';
+import { useAppTheme } from '@hooks/useAppTheme';
+import { borderRadius, spacing } from '@theme';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -33,22 +34,40 @@ export function Button({
   accessibilityLabel,
   accessibilityHint,
 }: ButtonProps) {
+  const theme = useAppTheme();
   const isDisabled = disabled || loading;
+
+  const variantStyle: ViewStyle = {
+    primary: { backgroundColor: theme.colors.brand.primary, ...theme.shadows.button },
+    secondary: {
+      backgroundColor: theme.colors.surface.card,
+      borderWidth: 2,
+      borderColor: theme.colors.border.main,
+    },
+    outline: {
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      borderColor: theme.colors.brand.primary,
+    },
+    ghost: { backgroundColor: 'transparent' },
+    destructive: { backgroundColor: theme.colors.error.main, ...theme.shadows.button },
+  }[variant];
+
+  const variantTextColor = {
+    primary: theme.colors.text.inverse,
+    secondary: theme.colors.text.primary,
+    outline: theme.colors.brand.primary,
+    ghost: theme.colors.brand.primary,
+    destructive: theme.colors.text.inverse,
+  }[variant];
 
   const buttonStyles = [
     styles.button,
-    styles[`button_${variant}`],
-    styles[`button_${size}`],
+    sizeButton[size],
+    variantStyle,
     isDisabled && styles.button_disabled,
     fullWidth && styles.button_fullWidth,
     style,
-  ];
-
-  const textStyles = [
-    styles.text,
-    styles[`text_${variant}`],
-    styles[`text_${size}`],
-    isDisabled && styles.text_disabled,
   ];
 
   return (
@@ -60,7 +79,9 @@ export function Button({
       onPress={onPress}
       disabled={isDisabled}
       accessibilityRole="button"
-      accessibilityLabel={loading ? `${accessibilityLabel ?? title}, loading` : (accessibilityLabel ?? title)}
+      accessibilityLabel={
+        loading ? `${accessibilityLabel ?? title}, loading` : (accessibilityLabel ?? title)
+      }
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: isDisabled }}
     >
@@ -72,7 +93,7 @@ export function Button({
       ) : (
         <>
           {icon && iconPosition === 'left' && <>{icon}</>}
-          <Text style={textStyles}>{title}</Text>
+          <Text style={[styles.text, sizeText[size], { color: variantTextColor }]}>{title}</Text>
           {icon && iconPosition === 'right' && <>{icon}</>}
         </>
       )}
@@ -81,103 +102,27 @@ export function Button({
 }
 
 const styles = StyleSheet.create({
-  // Base button styles
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: theme.borderRadius.button,
-    gap: theme.spacing.xs,
+    borderRadius: borderRadius.button,
+    gap: spacing.xs,
   },
+  button_disabled: { opacity: 0.5 },
+  button_pressed: { opacity: 0.8 },
+  button_fullWidth: { width: '100%' },
+  text: { textAlign: 'center' },
+});
 
-  // Variants
-  button_primary: {
-    backgroundColor: theme.colors.brand.primary,
-    ...theme.shadows.button,
-  },
-  button_secondary: {
-    backgroundColor: theme.colors.surface.card,
-    borderWidth: 2,
-    borderColor: theme.colors.border.main,
-  },
-  button_outline: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: theme.colors.brand.primary,
-  },
-  button_ghost: {
-    backgroundColor: 'transparent',
-  },
-  button_destructive: {
-    backgroundColor: theme.colors.error.main,
-    ...theme.shadows.button,
-  },
+const sizeButton = StyleSheet.create({
+  sm: { paddingVertical: spacing.xs, paddingHorizontal: spacing.md },
+  md: { paddingVertical: spacing.sm, paddingHorizontal: spacing.lg },
+  lg: { paddingVertical: spacing.md, paddingHorizontal: spacing.xl },
+});
 
-  // Sizes
-  button_sm: {
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.md,
-  },
-  button_md: {
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
-  },
-  button_lg: {
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.xl,
-  },
-
-  // States
-  button_disabled: {
-    opacity: 0.5,
-  },
-  button_pressed: {
-    opacity: 0.8,
-  },
-  button_fullWidth: {
-    width: '100%',
-  },
-
-  // Text styles
-  text: {
-    textAlign: 'center',
-  },
-
-  // Text variants
-  text_primary: {
-    ...theme.textStyles.button,
-    color: theme.colors.text.inverse,
-  },
-  text_secondary: {
-    ...theme.textStyles.button,
-    color: theme.colors.text.primary,
-  },
-  text_outline: {
-    ...theme.textStyles.button,
-    color: theme.colors.brand.primary,
-  },
-  text_ghost: {
-    ...theme.textStyles.button,
-    color: theme.colors.brand.primary,
-  },
-  text_destructive: {
-    ...theme.textStyles.button,
-    color: theme.colors.text.inverse,
-  },
-
-  // Text sizes
-  text_sm: {
-    ...theme.textStyles.buttonSmall,
-  },
-  text_md: {
-    ...theme.textStyles.button,
-  },
-  text_lg: {
-    ...theme.textStyles.buttonLarge,
-  },
-
-  // Text states
-  text_disabled: {
-    opacity: 1, // Already handled by button opacity
-  },
+const sizeText = StyleSheet.create({
+  sm: { fontSize: 13, fontWeight: '600' as const, letterSpacing: 0.2 },
+  md: { fontSize: 15, fontWeight: '600' as const, letterSpacing: 0.2 },
+  lg: { fontSize: 17, fontWeight: '700' as const, letterSpacing: 0.3 },
 });

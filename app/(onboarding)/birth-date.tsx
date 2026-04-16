@@ -3,12 +3,14 @@ import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 const MIN_DATE = new Date(1900, 0, 1);
 
 export default function BirthDateScreen() {
   const router = useRouter();
   const { capture } = useAnalytics();
+  const theme = useAppTheme();
   const params = useLocalSearchParams();
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(Platform.OS === 'ios');
@@ -39,9 +41,7 @@ export default function BirthDateScreen() {
   };
 
   const onChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
-    if (Platform.OS === 'android') {
-      setShowPicker(false);
-    }
+    if (Platform.OS === 'android') setShowPicker(false);
     if (selectedDate) {
       setDate(selectedDate);
       if (error) setError(validate(selectedDate));
@@ -49,24 +49,34 @@ export default function BirthDateScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
       <View style={styles.content}>
-        <Text style={styles.progress}>Step 2 of 4</Text>
-        <Text style={styles.title} accessibilityRole="header">When were you born?</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.progress, { color: theme.colors.brand.primary }]}>Step 2 of 4</Text>
+        <Text style={[styles.title, { color: theme.colors.text.primary }]} accessibilityRole="header">
+          When were you born?
+        </Text>
+        <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
           We'll use this to calculate your sun sign and other astrological placements
         </Text>
 
         <View style={styles.pickerContainer}>
           {Platform.OS === 'android' && !showPicker && (
             <Pressable
-              style={styles.dateButton}
+              style={[
+                styles.dateButton,
+                {
+                  backgroundColor: theme.colors.brand.primaryMuted,
+                  borderColor: theme.colors.brand.primary,
+                },
+              ]}
               onPress={() => setShowPicker(true)}
               accessibilityRole="button"
               accessibilityLabel={`Selected birth date: ${date.toLocaleDateString()}`}
               accessibilityHint="Double-tap to open date picker"
             >
-              <Text style={styles.dateButtonText}>{date.toLocaleDateString()}</Text>
+              <Text style={[styles.dateButtonText, { color: theme.colors.brand.primary }]}>
+                {date.toLocaleDateString()}
+              </Text>
             </Pressable>
           )}
           {showPicker && (
@@ -77,14 +87,17 @@ export default function BirthDateScreen() {
               onChange={onChange}
               maximumDate={new Date()}
               minimumDate={new Date(1900, 0, 1)}
+              textColor={theme.colors.text.primary}
             />
           )}
         </View>
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        {error ? (
+          <Text style={[styles.errorText, { color: theme.colors.error.main }]}>{error}</Text>
+        ) : null}
       </View>
 
       <Pressable
-        style={styles.button}
+        style={[styles.button, { backgroundColor: theme.colors.brand.primary }]}
         onPress={handleContinue}
         accessibilityRole="button"
         accessibilityLabel="Continue"
@@ -97,68 +110,21 @@ export default function BirthDateScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    justifyContent: 'space-between',
-  },
-  content: {
-    flex: 1,
-    paddingTop: 16,
-  },
-  progress: {
-    fontSize: 14,
-    color: '#8b5cf6',
-    fontWeight: '600',
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 12,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    lineHeight: 24,
-    marginBottom: 40,
-  },
-  pickerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 200,
-  },
+  container: { flex: 1, padding: 24, justifyContent: 'space-between' },
+  content: { flex: 1, paddingTop: 16 },
+  progress: { fontSize: 14, fontWeight: '600', marginBottom: 16 },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 12 },
+  subtitle: { fontSize: 16, lineHeight: 24, marginBottom: 40 },
+  pickerContainer: { alignItems: 'center', justifyContent: 'center', minHeight: 200 },
   dateButton: {
-    backgroundColor: '#f3e8ff',
     padding: 20,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#8b5cf6',
     width: '100%',
     alignItems: 'center',
   },
-  dateButtonText: {
-    fontSize: 18,
-    color: '#8b5cf6',
-    fontWeight: '600',
-  },
-  errorText: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#dc2626',
-    textAlign: 'center',
-  },
-  button: {
-    backgroundColor: '#8b5cf6',
-    padding: 18,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-  },
+  dateButtonText: { fontSize: 18, fontWeight: '600' },
+  errorText: { marginTop: 6, fontSize: 13, textAlign: 'center' },
+  button: { padding: 18, borderRadius: 12, alignItems: 'center', marginBottom: 20 },
+  buttonText: { color: '#fff', fontSize: 18, fontWeight: '600' },
 });

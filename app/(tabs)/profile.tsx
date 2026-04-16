@@ -5,12 +5,19 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAppTheme } from '@/hooks/useAppTheme';
-import { Screen, Card, Button, Skeleton, SkeletonCard, ZodiacAvatar, NatalChartWheel } from '@components/ui';
+import {
+  Screen,
+  Card,
+  Button,
+  Skeleton,
+  SkeletonCard,
+  ZodiacAvatar,
+  NatalChartWheel,
+} from '@components/ui';
 import type { ZodiacSign } from '@lib/astrology/calculate-signs';
 import { computeNatalChart } from '@lib/astrology/natal-chart';
 import { supabase } from '@lib/supabase/client';
 import { geocodeLocation, getTimezone } from '@lib/geocoding/geocode';
-
 function formatBirthDate(birthDate: string | null): string {
   if (!birthDate) return '—';
   const d = new Date(birthDate + 'T00:00:00');
@@ -32,14 +39,6 @@ export default function ProfileScreen() {
   const { userProfile, loading: profileLoading } = useUserProfile(user?.id);
   const router = useRouter();
   const queryClient = useQueryClient();
-
-  // Invalidate on mount so the tarot card join is always fresh —
-  // the onboarding cache pre-population sets tarotCard: null.
-  useEffect(() => {
-    if (user?.id) {
-      queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] });
-    }
-  }, [user?.id, queryClient]);
   const isLoading = authLoading || profileLoading;
   const theme = useAppTheme();
   const [retryingGeocode, setRetryingGeocode] = useState(false);
@@ -56,7 +55,8 @@ export default function ProfileScreen() {
       userProfile.natalChartData ||
       !userProfile.birthDate ||
       !userProfile.birthTime
-    ) return;
+    )
+      return;
 
     hasComputedChart.current = true;
     const [year, month, day] = userProfile.birthDate.split('-').map(Number);
@@ -65,7 +65,7 @@ export default function ProfileScreen() {
       birthDate,
       userProfile.birthTime,
       userProfile.birthLat,
-      userProfile.birthLng,
+      userProfile.birthLng
     );
     supabase
       .from('users')
@@ -77,7 +77,8 @@ export default function ProfileScreen() {
   const GEOCODE_COOLDOWN_MS = 30_000;
 
   const handleRetryGeocode = useCallback(async () => {
-    if (!user || !userProfile?.birthLocation || !userProfile?.birthDate || !userProfile?.birthTime) return;
+    if (!user || !userProfile?.birthLocation || !userProfile?.birthDate || !userProfile?.birthTime)
+      return;
     if (retryingGeocode || geocodeCoolingDown) return;
 
     const now = Date.now();
@@ -88,7 +89,10 @@ export default function ProfileScreen() {
     try {
       const coords = await geocodeLocation(userProfile.birthLocation);
       if (!coords) {
-        Alert.alert('Location not found', 'Could not resolve your birth location. Please try again later.');
+        Alert.alert(
+          'Location not found',
+          'Could not resolve your birth location. Please try again later.'
+        );
         return;
       }
       const timezone = await getTimezone(coords.lat, coords.lng);
@@ -96,7 +100,12 @@ export default function ProfileScreen() {
       // Recompute natal chart with real coords so ASC/MC are filled in.
       const [year, month, day] = userProfile.birthDate.split('-').map(Number);
       const birthDate = new Date(year, month - 1, day, 12, 0, 0);
-      const natalChart = computeNatalChart(birthDate, userProfile.birthTime, coords.lat, coords.lng);
+      const natalChart = computeNatalChart(
+        birthDate,
+        userProfile.birthTime,
+        coords.lat,
+        coords.lng
+      );
 
       await supabase
         .from('users')
@@ -144,9 +153,7 @@ export default function ProfileScreen() {
           <ZodiacAvatar sign={userProfile.sunSign as ZodiacSign} size={56} />
         )}
         <View style={styles.profileHeaderText}>
-          <Text style={styles.title}>
-            {userProfile?.displayName || 'Profile'}
-          </Text>
+          <Text style={[styles.title, { color: theme.colors.text.primary }]}>{userProfile?.displayName || 'Profile'}</Text>
           <Text style={[styles.email, { color: theme.colors.text.secondary }]}>{user?.email}</Text>
         </View>
       </View>
@@ -154,13 +161,13 @@ export default function ProfileScreen() {
       {/* Tarot card associated with sun sign */}
       {userProfile?.tarotCard && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Your Tarot Card</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>Your Tarot Card</Text>
           <Card variant="outlined">
-            <Text style={[styles.tarotCardName, { color: theme.colors.brand.primary }]}>
+            <Text style={[styles.tarotCardName, { color: theme.colors.brand.primaryDark }]}>
               {userProfile.tarotCard.name}
             </Text>
             {userProfile.tarotCard.associationType && (
-              <Text style={[styles.tarotCardType, { color: theme.colors.brand.primary }]}>
+              <Text style={[styles.tarotCardType, { color: theme.colors.brand.secondary }]}>
                 {userProfile.tarotCard.associationType}
               </Text>
             )}
@@ -182,8 +189,10 @@ export default function ProfileScreen() {
         accessibilityHint="Opens full natal chart"
       >
         <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionTitle}>Natal Chart</Text>
-          <Text style={[styles.sectionChevron, { color: theme.colors.brand.primary }]}>View Full →</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>Natal Chart</Text>
+          <Text style={[styles.sectionChevron, { color: theme.colors.brand.primary }]}>
+            View Full →
+          </Text>
         </View>
         <Card variant="outlined">
           {userProfile?.natalChartData ? (
@@ -207,25 +216,28 @@ export default function ProfileScreen() {
             </View>
           ) : (
             <Text style={[styles.signText, { color: theme.colors.text.muted }]}>
-              {userProfile?.birthDate ? 'Generating chart…' : 'Complete birth details to generate chart'}
+              {userProfile?.birthDate
+                ? 'Generating chart…'
+                : 'Complete birth details to generate chart'}
             </Text>
           )}
         </Card>
       </Pressable>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
           Birth Details
         </Text>
         <Card variant="outlined">
           <Text style={[styles.birthDetailText, { color: theme.colors.text.primary }]}>
-            Date: {formatBirthDate(userProfile?.birthDate ?? null)}
+            {formatBirthDate(userProfile?.birthDate ?? null)}
           </Text>
           <Text style={[styles.birthDetailText, { color: theme.colors.text.primary }]}>
             Time: {formatBirthTime(userProfile?.birthTime ?? null)}
             {userProfile?.birthTimezone ? (
               <Text style={{ color: theme.colors.text.muted, fontSize: 13 }}>
-                {' '}({userProfile.birthTimezone})
+                {' '}
+                ({userProfile.birthTimezone})
               </Text>
             ) : null}
           </Text>
@@ -290,9 +302,8 @@ export default function ProfileScreen() {
         variant="destructive"
         onPress={handleSignOut}
         fullWidth
-        style={{ marginTop: 16 }}
+        style={{ marginTop: 16, marginBottom: 56 }}
       />
-
     </Screen>
   );
 }
@@ -336,12 +347,7 @@ function ProfileSkeleton() {
       </View>
 
       {/* Sign out button */}
-      <Skeleton
-        width="100%"
-        height={48}
-        borderRadius={12}
-        style={{ marginTop: 'auto' }}
-      />
+      <Skeleton width="100%" height={48} borderRadius={12} style={{ marginTop: 'auto' }} />
     </View>
   );
 }

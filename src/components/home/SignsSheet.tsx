@@ -11,7 +11,8 @@ import {
   Text,
   View,
 } from 'react-native';
-import { theme } from '@theme';
+import { spacing, borderRadius } from '@theme';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { ZODIAC_THEMES } from '@lib/astrology/zodiac-themes';
 import type { ZodiacSign } from '@lib/astrology/calculate-signs';
 
@@ -118,6 +119,7 @@ interface SignsSheetProps {
 }
 
 export function SignsSheet({ isVisible, onClose, sunSign, moonSign, risingSign }: SignsSheetProps) {
+  const theme = useAppTheme();
   const slideY = useRef(new Animated.Value(900)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
   const sheetRef = useRef<View>(null);
@@ -202,7 +204,14 @@ export function SignsSheet({ isVisible, onClose, sunSign, moonSign, risingSign }
 
         <Animated.View
           ref={sheetRef}
-          style={[styles.sheet, { transform: [{ translateY: slideY }] }]}
+          style={[
+            styles.sheet,
+            {
+              backgroundColor: theme.colors.surface.card,
+              transform: [{ translateY: slideY }],
+              ...theme.shadows.xl,
+            },
+          ]}
           accessibilityViewIsModal
           accessibilityRole="none"
         >
@@ -216,7 +225,7 @@ export function SignsSheet({ isVisible, onClose, sunSign, moonSign, risingSign }
             accessibilityHint="Swipe down to dismiss"
             hitSlop={{ top: 12, bottom: 12 }}
           >
-            <View style={styles.handle} />
+            <View style={[styles.handle, { backgroundColor: theme.colors.border.default }]} />
           </View>
 
           <ScrollView
@@ -226,9 +235,9 @@ export function SignsSheet({ isVisible, onClose, sunSign, moonSign, risingSign }
             bounces={false}
           >
             {/* Header */}
-            <Text style={styles.headerGlyph} accessible={false}>✦</Text>
-            <Text style={styles.title}>The Big Three</Text>
-            <Text style={styles.intro}>
+            <Text style={[styles.headerGlyph, { color: theme.colors.brand.accent }]} accessible={false}>✦</Text>
+            <Text style={[styles.title, { color: theme.colors.text.primary }]}>The Big Three</Text>
+            <Text style={[styles.intro, { color: theme.colors.text.secondary }]}>
               Your birth chart is a snapshot of the sky at the exact moment you arrived — a map of
               light, shadow, and possibility. Your Sun, Moon, and Rising are the three main gateways
               into that map. The Sun shows how your light shines, the Moon reveals the tides of your
@@ -258,7 +267,7 @@ export function SignsSheet({ isVisible, onClose, sunSign, moonSign, risingSign }
               );
             })}
 
-            <Text style={styles.footer}>
+            <Text style={[styles.footer, { color: theme.colors.text.muted }]}>
               Together, your Sun, Moon, and Rising form a triad — your core story, your emotional
               underworld, and your first approach to life. Explore each one, and you begin to see
               not just who you are — but how you came here to move through this lifetime.
@@ -294,26 +303,41 @@ function PlacementCard({
   element,
   signCopy,
 }: PlacementCardProps) {
+  const theme = useAppTheme();
   return (
-    <View style={cardStyles.card}>
+    <View
+      style={[
+        cardStyles.card,
+        {
+          backgroundColor: theme.colors.surface.elevated,
+          borderColor: theme.colors.border.main,
+        },
+      ]}
+    >
       {/* Placement header */}
       <View style={cardStyles.placementRow}>
         <Text style={cardStyles.placementEmoji} accessible={false}>{emoji}</Text>
-        <Text style={cardStyles.placementTitle}>{placementTitle}</Text>
+        <Text style={[cardStyles.placementTitle, { color: theme.colors.brand.primary }]}>
+          {placementTitle}
+        </Text>
       </View>
-      <Text style={cardStyles.role}>{role}</Text>
-      <Text style={cardStyles.placementDescription}>{placementDescription}</Text>
+      <Text style={[cardStyles.role, { color: theme.colors.text.primary }]}>{role}</Text>
+      <Text style={[cardStyles.placementDescription, { color: theme.colors.text.secondary }]}>
+        {placementDescription}
+      </Text>
 
       {/* Sign block */}
-      <View style={cardStyles.divider} />
+      <View style={[cardStyles.divider, { backgroundColor: theme.colors.border.main }]} />
       <View style={cardStyles.signRow}>
-        <Text style={cardStyles.glyph} accessible={false}>{glyph}</Text>
+        <Text style={[cardStyles.glyph, { color: theme.colors.brand.primaryLight }]} accessible={false}>
+          {glyph}
+        </Text>
         <View style={cardStyles.signMeta}>
-          <Text style={cardStyles.signName}>{sign}</Text>
-          <Text style={cardStyles.element}>{element} sign</Text>
+          <Text style={[cardStyles.signName, { color: theme.colors.text.primary }]}>{sign}</Text>
+          <Text style={[cardStyles.element, { color: theme.colors.text.muted }]}>{element} sign</Text>
         </View>
       </View>
-      <Text style={cardStyles.signCopy}>{signCopy}</Text>
+      <Text style={[cardStyles.signCopy, { color: theme.colors.text.secondary }]}>{signCopy}</Text>
     </View>
   );
 }
@@ -330,76 +354,67 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.55)',
   },
   sheet: {
-    backgroundColor: theme.colors.surface.card,
-    borderTopLeftRadius: theme.radius['2xl'],
-    borderTopRightRadius: theme.radius['2xl'],
+    borderTopLeftRadius: borderRadius['2xl'],
+    borderTopRightRadius: borderRadius['2xl'],
     height: '88%',
-    ...theme.shadows.xl,
     overflow: 'hidden',
   },
   handleZone: {
     alignItems: 'center',
-    paddingVertical: theme.spacing.md,
+    paddingVertical: spacing.md,
     minHeight: 44,
     justifyContent: 'center',
   },
   handle: {
     width: 36,
     height: 4,
-    backgroundColor: theme.colors.border.default,
     borderRadius: 2,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: theme.spacing.xl,
+    paddingHorizontal: spacing.xl,
     paddingBottom: 48,
     alignItems: 'center',
   },
   headerGlyph: {
     fontSize: 28,
-    color: theme.colors.brand.accent,
-    marginBottom: theme.spacing.xs,
+    marginBottom: spacing.xs,
   },
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: theme.colors.text.primary,
     textAlign: 'center',
-    marginBottom: theme.spacing.sm,
+    marginBottom: spacing.sm,
   },
   intro: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 14,
     textAlign: 'center',
     lineHeight: 21,
-    marginBottom: theme.spacing.xl,
+    marginBottom: spacing.xl,
   },
   footer: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.text.muted,
+    fontSize: 14,
     textAlign: 'center',
     fontStyle: 'italic',
-    marginTop: theme.spacing.md,
+    marginTop: spacing.md,
   },
 });
 
 const cardStyles = StyleSheet.create({
   card: {
     width: '100%',
-    backgroundColor: theme.colors.surface.elevated,
-    borderRadius: theme.borderRadius.card,
+    borderRadius: borderRadius.card,
     borderWidth: 1,
-    borderColor: theme.colors.border.main,
-    padding: theme.spacing.xl,
-    marginBottom: theme.spacing.lg,
+    padding: spacing.xl,
+    marginBottom: spacing.lg,
   },
   placementRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.xs,
-    marginBottom: theme.spacing.xxs,
+    gap: spacing.xs,
+    marginBottom: 2,
   },
   placementEmoji: {
     fontSize: 18,
@@ -409,33 +424,28 @@ const cardStyles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1.2,
     textTransform: 'uppercase',
-    color: theme.colors.brand.primary,
   },
   role: {
-    fontSize: theme.typography.fontSize.base,
+    fontSize: 16,
     fontWeight: '600',
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.xs,
+    marginBottom: spacing.xs,
   },
   placementDescription: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 14,
     lineHeight: 20,
   },
   divider: {
     height: 1,
-    backgroundColor: theme.colors.border.main,
-    marginVertical: theme.spacing.lg,
+    marginVertical: spacing.lg,
   },
   signRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
   },
   glyph: {
     fontSize: 28,
-    color: theme.colors.brand.primaryLight,
   },
   signMeta: {
     gap: 2,
@@ -443,17 +453,14 @@ const cardStyles = StyleSheet.create({
   signName: {
     fontSize: 20,
     fontWeight: '700',
-    color: theme.colors.text.primary,
   },
   element: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.muted,
+    fontSize: 12,
     textTransform: 'capitalize',
     letterSpacing: 0.5,
   },
   signCopy: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 14,
     lineHeight: 21,
   },
 });

@@ -6,17 +6,17 @@ import { useReadings } from '@hooks/useReadings';
 import type { ReadingRow } from '@hooks/useReadings';
 import { useFilteredReadings } from '@hooks/useFilteredReadings';
 import { useReadingExpiry } from '@hooks/useReadingExpiry';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { useUpgradeSheet } from '@/context/UpgradeSheetContext';
 import { ReadingListItem, ReadingDrawer, SearchFilterBar, SkeletonRow } from '@/components/history';
 import { ExpiryWarningBanner } from '@components/ui/ExpiryWarningBanner';
-import { theme } from '@theme';
-
-// ── Screen ────────────────────────────────────────────────────────────────────
+import { spacing, borderRadius } from '@theme';
 
 export default function HistoryScreen() {
   const { user, error: authError } = useAuth();
   const { limits, isPremium } = useSubscription(user?.id);
   const expiry = useReadingExpiry(user?.id, isPremium);
+  const theme = useAppTheme();
   const {
     data,
     isLoading,
@@ -55,9 +55,7 @@ export default function HistoryScreen() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const renderItem = useCallback(
-    ({ item }: { item: ReadingRow }) => (
-      <ReadingListItem reading={item} onPress={openDrawer} />
-    ),
+    ({ item }: { item: ReadingRow }) => <ReadingListItem reading={item} onPress={openDrawer} />,
     [openDrawer]
   );
 
@@ -65,10 +63,12 @@ export default function HistoryScreen() {
 
   const { open: openUpgradeSheet } = useUpgradeSheet();
 
+  const isFilterActive = query.length > 0 || spreadFilter !== 'all' || dateRangeFilter !== 'all';
+
   const ListHeader = (
-    <View style={screenStyles.listHeader}>
-      <Text style={screenStyles.title}>Reading History</Text>
-      <Text style={screenStyles.subtitle}>
+    <View style={styles.listHeader}>
+      <Text style={[styles.title, { color: theme.colors.text.primary }]}>Reading History</Text>
+      <Text style={[styles.subtitle, { color: theme.colors.text.muted }]}>
         {isPremium
           ? `${readings.length} reading${readings.length !== 1 ? 's' : ''}`
           : `${readings.length} of ${limits.maxReadingHistory}`}
@@ -91,72 +91,87 @@ export default function HistoryScreen() {
     </View>
   );
 
-  const isFilterActive = query.length > 0 || spreadFilter !== 'all' || dateRangeFilter !== 'all';
-
   const ListEmpty = isLoading ? (
-    <View style={screenStyles.skeletons}>
+    <View style={styles.skeletons}>
       <SkeletonRow />
       <SkeletonRow />
       <SkeletonRow />
     </View>
   ) : error ? (
-    <View style={screenStyles.errorState}>
-      <Text style={screenStyles.errorIcon}>⚠️</Text>
-      <Text style={screenStyles.errorTitle}>Failed to load readings</Text>
-      <Text style={screenStyles.errorBody}>
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyIcon}>⚠️</Text>
+      <Text style={[styles.errorTitle, { color: theme.colors.error.dark }]}>
+        Failed to load readings
+      </Text>
+      <Text style={[styles.emptyBody, { color: theme.colors.text.muted }]}>
         {error.message || 'Something went wrong. Please try again.'}
       </Text>
       <TouchableOpacity
-        style={screenStyles.errorRetry}
+        style={[styles.actionButton, { backgroundColor: theme.colors.error.main }]}
         onPress={() => refetch()}
         accessibilityRole="button"
         accessibilityLabel="Retry loading readings"
       >
-        <Text style={screenStyles.errorRetryText}>Try Again</Text>
+        <Text style={styles.actionButtonText}>Try Again</Text>
       </TouchableOpacity>
     </View>
   ) : isDebouncing ? (
     <ActivityIndicator color={theme.colors.brand.primary} style={{ marginTop: 48 }} />
   ) : isFilterActive ? (
-    <View style={screenStyles.emptyState}>
-      <Text style={screenStyles.emptyIcon}>🔍</Text>
-      <Text style={screenStyles.emptyTitle}>No matching readings</Text>
-      <Text style={screenStyles.emptyBody}>
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyIcon}>🔍</Text>
+      <Text style={[styles.emptyTitle, { color: theme.colors.text.secondary }]}>
+        No matching readings
+      </Text>
+      <Text style={[styles.emptyBody, { color: theme.colors.text.muted }]}>
         Try adjusting your search or filters to find what you're looking for.
       </Text>
       <TouchableOpacity
-        style={screenStyles.clearFiltersButton}
+        style={[styles.actionButton, { backgroundColor: theme.colors.brand.primary }]}
         onPress={() => { clearSearch(); clearAllFilters(); }}
         accessibilityRole="button"
         accessibilityLabel="Clear all filters"
       >
-        <Text style={screenStyles.clearFiltersText}>Clear Filters</Text>
+        <Text style={styles.actionButtonText}>Clear Filters</Text>
       </TouchableOpacity>
     </View>
   ) : (
-    <View style={screenStyles.emptyState}>
-      <Text style={screenStyles.emptyIcon}>🔮</Text>
-      <Text style={screenStyles.emptyTitle}>No readings yet</Text>
-      <Text style={screenStyles.emptyBody}>
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyIcon}>🔮</Text>
+      <Text style={[styles.emptyTitle, { color: theme.colors.text.secondary }]}>
+        No readings yet
+      </Text>
+      <Text style={[styles.emptyBody, { color: theme.colors.text.muted }]}>
         Draw your first card from the Home screen to begin your journey.
       </Text>
     </View>
   );
 
   const ListFooter = (
-    <View style={screenStyles.footer}>
+    <View style={styles.footer}>
       {isFetchingNextPage && (
-        <ActivityIndicator color={theme.colors.brand.primary} size="small" style={{ marginVertical: 16 }} />
+        <ActivityIndicator
+          color={theme.colors.brand.primary}
+          size="small"
+          style={{ marginVertical: 16 }}
+        />
       )}
       {!isPremium && !isLoading && readings.length >= limits.maxReadingHistory && (
-        <View style={screenStyles.upgradePrompt}>
-          <Text style={screenStyles.upgradeText}>
+        <View
+          style={[
+            styles.upgradePrompt,
+            { backgroundColor: theme.colors.brand.purple[50] },
+          ]}
+        >
+          <Text style={[styles.upgradeText, { color: theme.colors.brand.purple[600] }]}>
             Upgrade to Premium to unlock your full reading history.
           </Text>
         </View>
       )}
       {isPremium && !hasNextPage && readings.length > 0 && (
-        <Text style={screenStyles.caughtUp}>You're all caught up ✦</Text>
+        <Text style={[styles.caughtUp, { color: theme.colors.text.muted }]}>
+          You're all caught up ✦
+        </Text>
       )}
     </View>
   );
@@ -167,8 +182,8 @@ export default function HistoryScreen() {
         data={filtered}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
-        style={screenStyles.list}
-        contentContainerStyle={screenStyles.content}
+        style={[styles.list, { backgroundColor: theme.colors.surface.subtle }]}
+        contentContainerStyle={styles.content}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={ListEmpty}
         ListFooterComponent={ListFooter}
@@ -189,97 +204,30 @@ export default function HistoryScreen() {
   );
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
-
-const screenStyles = StyleSheet.create({
-  list: { flex: 1, backgroundColor: theme.colors.surface.subtle },
-  content: { padding: theme.spacing.lg, paddingBottom: 40 },
-  listHeader: { paddingTop: theme.spacing.lg, marginBottom: theme.spacing.lg },
-  title: { 
-    fontSize: 28, 
-    fontWeight: 'bold', 
-    color: theme.colors.text.primary, 
-    marginBottom: 4 
-  },
-  subtitle: { fontSize: theme.typography.fontSize.sm, color: theme.colors.text.muted },
+const styles = StyleSheet.create({
+  list: { flex: 1 },
+  content: { padding: spacing.lg, paddingBottom: 40 },
+  listHeader: { paddingTop: spacing.lg, marginBottom: spacing.lg },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 4 },
+  subtitle: { fontSize: 14 },
   skeletons: { gap: 0 },
-  emptyState: { 
-    paddingTop: 80, 
-    alignItems: 'center', 
-    paddingHorizontal: 40 
-  },
-  emptyIcon: { fontSize: 48, marginBottom: theme.spacing.lg },
-  emptyTitle: { 
-    fontSize: theme.typography.fontSize.xl, 
-    fontWeight: '700', 
-    color: theme.colors.text.secondary, 
-    marginBottom: theme.spacing.sm 
-  },
-  emptyBody: { 
-    fontSize: theme.typography.fontSize.base, 
-    color: theme.colors.text.muted, 
-    textAlign: 'center', 
-    lineHeight: 22 
-  },
-  footer: { paddingTop: theme.spacing.sm },
+  emptyState: { paddingTop: 80, alignItems: 'center', paddingHorizontal: 40 },
+  emptyIcon: { fontSize: 48, marginBottom: spacing.lg },
+  emptyTitle: { fontSize: 20, fontWeight: '700', marginBottom: spacing.sm },
+  errorTitle: { fontSize: 20, fontWeight: '700', marginBottom: spacing.sm },
+  emptyBody: { fontSize: 16, textAlign: 'center', lineHeight: 22, marginBottom: spacing.lg },
+  footer: { paddingTop: spacing.sm },
   upgradePrompt: {
-    backgroundColor: theme.colors.brand.purple[50],
-    borderRadius: theme.radius.md,
-    padding: theme.spacing.lg,
+    borderRadius: borderRadius.md,
+    padding: spacing.lg,
     alignItems: 'center',
   },
-  upgradeText: { 
-    fontSize: theme.typography.fontSize.sm, 
-    color: theme.colors.brand.purple[600], 
-    textAlign: 'center', 
-    fontWeight: '600' 
+  upgradeText: { fontSize: 14, textAlign: 'center', fontWeight: '600' },
+  caughtUp: { textAlign: 'center', fontSize: 14, paddingVertical: spacing.lg },
+  actionButton: {
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
   },
-  caughtUp: { 
-    textAlign: 'center', 
-    fontSize: theme.typography.fontSize.sm, 
-    color: theme.colors.text.muted, 
-    paddingVertical: theme.spacing.lg 
-  },
-  clearFiltersButton: {
-    marginTop: theme.spacing.lg,
-    backgroundColor: theme.colors.brand.primary,
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.radius.md,
-  },
-  clearFiltersText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 15,
-  },
-  errorState: {
-    paddingTop: 80,
-    alignItems: 'center',
-    paddingHorizontal: 40,
-  },
-  errorIcon: { fontSize: 48, marginBottom: theme.spacing.lg },
-  errorTitle: {
-    fontSize: theme.typography.fontSize.xl,
-    fontWeight: '700',
-    color: theme.colors.error.dark,
-    marginBottom: theme.spacing.sm,
-  },
-  errorBody: {
-    fontSize: theme.typography.fontSize.base,
-    color: theme.colors.text.muted,
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: theme.spacing.lg,
-  },
-  errorRetry: {
-    backgroundColor: theme.colors.error.main,
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.radius.md,
-  },
-  errorRetryText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 15,
-  },
+  actionButtonText: { color: '#fff', fontWeight: '600', fontSize: 15 },
 });

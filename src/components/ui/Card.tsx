@@ -1,5 +1,6 @@
 import { View, StyleSheet, Pressable, ViewStyle } from 'react-native';
-import { theme } from '@theme';
+import { useAppTheme } from '@hooks/useAppTheme';
+import { spacing, borderRadius } from '@theme';
 
 export type CardVariant = 'elevated' | 'outlined' | 'filled';
 
@@ -7,7 +8,7 @@ export interface CardProps {
   children: React.ReactNode;
   variant?: CardVariant;
   onPress?: () => void;
-  padding?: number | keyof Omit<typeof theme.spacing, 'safeArea' | 'unit'>;
+  padding?: number | keyof Omit<typeof spacing, 'safeArea' | 'unit'>;
   style?: ViewStyle;
 }
 
@@ -18,13 +19,24 @@ export function Card({
   padding = 'cardPadding',
   style,
 }: CardProps) {
-  const paddingValue = typeof padding === 'number' 
-    ? padding 
-    : theme.spacing[padding as keyof Omit<typeof theme.spacing, 'safeArea' | 'unit'>];
+  const theme = useAppTheme();
+
+  const paddingValue =
+    typeof padding === 'number'
+      ? padding
+      : spacing[padding as keyof Omit<typeof spacing, 'safeArea' | 'unit'>];
+
+  const variantStyle: ViewStyle =
+    variant === 'outlined'
+      ? { borderWidth: 1, borderColor: theme.colors.border.main }
+      : variant === 'filled'
+        ? { backgroundColor: theme.colors.gray[100] }
+        : theme.shadows.card;
 
   const cardStyles: ViewStyle[] = [
-    styles.card,
-    styles[`card_${variant}`] as ViewStyle,
+    styles.base,
+    { backgroundColor: theme.colors.surface.card },
+    variantStyle,
     { padding: paddingValue as number },
     style || {},
   ];
@@ -32,10 +44,7 @@ export function Card({
   if (onPress) {
     return (
       <Pressable
-        style={({ pressed }) => {
-          const pressedStyle = pressed ? styles.card_pressed : {};
-          return [...cardStyles, pressedStyle];
-        }}
+        style={({ pressed }) => [...cardStyles, pressed ? styles.pressed : {}]}
         onPress={onPress}
       >
         {children}
@@ -47,25 +56,10 @@ export function Card({
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: theme.borderRadius.card,
-    backgroundColor: theme.colors.surface.card,
+  base: {
+    borderRadius: borderRadius.card,
   },
-
-  // Variants
-  card_elevated: {
-    ...theme.shadows.card,
-  },
-  card_outlined: {
-    borderWidth: 1,
-    borderColor: theme.colors.border.main,
-  },
-  card_filled: {
-    backgroundColor: theme.colors.gray[50],
-  },
-
-  // States
-  card_pressed: {
+  pressed: {
     opacity: 0.9,
   },
 });

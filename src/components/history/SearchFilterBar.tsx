@@ -10,7 +10,8 @@ import {
   UIManager,
   View,
 } from 'react-native';
-import { theme } from '@theme';
+import { spacing, borderRadius } from '@theme';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import type { DateRangeFilter, SpreadFilter } from '@hooks/useFilteredReadings';
 
 // Enable LayoutAnimation on Android
@@ -54,9 +55,10 @@ function ChipRow<T extends string>({
   onChange: (v: T) => void;
   label: string;
 }) {
+  const theme = useAppTheme();
   return (
     <View style={styles.filterSection}>
-      <Text style={styles.filterSectionLabel}>{label}</Text>
+      <Text style={[styles.filterSectionLabel, { color: theme.colors.text.muted }]}>{label}</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -70,13 +72,24 @@ function ChipRow<T extends string>({
           return (
             <Pressable
               key={chip.key}
-              style={[styles.chip, active && styles.chipActive]}
+              style={[
+                styles.chip,
+                {
+                  backgroundColor: active ? theme.colors.brand.primary : theme.colors.surface.subtle,
+                  borderColor: active ? theme.colors.brand.primary : theme.colors.border.main,
+                },
+              ]}
               onPress={() => onChange(chip.key)}
               accessibilityRole="tab"
               accessibilityLabel={chip.a11yLabel}
               accessibilityState={{ selected: active }}
             >
-              <Text style={[styles.chipText, active && styles.chipTextActive]}>
+              <Text
+                style={[
+                  styles.chipText,
+                  { color: active ? theme.colors.text.inverse : theme.colors.text.secondary },
+                ]}
+              >
                 {chip.label}
               </Text>
             </Pressable>
@@ -114,6 +127,7 @@ export const SearchFilterBar = memo(function SearchFilterBar({
   resultCount,
   totalCount,
 }: SearchFilterBarProps) {
+  const theme = useAppTheme();
   const inputRef = useRef<TextInput>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -148,11 +162,19 @@ export const SearchFilterBar = memo(function SearchFilterBar({
       accessibilityLabel="Filter readings"
     >
       {/* Search input */}
-      <View style={styles.inputWrapper}>
+      <View
+        style={[
+          styles.inputWrapper,
+          {
+            backgroundColor: theme.colors.surface.card,
+            borderColor: theme.colors.border.main,
+          },
+        ]}
+      >
         <Text style={styles.searchIcon} accessible={false}>🔍</Text>
         <TextInput
           ref={inputRef}
-          style={styles.input}
+          style={[styles.input, { color: theme.colors.text.primary }]}
           value={query}
           onChangeText={onChangeSearch}
           placeholder="Search cards, spreads…"
@@ -172,7 +194,7 @@ export const SearchFilterBar = memo(function SearchFilterBar({
             accessibilityRole="button"
             accessibilityLabel="Clear search"
           >
-            <Text style={styles.clearIcon}>✕</Text>
+            <Text style={[styles.clearIcon, { color: theme.colors.text.muted }]}>✕</Text>
           </Pressable>
         )}
       </View>
@@ -186,19 +208,33 @@ export const SearchFilterBar = memo(function SearchFilterBar({
         accessibilityState={{ expanded: drawerOpen }}
       >
         <View style={styles.filterToggleLeft}>
-          <Text style={styles.filterToggleLabel}>Filters</Text>
+          <Text style={[styles.filterToggleLabel, { color: theme.colors.text.secondary }]}>
+            Filters
+          </Text>
           {activeFilterCount > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{activeFilterCount}</Text>
+            <View style={[styles.badge, { backgroundColor: theme.colors.brand.primary }]}>
+              <Text style={[styles.badgeText, { color: theme.colors.text.inverse }]}>
+                {activeFilterCount}
+              </Text>
             </View>
           )}
         </View>
-        <Text style={styles.chevron}>{drawerOpen ? '▲' : '▼'}</Text>
+        <Text style={[styles.chevron, { color: theme.colors.text.muted }]}>
+          {drawerOpen ? '▲' : '▼'}
+        </Text>
       </Pressable>
 
       {/* Collapsible drawer */}
       {drawerOpen && (
-        <View style={styles.drawer}>
+        <View
+          style={[
+            styles.drawer,
+            {
+              backgroundColor: theme.colors.surface.card,
+              borderColor: theme.colors.border.main,
+            },
+          ]}
+        >
           <ChipRow
             chips={SPREAD_CHIPS}
             value={spreadFilter}
@@ -218,7 +254,9 @@ export const SearchFilterBar = memo(function SearchFilterBar({
               accessibilityRole="button"
               accessibilityLabel="Clear all filters"
             >
-              <Text style={styles.clearAllText}>Clear All</Text>
+              <Text style={[styles.clearAllText, { color: theme.colors.brand.primary }]}>
+                Clear All
+              </Text>
             </Pressable>
           )}
         </View>
@@ -227,7 +265,7 @@ export const SearchFilterBar = memo(function SearchFilterBar({
       {/* Result count — only shown when actively filtering */}
       {isFiltering && (
         <Text
-          style={styles.resultCount}
+          style={[styles.resultCount, { color: theme.colors.text.muted }]}
           accessibilityRole="text"
           accessibilityLiveRegion="polite"
         >
@@ -244,32 +282,29 @@ export const SearchFilterBar = memo(function SearchFilterBar({
 
 const styles = StyleSheet.create({
   container: {
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
+    gap: spacing.sm,
+    marginBottom: spacing.md,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surface.card,
     borderWidth: 1,
-    borderColor: theme.colors.border.main,
-    borderRadius: theme.borderRadius.input,
-    paddingHorizontal: theme.spacing.sm,
+    borderRadius: borderRadius.input,
+    paddingHorizontal: spacing.sm,
     minHeight: 44,
   },
   searchIcon: {
     fontSize: 14,
-    marginRight: theme.spacing.xs,
+    marginRight: spacing.xs,
   },
   input: {
     flex: 1,
-    fontSize: theme.typography.fontSize.base,
-    color: theme.colors.text.primary,
-    paddingVertical: theme.spacing.sm,
+    fontSize: 16,
+    paddingVertical: spacing.sm,
   },
   clearButton: {
-    padding: theme.spacing.xxs,
-    marginLeft: theme.spacing.xs,
+    padding: spacing.xxs,
+    marginLeft: spacing.xs,
     minWidth: 28,
     minHeight: 28,
     alignItems: 'center',
@@ -277,28 +312,25 @@ const styles = StyleSheet.create({
   },
   clearIcon: {
     fontSize: 14,
-    color: theme.colors.text.muted,
     fontWeight: '600',
   },
   filterToggle: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.xs,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.xs,
   },
   filterToggleLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.xs,
+    gap: spacing.xs,
   },
   filterToggleLabel: {
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: 14,
     fontWeight: '600',
-    color: theme.colors.text.secondary,
   },
   badge: {
-    backgroundColor: theme.colors.brand.primary,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -309,69 +341,52 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 11,
     fontWeight: '700',
-    color: theme.colors.text.inverse,
   },
   chevron: {
     fontSize: 10,
-    color: theme.colors.text.muted,
   },
   drawer: {
-    backgroundColor: theme.colors.surface.card,
-    borderRadius: theme.borderRadius.input,
+    borderRadius: borderRadius.input,
     borderWidth: 1,
-    borderColor: theme.colors.border.main,
-    padding: theme.spacing.md,
-    gap: theme.spacing.md,
+    padding: spacing.md,
+    gap: spacing.md,
   },
   filterSection: {
-    gap: theme.spacing.xs,
+    gap: spacing.xs,
   },
   filterSectionLabel: {
-    fontSize: theme.typography.fontSize.xs,
+    fontSize: 12,
     fontWeight: '600',
-    color: theme.colors.text.muted,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   chipsRow: {
     flexDirection: 'row',
-    gap: theme.spacing.xs,
-    paddingVertical: theme.spacing.xxs,
+    gap: spacing.xs,
+    paddingVertical: spacing.xxs,
   },
   chip: {
     paddingVertical: 6,
     paddingHorizontal: 14,
-    borderRadius: theme.borderRadius.badge,
-    backgroundColor: theme.colors.surface.subtle,
+    borderRadius: borderRadius.badge,
     borderWidth: 1,
-    borderColor: theme.colors.border.main,
     minHeight: 34,
     justifyContent: 'center',
   },
-  chipActive: {
-    backgroundColor: theme.colors.brand.primary,
-    borderColor: theme.colors.brand.primary,
-  },
   chipText: {
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: 14,
     fontWeight: '600',
-    color: theme.colors.text.secondary,
-  },
-  chipTextActive: {
-    color: theme.colors.text.inverse,
   },
   clearAllButton: {
     alignSelf: 'flex-start',
-    paddingVertical: theme.spacing.xs,
+    paddingVertical: spacing.xs,
   },
   clearAllText: {
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: 14,
     fontWeight: '600',
-    color: theme.colors.brand.primary,
   },
   resultCount: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.muted,
+    fontSize: 12,
     fontWeight: '500',
   },
 });
