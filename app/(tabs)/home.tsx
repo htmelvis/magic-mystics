@@ -95,56 +95,66 @@ export default function HomeScreen() {
               </Pressable>
               <View style={styles.headerText}>
                 <Text style={[styles.greeting, { color: theme.colors.text.secondary }]}>
-                  {getGreeting()}
+                  {getGreeting()},&nbsp;
+                  <Text style={{ color: theme.colors.text.primary }}>
+                    {userProfile?.displayName || user?.email}
+                  </Text>
                 </Text>
-                <Text style={[styles.userName, { color: theme.colors.text.primary }]}>
-                  {userProfile?.displayName || user?.email}
-                </Text>
+
+                {userProfile?.sunSign && (
+                  <Pressable
+                    onPress={() => setSignsSheetVisible(true)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Your signs: Sun ${userProfile.sunSign}, Moon ${userProfile.moonSign ?? 'unknown'}, Rising ${userProfile.risingSign ?? 'unknown'}. Tap to learn more.`}
+                    accessibilityHint="Opens a guide explaining your sun, moon, and rising signs"
+                  >
+                    <Badge
+                      label={`☀️ ${userProfile.sunSign} • 🌙 ${userProfile.moonSign ?? '—'} • ⬆️ ${userProfile.risingSign ?? '—'}`}
+                      variant="outline"
+                      size="md"
+                    />
+                  </Pressable>
+                )}
               </View>
             </View>
-            {userProfile?.sunSign && (
-              <Pressable
-                onPress={() => setSignsSheetVisible(true)}
-                accessibilityRole="button"
-                accessibilityLabel={`Your signs: Sun ${userProfile.sunSign}, Moon ${userProfile.moonSign ?? 'unknown'}, Rising ${userProfile.risingSign ?? 'unknown'}. Tap to learn more.`}
-                accessibilityHint="Opens a guide explaining your sun, moon, and rising signs"
-              >
-                <Badge
-                  label={`☀️ ${userProfile.sunSign} • 🌙 ${userProfile.moonSign ?? '—'} • ⬆️ ${userProfile.risingSign ?? '—'}`}
-                  variant="primary"
-                  size="md"
-                />
-              </Pressable>
-            )}
           </View>
 
           {/* Cosmic Weather */}
           <CosmicWeatherCard cosmic={cosmic} isLoading={cosmicLoading} />
 
           {/* Draw Now */}
-          <Pressable
+          <View
             style={[
               styles.drawNowCard,
-              { backgroundColor: theme.colors.brand.primary, ...theme.shadows.button },
+              {
+                backgroundColor: theme.colors.surface.card,
+                borderColor: theme.colors.border.main,
+                borderWidth: 1,
+                borderRadius: borderRadius.card,
+              },
             ]}
-            onPress={() => router.push('/(tabs)/draw')}
-            accessibilityRole="button"
-            accessibilityLabel="Go to Draw"
-            accessibilityHint="Opens the Draw tab to start a reading"
           >
-            <Text style={styles.drawNowIcon} accessible={false}>
-              ✨
-            </Text>
-            <View style={styles.drawNowText}>
-              <Text style={[styles.drawNowTitle, { color: theme.colors.text.inverse }]}>
-                Ready for your reading?
+            <Pressable
+              style={[styles.drawNowCardButton]}
+              onPress={() => router.push('/(tabs)/draw')}
+              accessibilityRole="button"
+              accessibilityLabel="Go to Draw"
+              accessibilityHint="Opens the Draw tab to start a reading"
+            >
+              <Text style={styles.drawNowIcon} accessible={false}>
+                ✨
               </Text>
-              <Text style={[styles.drawNowSubtitle, { color: theme.colors.text.inverse }]}>
-                Daily card, spreads, and more
-              </Text>
-            </View>
-            <Text style={[styles.drawNowChevron, { color: theme.colors.text.inverse }]}>›</Text>
-          </Pressable>
+              <View style={styles.drawNowText}>
+                <Text style={[styles.drawNowTitle, { color: theme.colors.text.primary }]}>
+                  Ready for your reading?
+                </Text>
+                <Text style={[styles.drawNowSubtitle, { color: theme.colors.text.secondary }]}>
+                  Daily card, spreads, and more
+                </Text>
+              </View>
+              <Text style={[styles.drawNowChevron, { color: theme.colors.text.primary }]}>›</Text>
+            </Pressable>
+          </View>
 
           {/* Premium Promo */}
           {!isPremium && (
@@ -323,20 +333,16 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 14,
-    marginBottom: 1,
-    marginTop: 16,
-  },
-  userName: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
   drawNowCard: {
+    marginBottom: spacing.xl,
+  },
+  drawNowCardButton: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.xl,
     borderRadius: borderRadius.card,
-    marginBottom: spacing.xl,
     gap: spacing.md,
   },
   drawNowIcon: {

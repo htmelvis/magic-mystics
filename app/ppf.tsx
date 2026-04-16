@@ -56,10 +56,11 @@ export default function PPFScreen() {
   const [readingId, setReadingId] = useState<string | null>(null);
   const [reflectionSheetOpen, setReflectionSheetOpen] = useState(false);
 
-  const { reflection, isSaving: isReflectionSaving, save: saveReflection } = useReflection(
-    readingId,
-    user?.id ?? null
-  );
+  const {
+    reflection,
+    isSaving: isReflectionSaving,
+    save: saveReflection,
+  } = useReflection(readingId, user?.id ?? null);
 
   const handleReflectionSave = useCallback(
     async (feeling: ReflectionSentiment, alignment: ReflectionSentiment, content: string) => {
@@ -79,7 +80,7 @@ export default function PPFScreen() {
     if (phase !== 'reading') return;
 
     flipTimer.current = setTimeout(() => {
-      setFlipped((prev) => {
+      setFlipped(prev => {
         if (prev[activeIndex]) return prev;
         const next = [...prev];
         next[activeIndex] = true;
@@ -96,9 +97,7 @@ export default function PPFScreen() {
     const results = drawSpread(cardIds, 3);
 
     const responses = await Promise.all(
-      results.map((r) =>
-        supabase.from('tarot_cards').select('*').eq('id', r.cardId).single()
-      )
+      results.map(r => supabase.from('tarot_cards').select('*').eq('id', r.cardId).single())
     );
 
     const fetchedCards: TarotCardRow[] = responses.map(({ data, error: e }) => {
@@ -128,7 +127,7 @@ export default function PPFScreen() {
     if (insertError) throw insertError;
 
     setCards(fetchedCards);
-    setOrientations(results.map((r) => r.orientation));
+    setOrientations(results.map(r => r.orientation));
     setReadingId(reading.id);
     invalidateReadings(user!.id);
     invalidateJourneyStats(user!.id);
@@ -139,7 +138,7 @@ export default function PPFScreen() {
     hasDrawn.current = true;
     setError(null);
 
-    const fadeOut = new Promise<void>((resolve) => {
+    const fadeOut = new Promise<void>(resolve => {
       Animated.timing(deckOpacity, {
         toValue: 0,
         duration: ANIMATION.deckFadeOut,
@@ -225,9 +224,10 @@ export default function PPFScreen() {
                     backgroundColor: theme.colors.brand.primary,
                     transform: [{ scale: 1.3 }],
                   },
-                  flipped[i] && i !== activeIndex && {
-                    backgroundColor: theme.colors.brand.secondary,
-                  },
+                  flipped[i] &&
+                    i !== activeIndex && {
+                      backgroundColor: theme.colors.brand.secondary,
+                    },
                 ]}
               />
               <Text
@@ -361,7 +361,9 @@ function CardPage({
 
   const isReversed = orientation === 'reversed';
   const summary = isReversed ? (card.reversed_summary ?? '') : (card.upright_summary ?? '');
-  const meaning = isReversed ? (card.reversed_meaning_long ?? '') : (card.upright_meaning_long ?? '');
+  const meaning = isReversed
+    ? (card.reversed_meaning_long ?? '')
+    : (card.upright_meaning_long ?? '');
   const keywords = isReversed ? (card.keywords_reversed ?? []) : (card.keywords_upright ?? []);
   const nextLabel = positionLabel === 'Past' ? 'Present' : 'Future';
 
@@ -401,16 +403,12 @@ function CardPage({
           ]}
         >
           <View style={styles.nameRow}>
-            <Text style={[styles.cardName, { color: theme.colors.text.primary }]}>
-              {card.name}
-            </Text>
+            <Text style={[styles.cardName, { color: theme.colors.text.primary }]}>{card.name}</Text>
             <Text
               style={[
                 styles.orientBadge,
                 {
-                  color: isReversed
-                    ? theme.colors.error.main
-                    : theme.colors.brand.primary,
+                  color: isReversed ? theme.colors.error.main : theme.colors.brand.primary,
                 },
               ]}
             >
@@ -430,9 +428,7 @@ function CardPage({
                 ]}
               >
                 <Text style={[styles.pillText, { color: theme.colors.text.secondary }]}>
-                  {card.arcana === 'Major'
-                    ? 'Major Arcana'
-                    : (card.suit ?? 'Minor Arcana')}
+                  {card.arcana === 'Major' ? 'Major Arcana' : (card.suit ?? 'Minor Arcana')}
                   {card.number != null ? ` · ${card.number}` : ''}
                 </Text>
               </View>
@@ -475,7 +471,7 @@ function CardPage({
 
           {keywords.length > 0 && (
             <View style={styles.keywordsRow}>
-              {keywords.map((kw) => (
+              {keywords.map(kw => (
                 <View
                   key={kw}
                   style={[
@@ -658,7 +654,14 @@ function ReflectionSection({
 }
 
 const reflectionStyles = StyleSheet.create({
-  addBox: { marginTop: 16, borderRadius: 16, padding: 20, borderWidth: 1, alignItems: 'center', gap: 8 },
+  addBox: {
+    marginTop: 16,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+    gap: 8,
+  },
   addIcon: { fontSize: 28, marginBottom: 4 },
   addTitle: { fontSize: 16, fontWeight: '700' },
   addBody: { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 4 },
@@ -683,7 +686,12 @@ const reflectionStyles = StyleSheet.create({
   },
   sentimentItem: { flex: 1, alignItems: 'center', paddingVertical: 12, gap: 4 },
   sentimentDivider: { width: 1, height: 30 },
-  sentimentCaption: { fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8 },
+  sentimentCaption: {
+    fontSize: 10,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
   sentimentIcon: { fontSize: 22 },
   viewContent: { fontSize: 14, lineHeight: 21 },
 });
@@ -760,7 +768,11 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 8,
   },
-  card: {},
+  card: {
+    width: 240,
+    height: 400,
+    borderRadius: 16,
+  },
   detailCard: {
     width: '100%',
     borderRadius: 16,

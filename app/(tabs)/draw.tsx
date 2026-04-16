@@ -29,7 +29,7 @@ export default function DrawScreen() {
   return (
     <Screen>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.colors.text.primary }]}>Draw</Text>
+        <Text style={[styles.title, { color: theme.colors.text.primary }]}>Read your cards </Text>
         <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
           Choose a spread to begin your reading
         </Text>
@@ -37,13 +37,18 @@ export default function DrawScreen() {
 
       <View style={styles.spreads}>
         <Pressable
-          style={[styles.primaryCard, { backgroundColor: theme.colors.brand.primary, ...theme.shadows.button }]}
+          style={[
+            styles.primaryCard,
+            { backgroundColor: theme.colors.brand.primary, ...theme.shadows.button },
+          ]}
           onPress={handleDrawCard}
           accessibilityRole="button"
           accessibilityLabel="Draw Your Daily Card"
           accessibilityHint="Discover today's tarot message"
         >
-          <Text style={styles.cardIcon} accessible={false}>✨</Text>
+          <Text style={styles.cardIcon} accessible={false}>
+            ✨
+          </Text>
           <Text style={[styles.cardTitle, { color: theme.colors.text.inverse }]}>Daily Card</Text>
           <Text style={[styles.cardSubtitle, { color: theme.colors.text.inverse }]}>
             Discover today's message
@@ -71,7 +76,9 @@ export default function DrawScreen() {
           }
           accessibilityState={{ disabled: !isPremium }}
         >
-          <Text style={styles.cardIcon} accessible={false}>🔮</Text>
+          <Text style={styles.cardIcon} accessible={false}>
+            🔮
+          </Text>
           <Text style={[styles.secondaryCardTitle, { color: theme.colors.text.primary }]}>
             Past / Present / Future{!isPremium && ' (Premium)'}
           </Text>
@@ -109,7 +116,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   subtitle: {

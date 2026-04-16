@@ -1,6 +1,6 @@
 export const CARD = {
-  width: 130,
-  height: 220,
+  width: 230,
+  height: 320,
   borderRadius: 14,
 } as const;
 

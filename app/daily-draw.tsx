@@ -213,9 +213,7 @@ export default function DrawScreen() {
           <Text style={[styles.backText, { color: theme.colors.brand.primary }]}>← Back</Text>
         </Pressable>
         <Text style={[styles.title, { color: theme.colors.text.primary }]}>Daily Draw</Text>
-        {__DEV__ && (
-          <Text style={styles.devBadge}>DEV</Text>
-        )}
+        {__DEV__ && <Text style={styles.devBadge}>DEV</Text>}
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
@@ -271,7 +269,10 @@ export default function DrawScreen() {
         </View>
 
         {canDraw && (
-          <Text style={[styles.tapHint, { color: theme.colors.text.muted }]} accessibilityElementsHidden>
+          <Text
+            style={[styles.tapHint, { color: theme.colors.text.muted }]}
+            accessibilityElementsHidden
+          >
             Tap to draw your card
           </Text>
         )}
@@ -417,28 +418,34 @@ function CardDetail({
       )}
 
       {summary.length > 0 && (
-        <Text style={[detailStyles.summary, { color: theme.colors.text.secondary }]}>{summary}</Text>
+        <Text style={[detailStyles.summary, { color: theme.colors.text.secondary }]}>
+          {summary}
+        </Text>
       )}
 
       {keywords.length > 0 && (
         <View style={detailStyles.keywordsRow}>
-          {keywords.map((kw) => (
+          {keywords.map(kw => (
             <View
               key={kw}
               style={[
                 detailStyles.keyword,
                 isReversed
-                  ? { backgroundColor: theme.colors.error.light, borderColor: theme.colors.error.main }
-                  : { backgroundColor: theme.colors.brand.purple[100], borderColor: theme.colors.brand.purple[200] },
+                  ? {
+                      backgroundColor: theme.colors.error.light,
+                      borderColor: theme.colors.error.main,
+                    }
+                  : {
+                      backgroundColor: theme.colors.brand.purple[100],
+                      borderColor: theme.colors.brand.purple[200],
+                    },
               ]}
             >
               <Text
                 style={[
                   detailStyles.keywordText,
                   {
-                    color: isReversed
-                      ? theme.colors.error.main
-                      : theme.colors.brand.primaryDark,
+                    color: isReversed ? theme.colors.error.main : theme.colors.brand.primaryDark,
                   },
                 ]}
               >
@@ -450,7 +457,9 @@ function CardDetail({
       )}
 
       {meaning.length > 0 && (
-        <Text style={[detailStyles.meaning, { color: theme.colors.text.secondary }]}>{meaning}</Text>
+        <Text style={[detailStyles.meaning, { color: theme.colors.text.secondary }]}>
+          {meaning}
+        </Text>
       )}
     </View>
   );
@@ -573,7 +582,10 @@ function ReflectionSection({
           </Text>
         </View>
         <View
-          style={[reflectionStyles.sentimentDivider, { backgroundColor: theme.colors.brand.purple[100] }]}
+          style={[
+            reflectionStyles.sentimentDivider,
+            { backgroundColor: theme.colors.brand.purple[100] },
+          ]}
         />
         <View style={reflectionStyles.sentimentItem}>
           <Text style={[reflectionStyles.sentimentCaption, { color: theme.colors.text.muted }]}>
@@ -674,7 +686,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   backButton: { padding: 4 },
-  backText: { fontSize: 16, fontWeight: '600' },
+  backText: { fontSize: 12, fontWeight: '600' },
   title: { fontSize: 20, fontWeight: 'bold', flex: 1 },
   devBadge: {
     fontSize: 11,
