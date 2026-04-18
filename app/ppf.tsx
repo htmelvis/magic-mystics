@@ -191,7 +191,7 @@ export default function PPFScreen() {
         ]}
       >
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/draw')}
           style={styles.backButton}
           accessibilityRole="button"
           accessibilityLabel="Go back"
@@ -446,8 +446,9 @@ function CardPage({
                 ]}
               >
                 <Text style={[styles.pillText, { color: theme.colors.text.secondary }]}>
-                  {card.arcana === 'Major' ? 'Major Arcana' : (card.suit ?? 'Minor Arcana')}
-                  {card.number != null ? ` · ${card.number}` : ''}
+                  {card.arcana === 'Major'
+                    ? 'Major Arcana'
+                    : `${card.suit ?? 'Minor Arcana'}${card.number != null ? ` · ${card.number}` : ''}`}
                 </Text>
               </View>
             )}

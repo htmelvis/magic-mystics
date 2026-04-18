@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Alert, Pressable, ActivityIndicator } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@hooks/useAuth';
@@ -41,9 +41,8 @@ export default function ProfileScreen() {
   const queryClient = useQueryClient();
   const isLoading = authLoading || profileLoading;
   const theme = useAppTheme();
-  const [retryingGeocode, setRetryingGeocode] = useState(false);
-  const [geocodeCoolingDown, setGeocodeCoolingDown] = useState(false);
-  const lastGeocodeAttempt = useRef<number>(0);
+  const [geocoding, setGeocoding] = useState(false);
+  const hasGeocodedRef = useRef(false);
   const hasComputedChart = useRef(false);
 
   // Lazy-compute natal chart on first profile view for users who onboarded before this feature
@@ -74,55 +73,52 @@ export default function ProfileScreen() {
       .then(() => queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] }));
   }, [user, userProfile, queryClient]);
 
-  const GEOCODE_COOLDOWN_MS = 30_000;
-
-  const handleRetryGeocode = useCallback(async () => {
-    if (!user || !userProfile?.birthLocation || !userProfile?.birthDate || !userProfile?.birthTime)
+  // Auto-geocode on profile load for users whose birth_lat was never resolved
+  useEffect(() => {
+    if (
+      hasGeocodedRef.current ||
+      !user ||
+      !userProfile ||
+      userProfile.birthLat ||
+      !userProfile.birthLocation ||
+      !userProfile.birthDate ||
+      !userProfile.birthTime
+    )
       return;
-    if (retryingGeocode || geocodeCoolingDown) return;
 
-    const now = Date.now();
-    if (now - lastGeocodeAttempt.current < GEOCODE_COOLDOWN_MS) return;
-    lastGeocodeAttempt.current = now;
+    hasGeocodedRef.current = true;
+    setGeocoding(true);
 
-    setRetryingGeocode(true);
-    try {
-      const coords = await geocodeLocation(userProfile.birthLocation);
-      if (!coords) {
-        Alert.alert(
-          'Location not found',
-          'Could not resolve your birth location. Please try again later.'
+    (async () => {
+      try {
+        const coords = await geocodeLocation(userProfile.birthLocation!);
+        if (!coords) return;
+
+        const timezone = await getTimezone(coords.lat, coords.lng);
+        const [year, month, day] = userProfile.birthDate!.split('-').map(Number);
+        const birthDate = new Date(year, month - 1, day, 12, 0, 0);
+        const natalChart = computeNatalChart(
+          birthDate,
+          userProfile.birthTime!,
+          coords.lat,
+          coords.lng
         );
-        return;
+
+        await supabase
+          .from('users')
+          .update({
+            birth_lat: coords.lat,
+            birth_lng: coords.lng,
+            birth_timezone: timezone ?? null,
+            natal_chart_data: natalChart,
+          })
+          .eq('id', user.id);
+        await queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] });
+      } finally {
+        setGeocoding(false);
       }
-      const timezone = await getTimezone(coords.lat, coords.lng);
-
-      // Recompute natal chart with real coords so ASC/MC are filled in.
-      const [year, month, day] = userProfile.birthDate.split('-').map(Number);
-      const birthDate = new Date(year, month - 1, day, 12, 0, 0);
-      const natalChart = computeNatalChart(
-        birthDate,
-        userProfile.birthTime,
-        coords.lat,
-        coords.lng
-      );
-
-      await supabase
-        .from('users')
-        .update({
-          birth_lat: coords.lat,
-          birth_lng: coords.lng,
-          birth_timezone: timezone ?? null,
-          natal_chart_data: natalChart,
-        })
-        .eq('id', user.id);
-      await queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] });
-    } finally {
-      setRetryingGeocode(false);
-      setGeocodeCoolingDown(true);
-      setTimeout(() => setGeocodeCoolingDown(false), GEOCODE_COOLDOWN_MS);
-    }
-  }, [user, userProfile, queryClient, retryingGeocode, geocodeCoolingDown]);
+    })();
+  }, [user, userProfile, queryClient]);
 
   const handleSignOut = async () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -269,30 +265,13 @@ export default function ProfileScreen() {
               ) : null}
             </View>
           )}
-          {userProfile?.birthLocation && !userProfile?.birthLat && (
-            <Pressable
-              onPress={handleRetryGeocode}
-              disabled={retryingGeocode || geocodeCoolingDown}
-              accessibilityRole="button"
-              accessibilityLabel="Resolve birth location coordinates"
-              style={[
-                styles.geocodeButton,
-                {
-                  backgroundColor:
-                    retryingGeocode || geocodeCoolingDown
-                      ? theme.colors.gray[300]
-                      : theme.colors.brand.primary,
-                },
-              ]}
-            >
-              {retryingGeocode ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Text style={styles.geocodeButtonText}>
-                  {geocodeCoolingDown ? 'Resolving…' : 'Complete Location & Chart'}
-                </Text>
-              )}
-            </Pressable>
+          {geocoding && (
+            <View style={styles.geocodingRow}>
+              <ActivityIndicator size="small" color={theme.colors.brand.primary} />
+              <Text style={[styles.geocodingText, { color: theme.colors.text.muted }]}>
+                Resolving location…
+              </Text>
+            </View>
           )}
         </Card>
       </View>
@@ -438,15 +417,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
-  geocodeButton: {
-    marginTop: 16,
-    paddingVertical: 12,
-    borderRadius: 10,
+  geocodingRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
   },
-  geocodeButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
+  geocodingText: {
+    fontSize: 13,
   },
 });

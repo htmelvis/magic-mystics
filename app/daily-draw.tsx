@@ -216,7 +216,7 @@ export default function DrawScreen() {
         ]}
       >
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/draw')}
           style={styles.backButton}
           accessibilityRole="button"
           accessibilityLabel="Go back"
@@ -389,7 +389,7 @@ function CardDetail({
     ? (card.reversed_meaning_long ?? '')
     : (card.upright_meaning_long ?? '');
   const keywords = isReversed ? (card.keywords_reversed ?? []) : (card.keywords_upright ?? []);
-  const { element, astrology_association: astrology, arcana, suit, number } = card;
+  const { element, astrology_association: astrology, arcana, suit, number, name } = card;
 
   return (
     <View
@@ -401,8 +401,7 @@ function CardDetail({
       <View style={detailStyles.metaRow}>
         {arcana && (
           <Text style={[detailStyles.arcanaText, { color: theme.colors.text.primary }]}>
-            {number != null ? ` ${number} of ` : ''}
-            {arcana === 'Major' ? 'Major Arcana' : (suit ?? 'Minor Arcana')}
+            {arcana === 'Major' ? name : `${number != null ? `${number} of ` : ''}${suit ?? 'Minor Arcana'}`}
           </Text>
         )}
         <Text
