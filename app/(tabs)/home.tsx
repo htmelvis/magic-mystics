@@ -6,11 +6,21 @@ import { useSubscription } from '@hooks/useSubscription';
 import { useUserProfile } from '@hooks/useUserProfile';
 import { useDailyMetaphysical } from '@hooks/useDailyMetaphysical';
 import { useJourneyStats } from '@hooks/useJourneyStats';
-import { Screen, Card, Button, Badge, Skeleton, SkeletonCard, ZodiacAvatar, ZodiacAvatarPlaceholder } from '@components/ui';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import {
+  Screen,
+  Card,
+  Button,
+  Badge,
+  Skeleton,
+  SkeletonCard,
+  ZodiacAvatar,
+  ZodiacAvatarPlaceholder,
+} from '@components/ui';
 import { useUpgradeSheet } from '@/context/UpgradeSheetContext';
 import { CosmicWeatherCard } from '@/components/home/CosmicWeatherCard';
 import { SignsSheet } from '@/components/home/SignsSheet';
-import { theme } from '@theme';
+import { spacing, borderRadius } from '@theme';
 import type { ZodiacSign } from '@lib/astrology/calculate-signs';
 
 export default function HomeScreen() {
@@ -18,26 +28,19 @@ export default function HomeScreen() {
   const { isPremium } = useSubscription(user?.id);
   const { userProfile, loading: profileLoading } = useUserProfile(user?.id);
   const { data: cosmic, isLoading: cosmicLoading } = useDailyMetaphysical();
-  const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useJourneyStats(user?.id);
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    error: statsError,
+    refetch: refetchStats,
+  } = useJourneyStats(user?.id);
   const router = useRouter();
+  const theme = useAppTheme();
   const { open: openUpgradeSheet } = useUpgradeSheet();
   const [signsSheetVisible, setSignsSheetVisible] = useState(false);
 
   const isLoading = authLoading || profileLoading;
-
   const error = authError || statsError;
-
-  const handleDrawCard = () => {
-    router.push('/draw');
-  };
-
-  const handlePPFSpread = () => {
-    if (!isPremium) {
-      openUpgradeSheet();
-      return;
-    }
-    router.push('/ppf');
-  };
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -48,15 +51,22 @@ export default function HomeScreen() {
 
   return (
     <Screen>
-      {/* Error Banner */}
       {error && (
-        <View style={styles.errorBanner}>
-          <Text style={styles.errorText}>
+        <View
+          style={[
+            styles.errorBanner,
+            {
+              backgroundColor: theme.colors.error.light,
+              borderColor: theme.colors.error.main,
+            },
+          ]}
+        >
+          <Text style={[styles.errorText, { color: theme.colors.error.dark }]}>
             {error.message || 'Something went wrong. Please try again.'}
           </Text>
           <TouchableOpacity
             onPress={() => refetchStats()}
-            style={styles.errorRetry}
+            style={[styles.errorRetry, { backgroundColor: theme.colors.error.main }]}
             accessibilityRole="button"
             accessibilityLabel="Retry loading"
           >
@@ -68,135 +78,191 @@ export default function HomeScreen() {
       {isLoading ? (
         <HomeSkeleton />
       ) : (
-        <>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          {userProfile?.sunSign ? (
-            <ZodiacAvatar sign={userProfile.sunSign as ZodiacSign} size={48} />
-          ) : (
-            <ZodiacAvatarPlaceholder size={48} />
-          )}
-          <View style={styles.headerText}>
-            <Text style={styles.greeting}>{getGreeting()}</Text>
-            <Text style={styles.userName}>{userProfile?.displayName || user?.email}</Text>
+        <View style={{ marginBottom: 48 }}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerTop}>
+              <Pressable
+                onPress={() => router.push('/(tabs)/profile')}
+                accessibilityRole="button"
+                accessibilityLabel="Go to your profile"
+              >
+                {userProfile?.sunSign ? (
+                  <ZodiacAvatar sign={userProfile.sunSign as ZodiacSign} size={48} />
+                ) : (
+                  <ZodiacAvatarPlaceholder size={48} />
+                )}
+              </Pressable>
+              <View style={styles.headerText}>
+                <Text style={[styles.greeting, { color: theme.colors.text.secondary }]}>
+                  {getGreeting()},&nbsp;
+                  <Text style={{ color: theme.colors.text.primary }}>
+                    {userProfile?.displayName || user?.email}
+                  </Text>
+                </Text>
+
+                {userProfile?.sunSign && (
+                  <Pressable
+                    onPress={() => setSignsSheetVisible(true)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Your signs: Sun ${userProfile.sunSign}, Moon ${userProfile.moonSign ?? 'unknown'}, Rising ${userProfile.risingSign ?? 'unknown'}. Tap to learn more.`}
+                    accessibilityHint="Opens a guide explaining your sun, moon, and rising signs"
+                  >
+                    <Badge
+                      label={`☀️ ${userProfile.sunSign} • 🌙 ${userProfile.moonSign ?? '—'} • ⬆️ ${userProfile.risingSign ?? '—'}`}
+                      variant="outline"
+                      size="md"
+                    />
+                  </Pressable>
+                )}
+              </View>
+            </View>
           </View>
-        </View>
-        {userProfile?.sunSign && (
-          <Pressable
-            onPress={() => setSignsSheetVisible(true)}
-            accessibilityRole="button"
-            accessibilityLabel={`Your signs: Sun ${userProfile.sunSign}, Moon ${userProfile.moonSign ?? 'unknown'}, Rising ${userProfile.risingSign ?? 'unknown'}. Tap to learn more.`}
-            accessibilityHint="Opens a guide explaining your sun, moon, and rising signs"
+
+          {/* Cosmic Weather */}
+          <CosmicWeatherCard cosmic={cosmic} isLoading={cosmicLoading} />
+
+          {/* Draw Now */}
+          <View
+            style={[
+              styles.drawNowCard,
+              {
+                backgroundColor: theme.colors.surface.card,
+                borderColor: theme.colors.border.main,
+                borderWidth: 1,
+                borderRadius: borderRadius.card,
+              },
+            ]}
           >
-            <Badge
-              label={`☀️ ${userProfile.sunSign} • 🌙 ${userProfile.moonSign ?? '—'} • ⬆️ ${userProfile.risingSign ?? '—'}`}
-              variant="primary"
-              size="md"
-            />
-          </Pressable>
-        )}
-      </View>
-
-      {/* Cosmic Weather */}
-      <CosmicWeatherCard cosmic={cosmic} isLoading={cosmicLoading} />
-
-      {/* Main Actions */}
-      <View style={styles.actionsContainer}>
-        <Pressable
-          style={styles.primaryButton}
-          onPress={handleDrawCard}
-          accessibilityRole="button"
-          accessibilityLabel="Draw Your Daily Card"
-          accessibilityHint="Discover today's tarot message"
-        >
-          <Text style={styles.primaryButtonIcon} accessible={false}>✨</Text>
-          <Text style={styles.primaryButtonText}>Draw Your Daily Card</Text>
-          <Text style={styles.primaryButtonSubtext}>Discover today's message</Text>
-        </Pressable>
-
-        <Pressable
-          style={[styles.secondaryButton, !isPremium && styles.disabledButton]}
-          onPress={handlePPFSpread}
-          disabled={!isPremium}
-          accessibilityRole="button"
-          accessibilityLabel={isPremium ? 'Past, Present, Future spread' : 'Past, Present, Future spread, Premium feature'}
-          accessibilityHint={isPremium ? 'Three-card spread reading' : 'Upgrade to Premium to unlock this feature'}
-          accessibilityState={{ disabled: !isPremium }}
-        >
-          <Text style={styles.secondaryButtonIcon} accessible={false}>🔮</Text>
-          <Text style={styles.secondaryButtonText}>
-            Past/Present/Future {!isPremium && '(Premium)'}
-          </Text>
-          <Text style={styles.secondaryButtonSubtext}>
-            {isPremium ? 'Three-card spread' : 'Upgrade to unlock'}
-          </Text>
-        </Pressable>
-      </View>
-
-      {/* Premium Promo */}
-      {!isPremium && (
-        <View style={styles.promoCard}>
-          <Text style={styles.promoIcon}>✨</Text>
-          <Text style={styles.promoTitle}>Unlock Premium Features</Text>
-          <View style={styles.promoFeatures}>
-            <Text style={styles.promoFeature}>• Unlimited reading history</Text>
-            <Text style={styles.promoFeature}>• Monthly Past/Present/Future spreads</Text>
-            <Text style={styles.promoFeature}>• AI insights with personalized context</Text>
-            <Text style={styles.promoFeature}>• Priority support</Text>
-          </View>
-          <View style={styles.promoFooter}>
-            <Text style={styles.promoPrice}>$49/year</Text>
             <Pressable
-              style={styles.upgradeButton}
-              onPress={openUpgradeSheet}
+              style={[styles.drawNowCardButton]}
+              onPress={() => router.push('/(tabs)/draw')}
               accessibilityRole="button"
-              accessibilityLabel="Upgrade to Premium for $49 per year"
+              accessibilityLabel="Go to Draw"
+              accessibilityHint="Opens the Draw tab to start a reading"
             >
-              <Text style={styles.upgradeButtonText}>Upgrade Now</Text>
+              <Text style={styles.drawNowIcon} accessible={false}>
+                ✨
+              </Text>
+              <View style={styles.drawNowText}>
+                <Text style={[styles.drawNowTitle, { color: theme.colors.text.primary }]}>
+                  Ready for your reading?
+                </Text>
+                <Text style={[styles.drawNowSubtitle, { color: theme.colors.text.secondary }]}>
+                  Daily card, spreads, and more
+                </Text>
+              </View>
+              <Text style={[styles.drawNowChevron, { color: theme.colors.text.primary }]}>›</Text>
             </Pressable>
           </View>
-        </View>
-      )}
 
-      {/* Quick Stats */}
-      {isPremium && (
-        <View style={styles.statsCard}>
-          <Text style={styles.statsTitle}>Your Journey</Text>
-          {statsLoading ? (
-            <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-              <View style={{ alignItems: 'center', gap: theme.spacing.xs }}>
-                <Skeleton width={50} height={28} />
-                <Skeleton width={60} height={12} />
+          {/* Premium Promo */}
+          {!isPremium && (
+            <View
+              style={[
+                styles.promoCard,
+                {
+                  backgroundColor: theme.colors.surface.card,
+                  borderColor: theme.colors.brand.primary,
+                },
+              ]}
+            >
+              <Text style={styles.promoIcon}>✨</Text>
+              <Text style={[styles.promoTitle, { color: theme.colors.brand.primary }]}>
+                Unlock Premium Features
+              </Text>
+              <View style={styles.promoFeatures}>
+                <Text style={[styles.promoFeature, { color: theme.colors.text.secondary }]}>
+                  • Unlimited reading history
+                </Text>
+                <Text style={[styles.promoFeature, { color: theme.colors.text.secondary }]}>
+                  • Monthly Past/Present/Future spreads
+                </Text>
+                <Text style={[styles.promoFeature, { color: theme.colors.text.secondary }]}>
+                  • AI insights with personalized context
+                </Text>
+                <Text style={[styles.promoFeature, { color: theme.colors.text.secondary }]}>
+                  • Priority support
+                </Text>
               </View>
-              <View style={{ alignItems: 'center', gap: theme.spacing.xs }}>
-                <Skeleton width={50} height={28} />
-                <Skeleton width={70} height={12} />
-              </View>
-              <View style={{ alignItems: 'center', gap: theme.spacing.xs }}>
-                <Skeleton width={50} height={28} />
-                <Skeleton width={72} height={12} />
-              </View>
-            </View>
-          ) : (
-            <View style={styles.statsRow}>
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{stats?.readings ?? '—'}</Text>
-                <Text style={styles.statsLabel}>Readings</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{stats?.reflections ?? '—'}</Text>
-                <Text style={styles.statsLabel}>Reflections</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{stats?.daysActive ?? '—'}</Text>
-                <Text style={styles.statsLabel}>Days Active</Text>
+              <View style={[styles.promoFooter, { borderTopColor: theme.colors.border.main }]}>
+                <Text style={[styles.promoPrice, { color: theme.colors.brand.primary }]}>
+                  $49/year
+                </Text>
+                <Pressable
+                  style={[styles.upgradeButton, { backgroundColor: theme.colors.brand.primary }]}
+                  onPress={openUpgradeSheet}
+                  accessibilityRole="button"
+                  accessibilityLabel="Upgrade to Premium for $49 per year"
+                >
+                  <Text style={[styles.upgradeButtonText, { color: theme.colors.text.inverse }]}>
+                    Upgrade Now
+                  </Text>
+                </Pressable>
               </View>
             </View>
           )}
+
+          {/* Quick Stats */}
+          {isPremium && (
+            <View
+              style={[
+                styles.statsCard,
+                {
+                  backgroundColor: theme.colors.surface.card,
+                  borderColor: theme.colors.border.main,
+                },
+              ]}
+            >
+              <Text style={[styles.statsTitle, { color: theme.colors.text.primary }]}>
+                Your Journey
+              </Text>
+              {statsLoading ? (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                  <View style={{ alignItems: 'center', gap: spacing.xs }}>
+                    <Skeleton width={50} height={28} />
+                    <Skeleton width={60} height={12} />
+                  </View>
+                  <View style={{ alignItems: 'center', gap: spacing.xs }}>
+                    <Skeleton width={50} height={28} />
+                    <Skeleton width={70} height={12} />
+                  </View>
+                  <View style={{ alignItems: 'center', gap: spacing.xs }}>
+                    <Skeleton width={50} height={28} />
+                    <Skeleton width={72} height={12} />
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.statsRow}>
+                  <View style={styles.statItem}>
+                    <Text style={[styles.statNumber, { color: theme.colors.brand.primary }]}>
+                      {stats?.readings ?? '—'}
+                    </Text>
+                    <Text style={[styles.statsLabel, { color: theme.colors.text.secondary }]}>
+                      Readings
+                    </Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={[styles.statNumber, { color: theme.colors.brand.primary }]}>
+                      {stats?.reflections ?? '—'}
+                    </Text>
+                    <Text style={[styles.statsLabel, { color: theme.colors.text.secondary }]}>
+                      Reflections
+                    </Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={[styles.statNumber, { color: theme.colors.brand.primary }]}>
+                      {stats?.daysActive ?? '—'}
+                    </Text>
+                    <Text style={[styles.statsLabel, { color: theme.colors.text.secondary }]}>
+                      Days Active
+                    </Text>
+                  </View>
+                </View>
+              )}
+            </View>
+          )}
         </View>
-      )}
-        </>
       )}
 
       {userProfile?.sunSign && (
@@ -212,15 +278,14 @@ export default function HomeScreen() {
   );
 }
 
-/** Full-page skeleton shown while auth + profile data loads. */
 function HomeSkeleton() {
+  const theme = useAppTheme();
   return (
-    <View style={{ marginTop: theme.spacing.lg, gap: theme.spacing.xl }}>
-      {/* Header skeleton — avatar circle + greeting/name lines, mirroring header layout */}
-      <View style={{ gap: theme.spacing.sm }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md }}>
+    <View style={{ marginTop: spacing.lg, gap: spacing.xl }}>
+      <View style={{ gap: spacing.sm }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
           <ZodiacAvatarPlaceholder size={48} />
-          <View style={{ flex: 1, gap: theme.spacing.xs }}>
+          <View style={{ flex: 1, gap: spacing.xs }}>
             <Skeleton width="40%" height={14} />
             <Skeleton width="65%" height={24} />
           </View>
@@ -228,13 +293,12 @@ function HomeSkeleton() {
         <Skeleton width="80%" height={24} borderRadius={12} />
       </View>
 
-      {/* Cosmic card skeleton */}
       <View
         style={{
           backgroundColor: theme.colors.brand.cosmic.deepSpace,
-          borderRadius: theme.borderRadius.xxl,
-          padding: theme.spacing.lg,
-          gap: theme.spacing.sm,
+          borderRadius: borderRadius.xxl,
+          padding: spacing.lg,
+          gap: spacing.sm,
         }}
       >
         <Skeleton width="45%" height={11} borderRadius={4} />
@@ -243,21 +307,11 @@ function HomeSkeleton() {
         <Skeleton width="90%" height={14} />
       </View>
 
-      {/* Action button skeletons */}
-      <View style={{ gap: theme.spacing.md }}>
-        <Skeleton
-          width="100%"
-          height={100}
-          borderRadius={theme.borderRadius.card}
-        />
-        <Skeleton
-          width="100%"
-          height={100}
-          borderRadius={theme.borderRadius.card}
-        />
+      <View style={{ gap: spacing.md }}>
+        <Skeleton width="100%" height={100} borderRadius={borderRadius.card} />
+        <Skeleton width="100%" height={100} borderRadius={borderRadius.card} />
       </View>
 
-      {/* Stats / promo skeleton */}
       <SkeletonCard />
     </View>
   );
@@ -265,137 +319,105 @@ function HomeSkeleton() {
 
 const styles = StyleSheet.create({
   header: {
-    marginTop: theme.spacing.lg,
-    marginBottom: theme.spacing.xxl,
-    gap: theme.spacing.sm,
+    marginTop: spacing.lg,
+    marginBottom: spacing.xxl,
+    gap: spacing.sm,
   },
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.md,
+    gap: spacing.md,
   },
   headerText: {
     flex: 1,
   },
   greeting: {
-    ...theme.textStyles.body,
-    color: theme.colors.text.secondary,
-    marginBottom: theme.spacing.xxs,
-  },
-  userName: {
-    ...theme.textStyles.h1,
-    marginBottom: theme.spacing.sm,
-  },
-  actionsContainer: {
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing.xl,
-  },
-  primaryButton: {
-    backgroundColor: theme.colors.brand.primary,
-    padding: theme.spacing.xl,
-    borderRadius: theme.borderRadius.card,
-    alignItems: 'center',
-    ...theme.shadows.button,
-  },
-  primaryButtonIcon: {
-    fontSize: 32,
-    marginBottom: theme.spacing.xs,
-  },
-  primaryButtonText: {
-    color: theme.colors.text.inverse,
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: theme.spacing.xxs,
-  },
-  primaryButtonSubtext: {
-    color: theme.colors.text.inverse,
     fontSize: 14,
+    marginBottom: spacing.xs,
   },
-  secondaryButton: {
-    backgroundColor: theme.colors.surface.card,
-    padding: theme.spacing.xl,
-    borderRadius: theme.borderRadius.card,
+  drawNowCard: {
+    marginBottom: spacing.xl,
+  },
+  drawNowCardButton: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: theme.colors.border.main,
+    padding: spacing.xl,
+    borderRadius: borderRadius.card,
+    gap: spacing.md,
   },
-  secondaryButtonIcon: {
+  drawNowIcon: {
     fontSize: 32,
-    marginBottom: theme.spacing.xs,
   },
-  secondaryButtonText: {
-    color: theme.colors.text.primary,
+  drawNowText: {
+    flex: 1,
+  },
+  drawNowTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    marginBottom: theme.spacing.xxs,
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
-  secondaryButtonSubtext: {
-    color: theme.colors.text.secondary,
+  drawNowSubtitle: {
     fontSize: 14,
+    opacity: 0.85,
   },
-  disabledButton: {
-    opacity: 0.5,
+  drawNowChevron: {
+    fontSize: 24,
+    lineHeight: 26,
+    opacity: 0.7,
   },
   promoCard: {
-    backgroundColor: theme.colors.surface.card,
-    padding: theme.spacing.xl,
-    borderRadius: theme.borderRadius.card,
+    padding: spacing.xl,
+    borderRadius: borderRadius.card,
     borderWidth: 2,
-    borderColor: theme.colors.brand.primary,
-    marginBottom: theme.spacing.xl,
+    marginBottom: spacing.xl,
   },
   promoIcon: {
     fontSize: 32,
     textAlign: 'center',
-    marginBottom: theme.spacing.sm,
+    marginBottom: spacing.sm,
   },
   promoTitle: {
-    ...theme.textStyles.h2,
-    marginBottom: theme.spacing.md,
-    color: theme.colors.brand.primary,
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: spacing.md,
     textAlign: 'center',
   },
   promoFeatures: {
-    gap: theme.spacing.xs,
-    marginBottom: theme.spacing.lg,
+    gap: spacing.xs,
+    marginBottom: spacing.lg,
   },
   promoFeature: {
-    ...theme.textStyles.body,
-    color: theme.colors.text.secondary,
+    fontSize: 15,
   },
   promoFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: theme.spacing.md,
+    paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border.main,
   },
   promoPrice: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: theme.colors.brand.primary,
   },
   upgradeButton: {
-    backgroundColor: theme.colors.brand.primary,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.borderRadius.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.md,
   },
   upgradeButtonText: {
-    color: theme.colors.text.inverse,
-    ...theme.textStyles.button,
+    fontSize: 15,
+    fontWeight: '600',
   },
   statsCard: {
-    backgroundColor: theme.colors.surface.card,
-    padding: theme.spacing.xl,
-    borderRadius: theme.borderRadius.card,
+    padding: spacing.xl,
+    borderRadius: borderRadius.card,
     borderWidth: 1,
-    borderColor: theme.colors.border.main,
   },
   statsTitle: {
-    ...theme.textStyles.h3,
-    marginBottom: theme.spacing.lg,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: spacing.lg,
     textAlign: 'center',
   },
   statsRow: {
@@ -408,35 +430,29 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: theme.colors.brand.primary,
-    marginBottom: theme.spacing.xxs,
+    marginBottom: 4,
   },
   statsLabel: {
-    ...theme.textStyles.bodySmall,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
   },
   errorBanner: {
-    backgroundColor: theme.colors.error.light,
     borderWidth: 1,
-    borderColor: theme.colors.error.main,
-    borderRadius: theme.borderRadius.card,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.lg,
+    borderRadius: borderRadius.card,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: theme.spacing.sm,
+    gap: spacing.sm,
   },
   errorText: {
-    color: theme.colors.error.dark,
     fontSize: 14,
     flex: 1,
   },
   errorRetry: {
-    backgroundColor: theme.colors.error.main,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.md,
   },
   errorRetryText: {
     color: '#fff',

@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, Alert, Pressable } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAuth } from '@hooks/useAuth';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { Screen, Input, Button } from '@components/ui';
-import { theme } from '@theme';
+import { spacing } from '@theme';
 
 export default function SignUpScreen() {
   const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ export default function SignUpScreen() {
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
   const router = useRouter();
+  const theme = useAppTheme();
 
   const handleSignUp = async () => {
     if (!email || !password) {
@@ -37,11 +39,13 @@ export default function SignUpScreen() {
 
   return (
     <Screen scroll={false} padding={false}>
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
         <View style={styles.header}>
           <Text style={styles.emoji} accessible={false}>✨🔮✨</Text>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Start your mystical journey today</Text>
+          <Text style={[styles.title, { color: theme.colors.brand.primary }]}>Create Account</Text>
+          <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
+            Start your mystical journey today
+          </Text>
         </View>
 
         <View style={styles.form}>
@@ -70,15 +74,17 @@ export default function SignUpScreen() {
             onPress={handleSignUp}
             loading={loading}
             fullWidth
-            style={{ marginTop: theme.spacing.xs }}
+            style={{ marginTop: spacing.xs }}
           />
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Already have an account? </Text>
+          <Text style={[styles.footerText, { color: theme.colors.text.secondary }]}>
+            Already have an account?{' '}
+          </Text>
           <Link href="/(auth)/sign-in" asChild>
             <Pressable accessibilityRole="link" accessibilityLabel="Sign in to existing account">
-              <Text style={styles.link}>Sign In</Text>
+              <Text style={[styles.link, { color: theme.colors.text.link }]}>Sign In</Text>
             </Pressable>
           </Link>
         </View>
@@ -91,8 +97,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'space-between',
-    padding: theme.spacing.xl,
-    backgroundColor: theme.colors.surface.card,
+    padding: spacing.xl,
   },
   header: {
     flex: 1,
@@ -101,33 +106,32 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: 64,
-    marginBottom: theme.spacing.xl,
+    marginBottom: spacing.xl,
   },
   title: {
-    ...theme.textStyles.display,
-    marginBottom: theme.spacing.xs,
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: spacing.xs,
     textAlign: 'center',
-    color: theme.colors.brand.primary,
   },
   subtitle: {
-    ...theme.textStyles.body,
-    color: theme.colors.text.secondary,
+    fontSize: 16,
     textAlign: 'center',
   },
   form: {
-    gap: theme.spacing.md,
+    gap: spacing.md,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingBottom: theme.spacing.lg,
+    paddingBottom: spacing.lg,
   },
   footerText: {
-    ...theme.textStyles.body,
-    color: theme.colors.text.secondary,
+    fontSize: 16,
   },
   link: {
-    ...theme.textStyles.link,
-    color: theme.colors.text.link,
+    fontSize: 16,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
 });

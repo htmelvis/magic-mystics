@@ -11,7 +11,7 @@ import {
 import { Input } from './Input';
 import { searchLocations } from '@lib/geocoding/geocode';
 import type { LocationSuggestion } from '@lib/geocoding/geocode';
-import { theme } from '@theme';
+import { useAppTheme } from '@hooks/useAppTheme';
 
 const DEBOUNCE_MS = 500;
 
@@ -42,6 +42,7 @@ export function LocationInput({
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [searching, setSearching] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const theme = useAppTheme();
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -112,10 +113,18 @@ export function LocationInput({
       />
 
       {showDropdown && (
-        <View style={styles.dropdown}>
+        <View
+          style={[
+            styles.dropdown,
+            {
+              borderColor: theme.colors.border.main,
+              backgroundColor: theme.colors.surface.card,
+            },
+          ]}
+        >
           {searching && suggestions.length === 0 ? (
             <View style={styles.row}>
-              <Text style={styles.muted}>Searching…</Text>
+              <Text style={[styles.muted, { color: theme.colors.text.muted }]}>Searching…</Text>
             </View>
           ) : (
             <FlatList
@@ -125,12 +134,18 @@ export function LocationInput({
               scrollEnabled={false}
               renderItem={({ item, index }) => (
                 <Pressable
-                  style={[styles.row, index < suggestions.length - 1 && styles.rowBorder]}
+                  style={[
+                    styles.row,
+                    index < suggestions.length - 1 && {
+                      borderBottomWidth: 1,
+                      borderBottomColor: theme.colors.border.light,
+                    },
+                  ]}
                   onPress={() => handleSelect(item)}
                   accessibilityRole="button"
                   accessibilityLabel={item.displayName}
                 >
-                  <Text style={styles.rowText} numberOfLines={1}>
+                  <Text style={[styles.rowText, { color: theme.colors.text.primary }]} numberOfLines={1}>
                     {item.displayName}
                   </Text>
                 </Pressable>
@@ -149,11 +164,9 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     borderWidth: 1,
-    borderColor: theme.colors.border.main,
-    borderRadius: theme.borderRadius.input,
-    marginTop: theme.spacing.xs,
+    borderRadius: 12,
+    marginTop: 4,
     overflow: 'hidden',
-    backgroundColor: theme.colors.surface.card,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
@@ -161,19 +174,13 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   row: {
-    paddingHorizontal: theme.spacing.md,
+    paddingHorizontal: 16,
     paddingVertical: 14,
   },
-  rowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border.light,
-  },
   rowText: {
-    ...theme.textStyles.body,
-    color: theme.colors.text.primary,
+    fontSize: 16,
   },
   muted: {
-    ...theme.textStyles.caption,
-    color: theme.colors.text.muted,
+    fontSize: 12,
   },
 });

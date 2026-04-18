@@ -12,7 +12,8 @@ import {
   View,
 } from 'react-native';
 import type { ReflectionSentiment } from '@hooks/useReflection';
-import { theme } from '@theme';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import { theme as staticTheme } from '@theme';
 
 // ── Sentiment option ───────────────────────────────────────────────────────────
 
@@ -29,23 +30,38 @@ interface SentimentPickerProps {
 }
 
 function SentimentPicker({ question, value, onChange }: SentimentPickerProps) {
+  const theme = useAppTheme();
+
   return (
     <View style={pickerStyles.root}>
-      <Text style={pickerStyles.question}>{question}</Text>
+      <Text style={[pickerStyles.question, { color: theme.colors.text.primary }]}>{question}</Text>
       <View style={pickerStyles.options}>
-        {SENTIMENT_OPTIONS.map((opt) => {
+        {SENTIMENT_OPTIONS.map(opt => {
           const selected = value === opt.value;
           return (
             <TouchableOpacity
               key={opt.value}
-              style={[pickerStyles.option, selected && pickerStyles.optionSelected]}
+              style={[
+                pickerStyles.option,
+                {
+                  borderColor: selected ? theme.colors.brand.primary : theme.colors.border.default,
+                  backgroundColor: selected
+                    ? theme.colors.brand.purple[50]
+                    : theme.colors.surface.card,
+                },
+              ]}
               onPress={() => onChange(opt.value)}
               accessibilityRole="radio"
               accessibilityLabel={opt.label}
               accessibilityState={{ selected }}
             >
               <Text style={pickerStyles.icon}>{opt.icon}</Text>
-              <Text style={[pickerStyles.label, selected && pickerStyles.labelSelected]}>
+              <Text
+                style={[
+                  pickerStyles.label,
+                  { color: selected ? theme.colors.brand.primary : theme.colors.text.muted },
+                ]}
+              >
                 {opt.label}
               </Text>
             </TouchableOpacity>
@@ -57,41 +73,32 @@ function SentimentPicker({ question, value, onChange }: SentimentPickerProps) {
 }
 
 const pickerStyles = StyleSheet.create({
-  root: { marginBottom: theme.spacing.xl },
+  root: { marginBottom: staticTheme.spacing.xl },
   question: {
-    fontSize: theme.typography.fontSize.base,
+    fontSize: staticTheme.typography.fontSize.base,
     fontWeight: '600',
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.lg,
+    marginBottom: staticTheme.spacing.lg,
     textAlign: 'center',
     lineHeight: 22,
   },
   options: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: theme.spacing.md,
+    gap: staticTheme.spacing.md,
   },
   option: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: theme.spacing.lg,
-    borderRadius: theme.radius.lg,
+    paddingVertical: staticTheme.spacing.lg,
+    borderRadius: staticTheme.radius.lg,
     borderWidth: 2,
-    borderColor: theme.colors.border.default,
-    backgroundColor: theme.colors.surface.card,
-    gap: theme.spacing.xs,
-  },
-  optionSelected: {
-    borderColor: theme.colors.brand.primary,
-    backgroundColor: theme.colors.brand.purple[50],
+    gap: staticTheme.spacing.xs,
   },
   icon: { fontSize: 26 },
   label: {
-    fontSize: theme.typography.fontSize.xs,
+    fontSize: staticTheme.typography.fontSize.xs,
     fontWeight: '600',
-    color: theme.colors.text.muted,
   },
-  labelSelected: { color: theme.colors.brand.primary },
 });
 
 // ── Steps ─────────────────────────────────────────────────────────────────────
@@ -119,6 +126,7 @@ export function ReflectionSheet({
   onSave,
   onClose,
 }: ReflectionSheetProps) {
+  const theme = useAppTheme();
   const [step, setStep] = useState<Step>(1);
   const [feeling, setFeeling] = useState<ReflectionSentiment | null>(initialFeeling);
   const [alignment, setAlignment] = useState<ReflectionSentiment | null>(initialAlignment);
@@ -203,18 +211,34 @@ export function ReflectionSheet({
           <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]} />
         </Pressable>
 
-        <Animated.View style={[styles.sheet, { transform: [{ translateY: slideY }] }]}>
+        <Animated.View
+          style={[
+            styles.sheet,
+            { backgroundColor: theme.colors.surface.card, transform: [{ translateY: slideY }] },
+          ]}
+        >
           {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.handle} />
+          <View
+            style={[styles.header, { borderBottomColor: theme.colors.border.subtle }]}
+          >
+            <View style={[styles.handle, { backgroundColor: theme.colors.border.default }]} />
             <View style={styles.titleRow}>
-              <Text style={styles.title}>Add Reflection</Text>
-              <Text style={styles.stepLabel}>{stepLabel}</Text>
+              <Text style={[styles.title, { color: theme.colors.text.primary }]}>
+                Add Reflection
+              </Text>
+              <Text style={[styles.stepLabel, { color: theme.colors.text.muted }]}>
+                {stepLabel}
+              </Text>
             </View>
 
             {/* Progress bar */}
-            <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, { width: `${(step / 3) * 100}%` }]} />
+            <View style={[styles.progressTrack, { backgroundColor: theme.colors.border.subtle }]}>
+              <View
+                style={[
+                  styles.progressFill,
+                  { width: `${(step / 3) * 100}%`, backgroundColor: theme.colors.brand.primary },
+                ]}
+              />
             </View>
           </View>
 
@@ -238,12 +262,21 @@ export function ReflectionSheet({
 
             {step === 3 && (
               <View>
-                <Text style={styles.textLabel}>Your thoughts</Text>
-                <Text style={styles.textHint}>
+                <Text style={[styles.textLabel, { color: theme.colors.text.primary }]}>
+                  Your thoughts
+                </Text>
+                <Text style={[styles.textHint, { color: theme.colors.text.muted }]}>
                   Write freely — this is just for you.
                 </Text>
                 <TextInput
-                  style={styles.textArea}
+                  style={[
+                    styles.textArea,
+                    {
+                      color: theme.colors.text.primary,
+                      backgroundColor: theme.colors.surface.elevated,
+                      borderColor: theme.colors.border.default,
+                    },
+                  ]}
                   value={content}
                   onChangeText={setContent}
                   placeholder="What came up for you? What does this card stir in you today?"
@@ -254,21 +287,25 @@ export function ReflectionSheet({
                   autoFocus
                   maxLength={2000}
                 />
-                <Text style={styles.charCount}>{content.length} / 2000</Text>
+                <Text style={[styles.charCount, { color: theme.colors.text.muted }]}>
+                  {content.length} / 2000
+                </Text>
               </View>
             )}
           </View>
 
           {/* Footer actions */}
-          <View style={styles.footer}>
+          <View style={[styles.footer, { borderTopColor: theme.colors.border.subtle }]}>
             {step > 1 && (
               <TouchableOpacity
-                style={styles.backBtn}
-                onPress={() => setStep((s) => (s - 1) as Step)}
+                style={[styles.backBtn, { borderColor: theme.colors.border.default }]}
+                onPress={() => setStep(s => (s - 1) as Step)}
                 accessibilityRole="button"
                 accessibilityLabel="Previous step"
               >
-                <Text style={styles.backBtnText}>Back</Text>
+                <Text style={[styles.backBtnText, { color: theme.colors.text.secondary }]}>
+                  Back
+                </Text>
               </TouchableOpacity>
             )}
 
@@ -276,6 +313,7 @@ export function ReflectionSheet({
               <TouchableOpacity
                 style={[
                   styles.nextBtn,
+                  { backgroundColor: theme.colors.brand.primary },
                   step === 1 && !feeling && styles.btnDisabled,
                   step === 2 && !alignment && styles.btnDisabled,
                 ]}
@@ -288,7 +326,11 @@ export function ReflectionSheet({
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                style={[styles.nextBtn, isSaving && styles.btnDisabled]}
+                style={[
+                  styles.nextBtn,
+                  { backgroundColor: theme.colors.brand.primary },
+                  isSaving && styles.btnDisabled,
+                ]}
                 onPress={handleSave}
                 disabled={isSaving}
                 accessibilityRole="button"
@@ -316,120 +358,103 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.48)',
   },
   sheet: {
-    backgroundColor: theme.colors.surface.card,
-    borderTopLeftRadius: theme.radius['2xl'],
-    borderTopRightRadius: theme.radius['2xl'],
-    ...theme.shadows.xl,
+    borderTopLeftRadius: staticTheme.radius['2xl'],
+    borderTopRightRadius: staticTheme.radius['2xl'],
+    ...staticTheme.shadows.xl,
     overflow: 'hidden',
   },
   header: {
-    paddingTop: theme.spacing.md,
-    paddingHorizontal: theme.spacing.xl,
-    paddingBottom: theme.spacing.lg,
+    paddingTop: staticTheme.spacing.md,
+    paddingHorizontal: staticTheme.spacing.xl,
+    paddingBottom: staticTheme.spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border.subtle,
     alignItems: 'center',
   },
   handle: {
     width: 36,
     height: 4,
-    backgroundColor: theme.colors.border.default,
     borderRadius: 2,
-    marginBottom: theme.spacing.lg,
+    marginBottom: staticTheme.spacing.lg,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    marginBottom: theme.spacing.md,
+    marginBottom: staticTheme.spacing.md,
   },
   title: {
-    fontSize: theme.typography.fontSize.lg,
+    fontSize: staticTheme.typography.fontSize.lg,
     fontWeight: '700',
-    color: theme.colors.text.primary,
   },
   stepLabel: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.muted,
+    fontSize: staticTheme.typography.fontSize.xs,
     fontWeight: '500',
   },
   progressTrack: {
     width: '100%',
     height: 3,
-    backgroundColor: theme.colors.border.subtle,
     borderRadius: 2,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: theme.colors.brand.primary,
     borderRadius: 2,
   },
   body: {
-    padding: theme.spacing.xl,
-    paddingTop: theme.spacing.xxl,
+    padding: staticTheme.spacing.xl,
+    paddingTop: staticTheme.spacing.xxl,
   },
   textLabel: {
-    fontSize: theme.typography.fontSize.base,
+    fontSize: staticTheme.typography.fontSize.base,
     fontWeight: '600',
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.xs,
+    marginBottom: staticTheme.spacing.xs,
   },
   textHint: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.text.muted,
-    marginBottom: theme.spacing.md,
+    fontSize: staticTheme.typography.fontSize.sm,
+    marginBottom: staticTheme.spacing.md,
   },
   textArea: {
     borderWidth: 1.5,
-    borderColor: theme.colors.border.default,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.md,
-    fontSize: theme.typography.fontSize.base,
-    color: theme.colors.text.primary,
+    borderRadius: staticTheme.radius.lg,
+    padding: staticTheme.spacing.md,
+    fontSize: staticTheme.typography.fontSize.base,
     minHeight: 130,
     lineHeight: 22,
-    backgroundColor: theme.colors.surface.subtle,
   },
   charCount: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.muted,
+    fontSize: staticTheme.typography.fontSize.xs,
     textAlign: 'right',
-    marginTop: theme.spacing.xs,
+    marginTop: staticTheme.spacing.xs,
   },
   footer: {
     flexDirection: 'row',
-    paddingHorizontal: theme.spacing.xl,
+    paddingHorizontal: staticTheme.spacing.xl,
     paddingBottom: 36,
-    paddingTop: theme.spacing.md,
-    gap: theme.spacing.md,
+    paddingTop: staticTheme.spacing.md,
+    gap: staticTheme.spacing.md,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border.subtle,
   },
   backBtn: {
     flex: 1,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.radius.lg,
+    paddingVertical: staticTheme.spacing.md,
+    borderRadius: staticTheme.radius.lg,
     borderWidth: 1.5,
-    borderColor: theme.colors.border.default,
     alignItems: 'center',
   },
   backBtnText: {
-    fontSize: theme.typography.fontSize.base,
+    fontSize: staticTheme.typography.fontSize.base,
     fontWeight: '600',
-    color: theme.colors.text.secondary,
   },
   nextBtn: {
     flex: 2,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.radius.lg,
-    backgroundColor: theme.colors.brand.primary,
+    paddingVertical: staticTheme.spacing.md,
+    borderRadius: staticTheme.radius.lg,
     alignItems: 'center',
   },
   btnDisabled: { opacity: 0.45 },
   nextBtnText: {
-    fontSize: theme.typography.fontSize.base,
+    fontSize: staticTheme.typography.fontSize.base,
     fontWeight: '700',
     color: '#fff',
   },

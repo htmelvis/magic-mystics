@@ -10,6 +10,7 @@ import { useAuth } from '@hooks/useAuth';
 import { useOnboarding } from '@hooks/useOnboarding';
 import { initRevenueCat } from '@hooks/useRevenueCat';
 import { useAnalytics } from '@hooks/useAnalytics';
+import { useAppTheme } from '@hooks/useAppTheme';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ErrorBoundary } from '@components/ui/ErrorBoundary';
 import { supabase } from '@lib/supabase/client';
@@ -26,6 +27,7 @@ const queryClient = new QueryClient({
 
 function RootLayoutNav() {
   const insets = useSafeAreaInsets();
+  const appTheme = useAppTheme();
   const { user, loading: authLoading, isPasswordRecovery } = useAuth();
   const { onboardingCompleted, loading: onboardingLoading } = useOnboarding(user?.id);
   const { identify, reset } = useAnalytics();
@@ -44,8 +46,9 @@ function RootLayoutNav() {
 
   // Identify or reset the PostHog user whenever auth state changes.
   useEffect(() => {
+    if(!user) return
     if (user?.id) {
-      identify(user.id, { email: user.email });
+      identify(user.id, { email: user.email ?? null });
     } else {
       reset();
     }
@@ -112,12 +115,12 @@ function RootLayoutNav() {
   }, [user, authLoading, onboardingCompleted, onboardingLoading, isPasswordRecovery, segments]);
 
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { paddingTop: insets.top } }}>
+    <Stack screenOptions={{ headerShown: false, contentStyle: { paddingTop: insets.top, backgroundColor: appTheme.colors.surface.background } }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(onboarding)" />
       <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="draw" options={{ headerShown: false, presentation: 'card' }} />
+      <Stack.Screen name="daily-draw" options={{ headerShown: false, presentation: 'card' }} />
       <Stack.Protected guard={__DEV__}>
         <Stack.Screen name="storybook" options={{ headerShown: false }} />
       </Stack.Protected>

@@ -18,9 +18,14 @@ npx eslint . --ext .ts,.tsx
 
 # Format
 npx prettier --write .
+
+# Test
+npm test                  # run all tests
+npm run test:watch        # watch mode
+npm run test:coverage     # with coverage report
 ```
 
-No test runner is configured.
+Tests use **Jest** (`jest-expo` preset). Test files live in `src/__tests__/` and follow the pattern `**/__tests__/**/*.test.[jt]s?(x)`. Mocks for `react-native-purchases` and `posthog-react-native` are in `src/__mocks__/`. E2E tests use Maestro (`npm run test:e2e`) but are out of scope for most changes.
 
 ## Architecture
 
@@ -38,7 +43,7 @@ Route groups:
 
 - `(auth)/` — sign-in, sign-up
 - `(onboarding)/` — 5-step flow: welcome → birth-date → birth-time → birth-location → calculating
-- `(tabs)/` — main app: home, history, profile
+- `(tabs)/` — main app: home, draw, profile, settings (history, natal-chart, edit-birth-details, support are hidden tabs)
 
 ### Path Aliases
 

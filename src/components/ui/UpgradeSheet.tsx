@@ -11,7 +11,8 @@ import {
   Text,
   View,
 } from 'react-native';
-import { theme } from '@theme';
+import { useAppTheme } from '@hooks/useAppTheme';
+import { spacing, borderRadius } from '@theme';
 
 const FEATURES = [
   { icon: '📜', label: 'Unlimited reading history' },
@@ -27,7 +28,13 @@ interface UpgradeSheetProps {
   isPurchasing?: boolean;
 }
 
-export function UpgradeSheet({ isVisible, onClose, onUpgradePress, isPurchasing = false }: UpgradeSheetProps) {
+export function UpgradeSheet({
+  isVisible,
+  onClose,
+  onUpgradePress,
+  isPurchasing = false,
+}: UpgradeSheetProps) {
+  const theme = useAppTheme();
   const slideY = useRef(new Animated.Value(900)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
   const sheetRef = useRef<View>(null);
@@ -36,16 +43,8 @@ export function UpgradeSheet({ isVisible, onClose, onUpgradePress, isPurchasing 
   const dismiss = useCallback(() => {
     onClose();
     Animated.parallel([
-      Animated.timing(slideY, {
-        toValue: 900,
-        duration: 280,
-        useNativeDriver: true,
-      }),
-      Animated.timing(backdropOpacity, {
-        toValue: 0,
-        duration: 220,
-        useNativeDriver: true,
-      }),
+      Animated.timing(slideY, { toValue: 900, duration: 280, useNativeDriver: true }),
+      Animated.timing(backdropOpacity, { toValue: 0, duration: 220, useNativeDriver: true }),
     ]).start();
   }, [onClose, slideY, backdropOpacity]);
 
@@ -69,11 +68,7 @@ export function UpgradeSheet({ isVisible, onClose, onUpgradePress, isPurchasing 
         mass: 1,
         useNativeDriver: true,
       }),
-      Animated.timing(backdropOpacity, {
-        toValue: 1,
-        duration: 250,
-        useNativeDriver: true,
-      }),
+      Animated.timing(backdropOpacity, { toValue: 1, duration: 250, useNativeDriver: true }),
     ]).start(() => {
       const node = findNodeHandle(sheetRef.current);
       if (node) AccessibilityInfo.setAccessibilityFocus(node);
@@ -122,7 +117,16 @@ export function UpgradeSheet({ isVisible, onClose, onUpgradePress, isPurchasing 
 
         <Animated.View
           ref={sheetRef}
-          style={[styles.sheet, { transform: [{ translateY: slideY }] }]}
+          style={[
+            styles.sheet,
+            {
+              backgroundColor: theme.colors.surface.card,
+              borderTopLeftRadius: borderRadius['2xl'],
+              borderTopRightRadius: borderRadius['2xl'],
+              ...theme.shadows.xl,
+            },
+            { transform: [{ translateY: slideY }] },
+          ]}
           accessibilityViewIsModal
           accessibilityRole="none"
         >
@@ -136,37 +140,42 @@ export function UpgradeSheet({ isVisible, onClose, onUpgradePress, isPurchasing 
             accessibilityHint="Swipe down to dismiss"
             hitSlop={{ top: 12, bottom: 12 }}
           >
-            <View style={styles.handle} />
+            <View style={[styles.handle, { backgroundColor: theme.colors.border.default }]} />
           </View>
 
           <View style={styles.content}>
-            {/* Header */}
-            <Text style={styles.star} accessible={false}>✦</Text>
-            <Text style={styles.title}>Keep Your Full History</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.star, { color: theme.colors.brand.accent }]} accessible={false}>
+              ✦
+            </Text>
+            <Text style={[styles.title, { color: theme.colors.text.primary }]}>
+              Keep Your Full History
+            </Text>
+            <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
               Free accounts store 30 days of readings. Premium keeps everything, forever.
             </Text>
 
-            {/* Feature list */}
             <View style={styles.features}>
               {FEATURES.map(({ icon, label }) => (
                 <View key={label} style={styles.featureRow}>
-                  <Text style={styles.featureIcon} accessible={false}>{icon}</Text>
-                  <Text style={styles.featureLabel}>{label}</Text>
+                  <Text style={styles.featureIcon} accessible={false}>
+                    {icon}
+                  </Text>
+                  <Text style={[styles.featureLabel, { color: theme.colors.text.primary }]}>
+                    {label}
+                  </Text>
                 </View>
               ))}
             </View>
 
-            {/* Price */}
             <View style={styles.priceRow}>
-              <Text style={styles.price}>$49</Text>
-              <Text style={styles.pricePer}> / year</Text>
+              <Text style={[styles.price, { color: theme.colors.brand.primary }]}>$49</Text>
+              <Text style={[styles.pricePer, { color: theme.colors.text.muted }]}> / year</Text>
             </View>
 
-            {/* Actions */}
             <Pressable
               style={({ pressed }) => [
                 styles.upgradeButton,
+                { backgroundColor: theme.colors.brand.primary, ...theme.shadows.button },
                 pressed && !isPurchasing && styles.upgradeButtonPressed,
                 isPurchasing && styles.upgradeButtonDisabled,
               ]}
@@ -179,7 +188,9 @@ export function UpgradeSheet({ isVisible, onClose, onUpgradePress, isPurchasing 
               {isPurchasing ? (
                 <ActivityIndicator color={theme.colors.text.inverse} size="small" />
               ) : (
-                <Text style={styles.upgradeButtonText}>Upgrade Now</Text>
+                <Text style={[styles.upgradeButtonText, { color: theme.colors.text.inverse }]}>
+                  Upgrade Now
+                </Text>
               )}
             </Pressable>
 
@@ -189,7 +200,9 @@ export function UpgradeSheet({ isVisible, onClose, onUpgradePress, isPurchasing 
               accessibilityRole="button"
               accessibilityLabel="Maybe later"
             >
-              <Text style={styles.laterButtonText}>Maybe Later</Text>
+              <Text style={[styles.laterButtonText, { color: theme.colors.text.muted }]}>
+                Maybe Later
+              </Text>
             </Pressable>
           </View>
         </Animated.View>
@@ -208,57 +221,49 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.48)',
   },
   sheet: {
-    backgroundColor: theme.colors.surface.card,
-    borderTopLeftRadius: theme.radius['2xl'],
-    borderTopRightRadius: theme.radius['2xl'],
-    ...theme.shadows.xl,
     overflow: 'hidden',
   },
   handleZone: {
     alignItems: 'center',
-    paddingVertical: theme.spacing.md,
+    paddingVertical: spacing.md,
     minHeight: 44,
     justifyContent: 'center',
   },
   handle: {
     width: 36,
     height: 4,
-    backgroundColor: theme.colors.border.default,
     borderRadius: 2,
   },
   content: {
-    paddingHorizontal: theme.spacing.xl,
+    paddingHorizontal: spacing.xl,
     paddingBottom: 44,
     alignItems: 'center',
   },
   star: {
     fontSize: 28,
-    color: theme.colors.brand.accent,
-    marginBottom: theme.spacing.sm,
+    marginBottom: spacing.sm,
   },
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: theme.colors.text.primary,
     textAlign: 'center',
-    marginBottom: theme.spacing.sm,
+    marginBottom: spacing.sm,
   },
   subtitle: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 14,
     textAlign: 'center',
     lineHeight: 21,
-    marginBottom: theme.spacing.xl,
+    marginBottom: spacing.xl,
   },
   features: {
     width: '100%',
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing.xl,
+    gap: spacing.md,
+    marginBottom: spacing.xl,
   },
   featureRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.md,
+    gap: spacing.md,
   },
   featureIcon: {
     fontSize: 18,
@@ -266,58 +271,45 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   featureLabel: {
-    fontSize: theme.typography.fontSize.base,
-    color: theme.colors.text.primary,
+    fontSize: 16,
     fontWeight: '500',
     flex: 1,
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    marginBottom: theme.spacing.xl,
+    marginBottom: spacing.xl,
   },
   price: {
     fontSize: 36,
     fontWeight: '800',
-    color: theme.colors.brand.primary,
   },
   pricePer: {
-    fontSize: theme.typography.fontSize.base,
-    color: theme.colors.text.muted,
+    fontSize: 16,
     fontWeight: '500',
   },
   upgradeButton: {
     width: '100%',
-    backgroundColor: theme.colors.brand.primary,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.radius.lg,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.lg,
     alignItems: 'center',
-    marginBottom: theme.spacing.sm,
-    ...theme.shadows.button,
+    marginBottom: spacing.sm,
   },
-  upgradeButtonPressed: {
-    opacity: 0.85,
-  },
-  upgradeButtonDisabled: {
-    opacity: 0.7,
-  },
+  upgradeButtonPressed: { opacity: 0.85 },
+  upgradeButtonDisabled: { opacity: 0.7 },
   upgradeButtonText: {
-    color: theme.colors.text.inverse,
-    fontSize: theme.typography.fontSize.base,
+    fontSize: 16,
     fontWeight: '700',
     letterSpacing: 0.3,
   },
   laterButton: {
     width: '100%',
-    paddingVertical: theme.spacing.md,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
-  laterButtonPressed: {
-    opacity: 0.6,
-  },
+  laterButtonPressed: { opacity: 0.6 },
   laterButtonText: {
-    color: theme.colors.text.muted,
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: 14,
     fontWeight: '500',
   },
 });

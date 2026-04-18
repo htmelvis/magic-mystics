@@ -1,6 +1,7 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import type { DrawnCardRecord } from '@/types/tarot';
-import { theme } from '@theme';
+import { spacing, borderRadius } from '@theme';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -35,6 +36,7 @@ export function DrawerCardSection({
   showPosition,
   divider,
 }: DrawerCardSectionProps) {
+  const theme = useAppTheme();
   const isReversed = card.orientation === 'reversed';
   const detail = cardDetail as CardDetail | null;
 
@@ -43,18 +45,40 @@ export function DrawerCardSection({
   const keywords = isReversed ? detail?.keywords_reversed : detail?.keywords_upright;
 
   return (
-    <View style={[styles.cardSection, divider && styles.cardDivider]}>
+    <View
+      style={[
+        styles.cardSection,
+        divider && { borderBottomWidth: 1, borderBottomColor: theme.colors.border.light },
+      ]}
+    >
       {showPosition && card.position && (
-        <Text style={styles.positionLabel}>{card.position.toUpperCase()}</Text>
+        <Text style={[styles.positionLabel, { color: theme.colors.text.muted }]}>
+          {card.position.toUpperCase()}
+        </Text>
       )}
-      <Text style={styles.cardName}>{card.cardName}</Text>
+      <Text style={[styles.cardName, { color: theme.colors.text.primary }]}>{card.cardName}</Text>
 
       <View style={styles.cardMeta}>
-        <Text style={[styles.orientText, isReversed && styles.orientReversed]}>
+        <Text
+          style={[
+            styles.orientText,
+            { color: isReversed ? theme.colors.tarot.orientation.reversed : theme.colors.brand.primary },
+          ]}
+        >
           {isReversed ? '↓ Reversed' : '↑ Upright'}
         </Text>
-        <View style={styles.arcanaBadge}>
-          <Text style={styles.arcanaText}>{arcanaLabel(card)}</Text>
+        <View
+          style={[
+            styles.arcanaBadge,
+            {
+              backgroundColor: theme.colors.surface.subtle,
+              borderColor: theme.colors.border.subtle,
+            },
+          ]}
+        >
+          <Text style={[styles.arcanaText, { color: theme.colors.text.muted }]}>
+            {arcanaLabel(card)}
+          </Text>
         </View>
       </View>
 
@@ -64,32 +88,77 @@ export function DrawerCardSection({
           {(detail?.element || detail?.astrology_association) && (
             <View style={styles.metaRow}>
               {detail.element && (
-                <View style={styles.metaPill}>
-                  <Text style={styles.metaPillText}>{detail.element}</Text>
+                <View
+                  style={[
+                    styles.metaPill,
+                    {
+                      backgroundColor: theme.colors.surface.subtle,
+                      borderColor: theme.colors.border.subtle,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.metaPillText, { color: theme.colors.text.muted }]}>
+                    {detail.element}
+                  </Text>
                 </View>
               )}
               {detail.astrology_association && (
-                <View style={styles.metaPill}>
-                  <Text style={styles.metaPillText}>{detail.astrology_association}</Text>
+                <View
+                  style={[
+                    styles.metaPill,
+                    {
+                      backgroundColor: theme.colors.surface.subtle,
+                      borderColor: theme.colors.border.subtle,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.metaPillText, { color: theme.colors.text.muted }]}>
+                    {detail.astrology_association}
+                  </Text>
                 </View>
               )}
               {detail.numerology != null && (
-                <View style={styles.metaPill}>
-                  <Text style={styles.metaPillText}>#{detail.numerology}</Text>
+                <View
+                  style={[
+                    styles.metaPill,
+                    {
+                      backgroundColor: theme.colors.surface.subtle,
+                      borderColor: theme.colors.border.subtle,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.metaPillText, { color: theme.colors.text.muted }]}>
+                    #{detail.numerology}
+                  </Text>
                 </View>
               )}
             </View>
           )}
 
           {/* Summary */}
-          {summary && <Text style={styles.summary}>{summary}</Text>}
+          {summary && (
+            <Text style={[styles.summary, { color: theme.colors.text.secondary }]}>{summary}</Text>
+          )}
 
           {/* Keywords */}
           {keywords && keywords.length > 0 && (
             <View style={styles.keywordsRow}>
               {keywords.map(kw => (
-                <View key={kw} style={[styles.keyword, isReversed && styles.keywordReversed]}>
-                  <Text style={[styles.keywordText, isReversed && styles.keywordTextReversed]}>
+                <View
+                  key={kw}
+                  style={[
+                    styles.keyword,
+                    isReversed
+                      ? { backgroundColor: theme.colors.error.light, borderColor: theme.colors.error.main }
+                      : { backgroundColor: theme.colors.brand.purple[50], borderColor: theme.colors.brand.purple[100] },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.keywordText,
+                      { color: isReversed ? theme.colors.error.main : theme.colors.brand.purple[600] },
+                    ]}
+                  >
                     {kw}
                   </Text>
                 </View>
@@ -98,13 +167,15 @@ export function DrawerCardSection({
           )}
 
           {/* Long meaning */}
-          {meaning && <Text style={styles.meaning}>{meaning}</Text>}
+          {meaning && (
+            <Text style={[styles.meaning, { color: theme.colors.text.secondary }]}>{meaning}</Text>
+          )}
         </View>
       ) : (
         <ActivityIndicator
           size="small"
           color={theme.colors.brand.primary}
-          style={{ marginTop: theme.spacing.lg }}
+          style={{ marginTop: spacing.lg }}
         />
       )}
     </View>
@@ -115,101 +186,77 @@ export function DrawerCardSection({
 
 const styles = StyleSheet.create({
   cardSection: { paddingVertical: 22 },
-  cardDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border.light,
-  },
   positionLabel: {
     fontSize: 10,
     fontWeight: '800',
-    color: theme.colors.text.muted,
     letterSpacing: 2,
     textTransform: 'uppercase',
-    marginBottom: theme.spacing.sm,
+    marginBottom: spacing.sm,
   },
   cardName: {
     fontSize: 30,
     fontWeight: '800',
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.sm,
+    marginBottom: spacing.sm,
     lineHeight: 36,
   },
   cardMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.lg,
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
   },
   orientText: {
-    fontSize: theme.typography.fontSize.base,
+    fontSize: 16,
     fontWeight: '700',
-    color: theme.colors.brand.primary,
   },
-  orientReversed: { color: theme.colors.tarot.orientation.reversed },
   arcanaBadge: {
-    backgroundColor: theme.colors.surface.subtle,
     borderWidth: 1,
-    borderColor: theme.colors.border.subtle,
     paddingVertical: 4,
     paddingHorizontal: 10,
-    borderRadius: theme.radius.sm,
+    borderRadius: borderRadius.sm,
   },
   arcanaText: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.muted,
+    fontSize: 12,
     fontWeight: '600',
   },
-  detailContainer: { gap: theme.spacing.md },
+  detailContainer: { gap: spacing.md },
   metaRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: theme.spacing.xs,
+    gap: spacing.xs,
   },
   metaPill: {
-    backgroundColor: theme.colors.surface.subtle,
-    borderRadius: theme.radius.sm,
+    borderRadius: borderRadius.sm,
     paddingVertical: 3,
-    paddingHorizontal: theme.spacing.sm,
+    paddingHorizontal: spacing.sm,
     borderWidth: 1,
-    borderColor: theme.colors.border.subtle,
   },
   metaPillText: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.muted,
+    fontSize: 12,
     fontWeight: '500',
   },
   summary: {
-    fontSize: theme.typography.fontSize.base,
-    color: theme.colors.text.secondary,
+    fontSize: 16,
     lineHeight: 22,
     fontStyle: 'italic',
   },
   keywordsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: theme.spacing.xs,
+    gap: spacing.xs,
   },
   keyword: {
-    backgroundColor: theme.colors.brand.purple[50],
-    borderRadius: theme.radius.sm,
+    borderRadius: borderRadius.sm,
     paddingVertical: 4,
-    paddingHorizontal: theme.spacing.sm,
+    paddingHorizontal: spacing.sm,
     borderWidth: 1,
-    borderColor: theme.colors.brand.purple[100],
-  },
-  keywordReversed: {
-    backgroundColor: '#fef2f2',
-    borderColor: '#fca5a5',
   },
   keywordText: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.brand.purple[600],
+    fontSize: 12,
     fontWeight: '600',
   },
-  keywordTextReversed: { color: '#dc2626' },
   meaning: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 14,
     lineHeight: 21,
   },
 });

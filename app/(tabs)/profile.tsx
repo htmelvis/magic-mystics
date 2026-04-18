@@ -3,17 +3,21 @@ import { View, Text, StyleSheet, Alert, Pressable, ActivityIndicator } from 'rea
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@hooks/useAuth';
-import { useSubscription } from '@hooks/useSubscription';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { useTheme } from '@/context/ThemeContext';
 import { useAppTheme } from '@/hooks/useAppTheme';
-import { Screen, Card, Badge, Button, Skeleton, SkeletonCard, ZodiacAvatar, NatalChartWheel } from '@components/ui';
+import {
+  Screen,
+  Card,
+  Button,
+  Skeleton,
+  SkeletonCard,
+  ZodiacAvatar,
+  NatalChartWheel,
+} from '@components/ui';
 import type { ZodiacSign } from '@lib/astrology/calculate-signs';
 import { computeNatalChart } from '@lib/astrology/natal-chart';
-import { useUpgradeSheet } from '@/context/UpgradeSheetContext';
 import { supabase } from '@lib/supabase/client';
 import { geocodeLocation, getTimezone } from '@lib/geocoding/geocode';
-
 function formatBirthDate(birthDate: string | null): string {
   if (!birthDate) return '—';
   const d = new Date(birthDate + 'T00:00:00');
@@ -32,14 +36,11 @@ function formatBirthTime(birthTime: string | null): string {
 
 export default function ProfileScreen() {
   const { user, loading: authLoading, signOut } = useAuth();
-  const { subscription, isPremium, loading: subLoading } = useSubscription(user?.id);
   const { userProfile, loading: profileLoading } = useUserProfile(user?.id);
   const router = useRouter();
   const queryClient = useQueryClient();
-  const isLoading = authLoading || profileLoading || subLoading;
-  const { activeColorScheme, toggleColorScheme, setColorScheme, colorScheme } = useTheme();
+  const isLoading = authLoading || profileLoading;
   const theme = useAppTheme();
-  const { open: openUpgradeSheet } = useUpgradeSheet();
   const [retryingGeocode, setRetryingGeocode] = useState(false);
   const [geocodeCoolingDown, setGeocodeCoolingDown] = useState(false);
   const lastGeocodeAttempt = useRef<number>(0);
@@ -54,7 +55,8 @@ export default function ProfileScreen() {
       userProfile.natalChartData ||
       !userProfile.birthDate ||
       !userProfile.birthTime
-    ) return;
+    )
+      return;
 
     hasComputedChart.current = true;
     const [year, month, day] = userProfile.birthDate.split('-').map(Number);
@@ -63,7 +65,7 @@ export default function ProfileScreen() {
       birthDate,
       userProfile.birthTime,
       userProfile.birthLat,
-      userProfile.birthLng,
+      userProfile.birthLng
     );
     supabase
       .from('users')
@@ -75,7 +77,8 @@ export default function ProfileScreen() {
   const GEOCODE_COOLDOWN_MS = 30_000;
 
   const handleRetryGeocode = useCallback(async () => {
-    if (!user || !userProfile?.birthLocation || !userProfile?.birthDate || !userProfile?.birthTime) return;
+    if (!user || !userProfile?.birthLocation || !userProfile?.birthDate || !userProfile?.birthTime)
+      return;
     if (retryingGeocode || geocodeCoolingDown) return;
 
     const now = Date.now();
@@ -86,7 +89,10 @@ export default function ProfileScreen() {
     try {
       const coords = await geocodeLocation(userProfile.birthLocation);
       if (!coords) {
-        Alert.alert('Location not found', 'Could not resolve your birth location. Please try again later.');
+        Alert.alert(
+          'Location not found',
+          'Could not resolve your birth location. Please try again later.'
+        );
         return;
       }
       const timezone = await getTimezone(coords.lat, coords.lng);
@@ -94,7 +100,12 @@ export default function ProfileScreen() {
       // Recompute natal chart with real coords so ASC/MC are filled in.
       const [year, month, day] = userProfile.birthDate.split('-').map(Number);
       const birthDate = new Date(year, month - 1, day, 12, 0, 0);
-      const natalChart = computeNatalChart(birthDate, userProfile.birthTime, coords.lat, coords.lng);
+      const natalChart = computeNatalChart(
+        birthDate,
+        userProfile.birthTime,
+        coords.lat,
+        coords.lng
+      );
 
       await supabase
         .from('users')
@@ -142,52 +153,32 @@ export default function ProfileScreen() {
           <ZodiacAvatar sign={userProfile.sunSign as ZodiacSign} size={56} />
         )}
         <View style={styles.profileHeaderText}>
-          <Text style={styles.title}>
-            {userProfile?.displayName || 'Profile'}
-          </Text>
+          <Text style={[styles.title, { color: theme.colors.text.primary }]}>{userProfile?.displayName || 'Profile'}</Text>
           <Text style={[styles.email, { color: theme.colors.text.secondary }]}>{user?.email}</Text>
         </View>
       </View>
 
-      {/* Theme Section */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>Appearance</Text>
-        <Card variant="outlined">
-          <View style={styles.themeRow}>
-            <View>
-              <Text style={[styles.themeTitle, { color: theme.colors.text.primary }]}>Dark Mode</Text>
-              <Text style={[styles.themeSubtitle, { color: theme.colors.text.muted }]}>
-                {activeColorScheme === 'dark' ? 'On' : 'Off'}
-              </Text>
-            </View>
-            <Pressable
-              style={[
-                styles.toggle,
-                { backgroundColor: activeColorScheme === 'dark' ? theme.colors.brand.primary : theme.colors.gray[300] }
-              ]}
-              onPress={toggleColorScheme}
-              accessibilityRole="switch"
-              accessibilityLabel="Dark mode"
-              accessibilityState={{ checked: activeColorScheme === 'dark' }}
-            >
-              <View
-                style={[
-                  styles.toggleKnob,
-                  { 
-                    backgroundColor: theme.colors.surface.card,
-                    transform: [{ translateX: activeColorScheme === 'dark' ? 24 : 2 }]
-                  }
-                ]}
-              />
-            </Pressable>
-          </View>
-          {colorScheme === 'auto' && (
-            <Text style={[styles.autoModeText, { color: theme.colors.text.muted }]}>
-              Following system preference
+      {/* Tarot card associated with sun sign */}
+      {userProfile?.tarotCard && (
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>Your Tarot Card</Text>
+          <Card variant="outlined">
+            <Text style={[styles.tarotCardName, { color: theme.colors.brand.primaryDark }]}>
+              {userProfile.tarotCard.name}
             </Text>
-          )}
-        </Card>
-      </View>
+            {userProfile.tarotCard.associationType && (
+              <Text style={[styles.tarotCardType, { color: theme.colors.brand.secondary }]}>
+                {userProfile.tarotCard.associationType}
+              </Text>
+            )}
+            {userProfile.tarotCard.associationDescription && (
+              <Text style={[styles.tarotCardSummary, { color: theme.colors.text.secondary }]}>
+                {userProfile.tarotCard.associationDescription}
+              </Text>
+            )}
+          </Card>
+        </View>
+      )}
 
       {/* Natal Chart preview — taps to full-screen */}
       <Pressable
@@ -198,8 +189,10 @@ export default function ProfileScreen() {
         accessibilityHint="Opens full natal chart"
       >
         <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionTitle}>Natal Chart</Text>
-          <Text style={[styles.sectionChevron, { color: theme.colors.brand.primary }]}>View Full →</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>Natal Chart</Text>
+          <Text style={[styles.sectionChevron, { color: theme.colors.brand.primary }]}>
+            View Full →
+          </Text>
         </View>
         <Card variant="outlined">
           {userProfile?.natalChartData ? (
@@ -223,36 +216,28 @@ export default function ProfileScreen() {
             </View>
           ) : (
             <Text style={[styles.signText, { color: theme.colors.text.muted }]}>
-              {userProfile?.birthDate ? 'Generating chart…' : 'Complete birth details to generate chart'}
+              {userProfile?.birthDate
+                ? 'Generating chart…'
+                : 'Complete birth details to generate chart'}
             </Text>
           )}
         </Card>
       </Pressable>
 
       <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary, marginBottom: 0 }]}>
-            Birth Details
-          </Text>
-          {!userProfile?.birthDetailsEditedAt && (
-            <Pressable
-              onPress={() => router.push('/(tabs)/edit-birth-details')}
-              accessibilityRole="button"
-              accessibilityLabel="Edit birth details"
-            >
-              <Text style={[styles.editLink, { color: theme.colors.brand.primary }]}>Edit</Text>
-            </Pressable>
-          )}
-        </View>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
+          Birth Details
+        </Text>
         <Card variant="outlined">
           <Text style={[styles.birthDetailText, { color: theme.colors.text.primary }]}>
-            Date: {formatBirthDate(userProfile?.birthDate ?? null)}
+            {formatBirthDate(userProfile?.birthDate ?? null)}
           </Text>
           <Text style={[styles.birthDetailText, { color: theme.colors.text.primary }]}>
             Time: {formatBirthTime(userProfile?.birthTime ?? null)}
             {userProfile?.birthTimezone ? (
               <Text style={{ color: theme.colors.text.muted, fontSize: 13 }}>
-                {' '}({userProfile.birthTimezone})
+                {' '}
+                ({userProfile.birthTimezone})
               </Text>
             ) : null}
           </Text>
@@ -310,53 +295,6 @@ export default function ProfileScreen() {
             </Pressable>
           )}
         </Card>
-        {userProfile?.birthDetailsEditedAt && (
-          <Text style={[styles.editedNote, { color: theme.colors.text.muted }]}>
-            Birth details have already been edited once and cannot be changed again.
-          </Text>
-        )}
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Subscription</Text>
-        <Card variant="filled">
-          <Badge 
-            label={isPremium ? '✨ Premium Member' : '🌙 Free Tier'}
-            variant={isPremium ? 'primary' : 'default'}
-            size="lg"
-            style={{ marginBottom: theme.spacing.sm }}
-          />
-          {isPremium && subscription?.expiry_date && (
-            <Text style={styles.expiryText}>
-              Expires: {new Date(subscription.expiry_date).toLocaleDateString()}
-            </Text>
-          )}
-          {!isPremium && (
-            <Button
-              title="Upgrade to Premium"
-              variant="primary"
-              onPress={openUpgradeSheet}
-              style={{ marginTop: theme.spacing.sm }}
-            />
-          )}
-        </Card>
-      </View>
-
-      <View style={[styles.section, { marginTop: 'auto' }]}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>Support</Text>
-        <Card variant="outlined">
-          <Pressable
-            style={styles.supportRow}
-            onPress={() => router.push('/(tabs)/support')}
-            accessibilityRole="button"
-            accessibilityLabel="Get help or send feedback"
-          >
-            <Text style={[styles.supportRowLabel, { color: theme.colors.text.primary }]}>
-              Get Help / Send Feedback
-            </Text>
-            <Text style={[styles.supportRowChevron, { color: theme.colors.text.muted }]}>›</Text>
-          </Pressable>
-        </Card>
       </View>
 
       <Button
@@ -364,9 +302,8 @@ export default function ProfileScreen() {
         variant="destructive"
         onPress={handleSignOut}
         fullWidth
-        style={{ marginTop: 16 }}
+        style={{ marginTop: 16, marginBottom: 56 }}
       />
-
     </Screen>
   );
 }
@@ -410,12 +347,7 @@ function ProfileSkeleton() {
       </View>
 
       {/* Sign out button */}
-      <Skeleton
-        width="100%"
-        height={48}
-        borderRadius={12}
-        style={{ marginTop: 'auto' }}
-      />
+      <Skeleton width="100%" height={48} borderRadius={12} style={{ marginTop: 'auto' }} />
     </View>
   );
 }
@@ -471,49 +403,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginBottom: 8,
   },
-  expiryText: {
-    fontSize: 13,
-  },
-  themeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  themeTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  themeSubtitle: {
-    fontSize: 13,
-  },
-  toggle: {
-    width: 52,
-    height: 32,
-    borderRadius: 16,
-    padding: 2,
-    justifyContent: 'center',
-  },
-  toggleKnob: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-  },
-  autoModeText: {
-    fontSize: 12,
-    marginTop: 12,
-    fontStyle: 'italic',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  editLink: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
   birthDetailText: {
     fontSize: 15,
     marginBottom: 8,
@@ -533,6 +422,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
   },
+  tarotCardName: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  tarotCardType: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  tarotCardSummary: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
   geocodeButton: {
     marginTop: 16,
     paddingVertical: 12,
@@ -543,22 +448,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
-  },
-  editedNote: {
-    fontSize: 12,
-    marginTop: 8,
-    fontStyle: 'italic',
-  },
-  supportRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  supportRowLabel: {
-    fontSize: 15,
-  },
-  supportRowChevron: {
-    fontSize: 20,
-    lineHeight: 22,
   },
 });

@@ -1,6 +1,6 @@
 import { View, TextInput, Text, StyleSheet, TextInputProps, ViewStyle } from 'react-native';
-import { theme } from '@theme';
 import { useState } from 'react';
+import { useAppTheme } from '@hooks/useAppTheme';
 
 export interface InputProps extends Omit<TextInputProps, 'style'> {
   label?: string;
@@ -21,17 +21,26 @@ export function Input({
   ...textInputProps
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
+  const theme = useAppTheme();
   const { accessibilityLabel, accessibilityHint, ...restInputProps } = textInputProps;
 
   return (
     <View style={[styles.container, containerStyle]}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && (
+        <Text style={[styles.label, { color: theme.colors.text.primary }]}>{label}</Text>
+      )}
 
       <View
         style={[
           styles.inputContainer,
-          isFocused && styles.inputContainer_focused,
-          error && styles.inputContainer_error,
+          {
+            backgroundColor: theme.colors.surface.elevated,
+            borderColor: isFocused
+              ? theme.colors.border.focus
+              : error
+                ? theme.colors.error.main
+                : theme.colors.border.main,
+          },
         ]}
       >
         {leftIcon && <View style={styles.iconLeft}>{leftIcon}</View>}
@@ -39,6 +48,7 @@ export function Input({
         <TextInput
           style={[
             styles.input,
+            { color: theme.colors.text.primary },
             leftIcon ? styles.input_withLeftIcon : undefined,
           ]}
           placeholderTextColor={theme.colors.text.muted}
@@ -52,8 +62,8 @@ export function Input({
         {rightIcon && <View style={styles.iconRight}>{rightIcon}</View>}
       </View>
 
-      {error && <Text style={styles.error}>{error}</Text>}
-      {hint && !error && <Text style={styles.hint}>{hint}</Text>}
+      {error && <Text style={[styles.error, { color: theme.colors.error.main }]}>{error}</Text>}
+      {hint && !error && <Text style={[styles.hint, { color: theme.colors.text.muted }]}>{hint}</Text>}
     </View>
   );
 }
@@ -64,33 +74,22 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    ...theme.textStyles.label,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.xs,
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 4,
   },
 
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.gray[100],
     borderWidth: 2,
-    borderColor: theme.colors.border.main,
-    borderRadius: theme.borderRadius.input,
-  },
-
-  inputContainer_focused: {
-    borderColor: theme.colors.border.focus,
-  },
-
-  inputContainer_error: {
-    borderColor: theme.colors.error.main,
+    borderRadius: 12,
   },
 
   input: {
     flex: 1,
-    ...theme.textStyles.body,
-    color: theme.colors.text.primary,
-    padding: theme.spacing.md,
+    fontSize: 16,
+    padding: 16,
   },
 
   input_withLeftIcon: {
@@ -98,22 +97,20 @@ const styles = StyleSheet.create({
   },
 
   iconLeft: {
-    paddingLeft: theme.spacing.md,
+    paddingLeft: 16,
   },
 
   iconRight: {
-    paddingRight: theme.spacing.md,
+    paddingRight: 16,
   },
 
   error: {
-    ...theme.textStyles.caption,
-    color: theme.colors.error.main,
-    marginTop: theme.spacing.xxs,
+    fontSize: 12,
+    marginTop: 2,
   },
 
   hint: {
-    ...theme.textStyles.caption,
-    color: theme.colors.text.muted,
-    marginTop: theme.spacing.xxs,
+    fontSize: 12,
+    marginTop: 2,
   },
 });

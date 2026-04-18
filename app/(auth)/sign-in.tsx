@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, Alert, Pressable } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAuth } from '@hooks/useAuth';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { Screen, Input, Button } from '@components/ui';
-import { theme } from '@theme';
+import { spacing } from '@theme';
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ export default function SignInScreen() {
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const router = useRouter();
+  const theme = useAppTheme();
 
   const handleSignIn = async () => {
     if (!email || !password) {
@@ -31,13 +33,13 @@ export default function SignInScreen() {
 
   return (
     <Screen scroll={false} padding={false}>
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
         <View style={styles.header}>
-          <Text style={styles.emoji} accessible={false}>
-            🔮
+          <Text style={styles.emoji} accessible={false}>🔮</Text>
+          <Text style={[styles.title, { color: theme.colors.brand.primary }]}>Welcome Back</Text>
+          <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
+            Sign in to continue your mystical journey
           </Text>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Sign in to continue your mystical journey</Text>
         </View>
 
         <View style={styles.form}>
@@ -69,7 +71,7 @@ export default function SignInScreen() {
             onPress={handleSignIn}
             loading={loading}
             fullWidth
-            style={{ marginTop: theme.spacing.xs }}
+            style={{ marginTop: spacing.xs }}
           />
 
           <Link href="/(auth)/forgot-password" asChild>
@@ -78,16 +80,20 @@ export default function SignInScreen() {
               accessibilityRole="link"
               accessibilityLabel="Forgot password? Click here to reset"
             >
-              <Text style={styles.forgotPasswordText}>Forgot password? Click here to reset</Text>
+              <Text style={[styles.forgotPasswordText, { color: theme.colors.text.secondary }]}>
+                Forgot password? Click here to reset
+              </Text>
             </Pressable>
           </Link>
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Don't have an account? </Text>
+          <Text style={[styles.footerText, { color: theme.colors.text.secondary }]}>
+            Don't have an account?{' '}
+          </Text>
           <Link href="/(auth)/sign-up" asChild>
             <Pressable accessibilityRole="link" accessibilityLabel="Sign up for a new account">
-              <Text style={styles.link}>Sign Up</Text>
+              <Text style={[styles.link, { color: theme.colors.text.link }]}>Sign Up</Text>
             </Pressable>
           </Link>
         </View>
@@ -100,8 +106,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'space-between',
-    padding: theme.spacing.xl,
-    backgroundColor: theme.colors.surface.card,
+    padding: spacing.xl,
   },
   header: {
     flex: 1,
@@ -110,42 +115,40 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: 64,
-    marginBottom: theme.spacing.xl,
+    marginBottom: spacing.xl,
   },
   title: {
-    ...theme.textStyles.display,
-    marginBottom: theme.spacing.xs,
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: spacing.xs,
     textAlign: 'center',
-    color: theme.colors.brand.primary,
   },
   subtitle: {
-    ...theme.textStyles.body,
-    color: theme.colors.text.secondary,
+    fontSize: 16,
     textAlign: 'center',
   },
   form: {
-    gap: theme.spacing.md,
+    gap: spacing.md,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingBottom: theme.spacing.lg,
+    paddingBottom: spacing.lg,
   },
   footerText: {
-    ...theme.textStyles.body,
-    color: theme.colors.text.secondary,
+    fontSize: 16,
   },
   link: {
-    ...theme.textStyles.link,
-    color: theme.colors.text.link,
+    fontSize: 16,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
   forgotPassword: {
     alignItems: 'center',
-    marginTop: theme.spacing.sm,
+    marginTop: spacing.sm,
   },
   forgotPasswordText: {
-    ...theme.textStyles.caption,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
     textDecorationLine: 'underline',
   },
 });

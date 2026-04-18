@@ -3,11 +3,13 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { LocationInput } from '@components/ui';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 export default function BirthLocationScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { capture } = useAnalytics();
+  const theme = useAppTheme();
 
   capture('screen_viewed', { screen: 'onboarding birth location' });
 
@@ -44,11 +46,13 @@ export default function BirthLocationScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
       <View style={styles.content}>
-        <Text style={styles.progress}>Step 4 of 4</Text>
-        <Text style={styles.title}>Where were you born?</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.progress, { color: theme.colors.brand.primary }]}>Step 4 of 4</Text>
+        <Text style={[styles.title, { color: theme.colors.text.primary }]}>
+          Where were you born?
+        </Text>
+        <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
           Enter your city and country to refine your astrological chart
         </Text>
 
@@ -61,7 +65,10 @@ export default function BirthLocationScreen() {
         />
       </View>
 
-      <Pressable style={styles.button} onPress={handleContinue}>
+      <Pressable
+        style={[styles.button, { backgroundColor: theme.colors.brand.primary }]}
+        onPress={handleContinue}
+      >
         <Text style={styles.buttonText}>Calculate My Signs</Text>
       </Pressable>
     </View>
@@ -69,43 +76,11 @@ export default function BirthLocationScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    justifyContent: 'space-between',
-  },
-  content: {
-    flex: 1,
-    paddingTop: 16,
-  },
-  progress: {
-    fontSize: 14,
-    color: '#8b5cf6',
-    fontWeight: '600',
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 12,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    lineHeight: 24,
-    marginBottom: 40,
-  },
-  button: {
-    backgroundColor: '#8b5cf6',
-    padding: 18,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-  },
+  container: { flex: 1, padding: 24, justifyContent: 'space-between' },
+  content: { flex: 1, paddingTop: 16 },
+  progress: { fontSize: 14, fontWeight: '600', marginBottom: 16 },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 12 },
+  subtitle: { fontSize: 16, lineHeight: 24, marginBottom: 40 },
+  button: { padding: 18, borderRadius: 12, alignItems: 'center', marginBottom: 20 },
+  buttonText: { color: '#fff', fontSize: 18, fontWeight: '600' },
 });
