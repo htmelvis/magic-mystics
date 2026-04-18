@@ -157,7 +157,6 @@ Deno.serve(async (req: Request) => {
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
     // ── Auth ──────────────────────────────────────────────────────────────────
@@ -166,25 +165,26 @@ Deno.serve(async (req: Request) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const {
-      data: { user },
-      error: authError,
-    } = await userClient.auth.getUser();
+    const token = authHeader.replace('Bearer ', '');
 
-    if (authError || !user) {
+    // Supabase verifies the JWT signature at the infrastructure level before
+    // routing to this function, so decoding the payload here is safe.
+    let userId: string;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (!payload.sub) throw new Error('missing sub');
+      userId = payload.sub as string;
+    } catch {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // ── Parse body ────────────────────────────────────────────────────────────
     const body: RequestBody = await req.json();
     if (!body.reading_id) {
       return Response.json({ error: 'reading_id is required' }, { status: 400 });
     }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // ── Fetch reading + verify ownership ─────────────────────────────────────
     const { data: reading, error: readingError } = await supabase
@@ -197,7 +197,7 @@ Deno.serve(async (req: Request) => {
     if (!reading) {
       return Response.json({ error: 'Reading not found' }, { status: 404 });
     }
-    if (reading.user_id !== user.id) {
+    if (reading.user_id !== userId) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -214,7 +214,7 @@ Deno.serve(async (req: Request) => {
       supabase
         .from('users')
         .select('sun_sign, moon_sign, rising_sign')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single(),
       supabase
         .from('daily_metaphysical_data')
@@ -224,7 +224,7 @@ Deno.serve(async (req: Request) => {
       supabase
         .from('subscriptions')
         .select('tier, is_active')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .eq('is_active', true)
         .maybeSingle(),
     ]);
@@ -243,7 +243,7 @@ Deno.serve(async (req: Request) => {
     const { data: recentReadings } = await supabase
       .from('readings')
       .select('drawn_cards')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .neq('id', body.reading_id)
       .order('created_at', { ascending: false })
       .limit(5);

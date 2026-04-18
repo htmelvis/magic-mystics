@@ -14,8 +14,11 @@ import {
 import type { ReadingRow } from '@hooks/useReadings';
 import { useReflection } from '@hooks/useReflection';
 import { useAuth } from '@hooks/useAuth';
+import { useSubscription } from '@hooks/useSubscription';
 import { supabase } from '@lib/supabase/client';
 import { DrawerCardSection } from './DrawerCardSection';
+import { AIInsightSection } from '@components/tarot';
+import { parseAIInsight } from '@/types/ai-insight';
 import { spacing, borderRadius } from '@theme';
 import { useAppTheme } from '@/hooks/useAppTheme';
 
@@ -48,6 +51,7 @@ interface ReadingDrawerProps {
 
 export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
   const { user } = useAuth();
+  const { isPremium } = useSubscription(user?.id);
   const theme = useAppTheme();
 
   const [isVisible, setIsVisible] = useState(false);
@@ -235,24 +239,11 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
             ))}
 
             {/* AI insight */}
-            {reading?.ai_insight && (
-              <View
-                style={[
-                  styles.insightBox,
-                  {
-                    backgroundColor: theme.colors.tarot.insight.background,
-                    borderColor: theme.colors.tarot.insight.border,
-                  },
-                ]}
-              >
-                <Text style={[styles.insightLabel, { color: theme.colors.tarot.insight.text }]}>
-                  ✦ AI Insight
-                </Text>
-                <Text style={[styles.insightBody, { color: theme.colors.tarot.insight.text }]}>
-                  {reading.ai_insight}
-                </Text>
-              </View>
-            )}
+            <AIInsightSection
+              insight={parseAIInsight(reading?.ai_insight ?? null)}
+              isLoading={false}
+              isPremium={isPremium || !!reading?.ai_insight}
+            />
 
             {/* Reflection (read-only) */}
             {reflection && (
@@ -360,23 +351,6 @@ const styles = StyleSheet.create({
   },
   typeBadgeText: { fontSize: 12, fontWeight: '700' },
   sheetDate: { fontSize: 14, fontWeight: '500' },
-  insightBox: {
-    marginTop: spacing.sm,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    borderWidth: 1,
-  },
-  insightLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    marginBottom: spacing.sm,
-  },
-  insightBody: {
-    fontSize: 16,
-    lineHeight: 23,
-  },
   reflectionBox: {
     marginTop: spacing.sm,
     borderRadius: borderRadius.lg,
