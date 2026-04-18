@@ -732,7 +732,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   backButton: { padding: 4 },
-  backText: { fontSize: 16, fontWeight: '600' },
+  backText: { fontSize: 12, fontWeight: '600' },
   title: { fontSize: 18, fontWeight: 'bold', flex: 1 },
   progressRow: {
     flexDirection: 'row',

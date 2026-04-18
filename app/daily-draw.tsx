@@ -201,6 +201,7 @@ export default function DrawScreen() {
           {
             backgroundColor: theme.colors.surface.card,
             borderBottomColor: theme.colors.border.main,
+            zIndex: 99,
           },
         ]}
       >
@@ -212,12 +213,13 @@ export default function DrawScreen() {
         >
           <Text style={[styles.backText, { color: theme.colors.brand.primary }]}>← Back</Text>
         </Pressable>
-        <Text style={[styles.title, { color: theme.colors.text.primary }]}>Daily Draw</Text>
+        <Text style={[styles.topBarTitle, { color: theme.colors.text.primary }]}>Daily Card</Text>
         {__DEV__ && <Text style={styles.devBadge}>DEV</Text>}
       </View>
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-        <View style={styles.stage}>
+      <View style={{ flex: 1 }}>
+        {/* Card stage pinned behind scroll content */}
+        <View style={styles.pinnedStage}>
           {!isReady ? (
             <ActivityIndicator color={theme.colors.brand.primary} size="large" />
           ) : (
@@ -266,55 +268,78 @@ export default function DrawScreen() {
               </Animated.View>
             </>
           )}
+          {canDraw && (
+            <Text
+              style={[styles.tapHint, { color: theme.colors.text.muted }]}
+              accessibilityElementsHidden
+            >
+              Tap to draw your card
+            </Text>
+          )}
         </View>
 
-        {canDraw && (
-          <Text
-            style={[styles.tapHint, { color: theme.colors.text.muted }]}
-            accessibilityElementsHidden
-          >
-            Tap to draw your card
-          </Text>
-        )}
+        {/* ScrollView overlaid on top — transparent spacer reveals pinned card */}
+        <ScrollView
+          style={[StyleSheet.absoluteFill, styles.scroll]}
+          contentContainerStyle={styles.scrollContent}
+          scrollEnabled={isFlipped}
+          pointerEvents={isFlipped ? 'auto' : 'none'}
+        >
+          <View style={styles.cardSpacer} />
 
-        {deckError && (
-          <View
-            style={[
-              styles.errorBox,
-              { backgroundColor: theme.colors.error.light, borderColor: theme.colors.error.main },
-            ]}
-          >
-            <Text style={[styles.errorLabel, { color: theme.colors.error.main }]}>
-              Failed to load deck
-            </Text>
-            <Text style={[styles.errorText, { color: theme.colors.error.main }]}>
-              {(deckError as Error).message}
-            </Text>
-          </View>
-        )}
+          {(deckError || error || (card && orientation)) && (
+            <View
+              style={[styles.contentSheet, { backgroundColor: theme.colors.surface.background }]}
+            >
+              {deckError && (
+                <View
+                  style={[
+                    styles.errorBox,
+                    {
+                      backgroundColor: theme.colors.error.light,
+                      borderColor: theme.colors.error.main,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.errorLabel, { color: theme.colors.error.main }]}>
+                    Failed to load deck
+                  </Text>
+                  <Text style={[styles.errorText, { color: theme.colors.error.main }]}>
+                    {(deckError as Error).message}
+                  </Text>
+                </View>
+              )}
 
-        {error && (
-          <View
-            style={[
-              styles.errorBox,
-              { backgroundColor: theme.colors.error.light, borderColor: theme.colors.error.main },
-            ]}
-          >
-            <Text style={[styles.errorLabel, { color: theme.colors.error.main }]}>Error</Text>
-            <Text style={[styles.errorText, { color: theme.colors.error.main }]}>{error}</Text>
-          </View>
-        )}
+              {error && (
+                <View
+                  style={[
+                    styles.errorBox,
+                    {
+                      backgroundColor: theme.colors.error.light,
+                      borderColor: theme.colors.error.main,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.errorLabel, { color: theme.colors.error.main }]}>Error</Text>
+                  <Text style={[styles.errorText, { color: theme.colors.error.main }]}>
+                    {error}
+                  </Text>
+                </View>
+              )}
 
-        {card && orientation && <CardDetail card={card} orientation={orientation} />}
+              {card && orientation && <CardDetail card={card} orientation={orientation} />}
 
-        {readingId && card && (
-          <ReflectionSection
-            reflection={reflection}
-            onAdd={() => setReflectionSheetOpen(true)}
-            onEdit={() => setReflectionSheetOpen(true)}
-          />
-        )}
-      </ScrollView>
+              {readingId && card && (
+                <ReflectionSection
+                  reflection={reflection}
+                  onAdd={() => setReflectionSheetOpen(true)}
+                  onEdit={() => setReflectionSheetOpen(true)}
+                />
+              )}
+            </View>
+          )}
+        </ScrollView>
+      </View>
 
       <ReflectionSheet
         visible={reflectionSheetOpen}
@@ -356,31 +381,19 @@ function CardDetail({
       ]}
     >
       <View style={detailStyles.metaRow}>
-        <Text
-          style={[
-            detailStyles.orientText,
-            { color: isReversed ? theme.colors.error.main : theme.colors.brand.primary },
-          ]}
-        >
-          {isReversed ? '↓ Reversed' : '↑ Upright'}
-        </Text>
         {arcana && (
-          <View
-            style={[
-              detailStyles.pill,
-              {
-                backgroundColor: theme.colors.surface.elevated,
-                borderColor: theme.colors.border.main,
-              },
-            ]}
-          >
-            <Text style={[detailStyles.pillText, { color: theme.colors.text.secondary }]}>
-              {arcana === 'Major' ? 'Major Arcana' : (suit ?? 'Minor Arcana')}
-              {number != null ? ` · ${number}` : ''}
-            </Text>
-          </View>
+          <Text style={[detailStyles.arcanaText, { color: theme.colors.text.primary }]}>
+            {number != null ? ` ${number} of ` : ''}
+            {arcana === 'Major' ? 'Major Arcana' : (suit ?? 'Minor Arcana')}
+          </Text>
         )}
+        <Text
+          style={[detailStyles.orientText, { color: isReversed ? theme.colors.brand.primary : '' }]}
+        >
+          {isReversed ? '↓ Reversed' : null}
+        </Text>
       </View>
+      <View style={detailStyles.metaRow}></View>
 
       {(element || astrology) && (
         <View style={detailStyles.metaRow}>
@@ -423,7 +436,7 @@ function CardDetail({
         </Text>
       )}
 
-      {keywords.length > 0 && (
+      {/* {keywords.length > 0 && (
         <View style={detailStyles.keywordsRow}>
           {keywords.map(kw => (
             <View
@@ -454,7 +467,7 @@ function CardDetail({
             </View>
           ))}
         </View>
-      )}
+      )} */}
 
       {meaning.length > 0 && (
         <Text style={[detailStyles.meaning, { color: theme.colors.text.secondary }]}>
@@ -471,9 +484,10 @@ const detailStyles = StyleSheet.create({
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 12,
+    marginBottom: 8,
   },
-  orientText: { fontSize: 15, fontWeight: '700' },
+  orientText: { fontSize: 11, fontWeight: '400' },
+  arcanaText: { fontSize: 14, fontWeight: '700' },
   pill: {
     borderRadius: 6,
     paddingVertical: 3,
@@ -481,11 +495,11 @@ const detailStyles = StyleSheet.create({
     borderWidth: 1,
   },
   pillText: { fontSize: 12, fontWeight: '500' },
-  summary: { fontSize: 15, lineHeight: 22, fontStyle: 'italic', marginBottom: 12 },
+  summary: { fontSize: 12, lineHeight: 22, fontStyle: 'italic', marginBottom: 12 },
   keywordsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 16 },
   keyword: { borderRadius: 6, paddingVertical: 4, paddingHorizontal: 10, borderWidth: 1 },
   keywordText: { fontSize: 12, fontWeight: '600' },
-  meaning: { fontSize: 14, lineHeight: 21 },
+  meaning: { fontSize: 16, lineHeight: 23 },
 });
 
 // ── Reflection section ────────────────────────────────────────────────────────
@@ -688,6 +702,7 @@ const styles = StyleSheet.create({
   backButton: { padding: 4 },
   backText: { fontSize: 12, fontWeight: '600' },
   title: { fontSize: 20, fontWeight: 'bold', flex: 1 },
+  topBarTitle: { fontSize: 12, fontWeight: '600', flex: 1, textAlign: 'center' },
   devBadge: {
     fontSize: 11,
     fontWeight: '700',
@@ -698,9 +713,30 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     overflow: 'hidden',
   },
-  scroll: { flex: 1 },
-  scrollContent: { padding: 20, paddingBottom: 40 },
-  errorBox: { borderRadius: 12, padding: 16, borderWidth: 1, marginBottom: 20 },
+  scroll: { backgroundColor: 'transparent' },
+  scrollContent: { flexGrow: 1 },
+  pinnedStage: {
+    height: 420,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardSpacer: { height: 344 },
+  contentSheet: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: 12,
+    paddingTop: 0,
+    marginTop: 20,
+    paddingBottom: 48,
+    gap: 16,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: -6 },
+    // shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 10,
+    minHeight: 200,
+  },
+  errorBox: { borderRadius: 12, padding: 16, borderWidth: 1 },
   errorLabel: {
     fontSize: 11,
     fontWeight: '700',
@@ -710,14 +746,8 @@ const styles = StyleSheet.create({
   },
   errorText: { fontSize: 13, fontFamily: 'monospace' },
   resultBox: { borderRadius: 16, padding: 20, borderWidth: 1, gap: 0 },
-  stage: {
-    height: 340,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 24,
-  },
   stageLayer: {
-    position: 'absolute',
+    ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -735,5 +765,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tapHint: { fontSize: 13, letterSpacing: 0.5 },
+  tapHint: { fontSize: 13, letterSpacing: 0.5, marginTop: 8 },
 });

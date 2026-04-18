@@ -71,8 +71,7 @@ CREATE TABLE IF NOT EXISTS public.ppf_readings (
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON public.subscriptions(user_id);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_active ON public.subscriptions(is_active);
-CREATE INDEX IF NOT EXISTS idx_readings_user_id ON public.readings(user_id);
-CREATE INDEX IF NOT EXISTS idx_readings_created_at ON public.readings(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_readings_user_created ON public.readings(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_reflections_reading_id ON public.reflections(reading_id);
 CREATE INDEX IF NOT EXISTS idx_reflections_user_id ON public.reflections(user_id);
 CREATE INDEX IF NOT EXISTS idx_ppf_readings_user_id ON public.ppf_readings(user_id);

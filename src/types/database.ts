@@ -156,33 +156,6 @@ export interface Database {
         };
         Relationships: [];
       };
-      ppf_readings: {
-        Row: {
-          id: string;
-          user_id: string;
-          past_card: unknown;
-          present_card: unknown;
-          future_card: unknown;
-          ai_insight: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          past_card: unknown;
-          present_card: unknown;
-          future_card: unknown;
-          ai_insight?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          past_card?: unknown;
-          present_card?: unknown;
-          future_card?: unknown;
-          ai_insight?: string | null;
-        };
-        Relationships: [];
-      };
       tarot_cards: {
         Row: {
           id: number;
