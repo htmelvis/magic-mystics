@@ -20,7 +20,7 @@ import {
   DEFAULT_INTENTIONS,
   SPREAD_DISPLAY_NAMES,
   parseAIInsight,
-} from '../../src/types/ai-insight.ts';
+} from '../_shared/ai-insight.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
