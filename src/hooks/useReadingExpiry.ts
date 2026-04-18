@@ -12,13 +12,8 @@ interface ExpiringRow {
   created_at: string;
 }
 
-interface ExpiryResult {
-  readings: ExpiringRow[];
-  ppfReadings: ExpiringRow[];
-}
-
-/** Returns readings and ppf_readings that are 23–30 days old (due for deletion within 7 days). */
-async function fetchExpiringRows(userId: string): Promise<ExpiryResult> {
+/** Returns readings that are 23–30 days old (due for deletion within 7 days). */
+async function fetchExpiringRows(userId: string): Promise<ExpiringRow[]> {
   const now = new Date();
 
   // Older bound: already beyond 30 days = already purged, exclude them.
@@ -29,31 +24,16 @@ async function fetchExpiringRows(userId: string): Promise<ExpiryResult> {
   const warnThreshold = new Date(now);
   warnThreshold.setUTCDate(warnThreshold.getUTCDate() - WARNING_START_DAYS);
 
-  const [readingsRes, ppfRes] = await Promise.all([
-    supabase
-      .from('readings')
-      .select('id, created_at')
-      .eq('user_id', userId)
-      .gte('created_at', cutoff.toISOString())
-      .lte('created_at', warnThreshold.toISOString())
-      .order('created_at', { ascending: true }),
+  const { data, error } = await supabase
+    .from('readings')
+    .select('id, created_at')
+    .eq('user_id', userId)
+    .gte('created_at', cutoff.toISOString())
+    .lte('created_at', warnThreshold.toISOString())
+    .order('created_at', { ascending: true });
 
-    supabase
-      .from('ppf_readings')
-      .select('id, created_at')
-      .eq('user_id', userId)
-      .gte('created_at', cutoff.toISOString())
-      .lte('created_at', warnThreshold.toISOString())
-      .order('created_at', { ascending: true }),
-  ]);
-
-  if (readingsRes.error) throw readingsRes.error;
-  if (ppfRes.error) throw ppfRes.error;
-
-  return {
-    readings: readingsRes.data ?? [],
-    ppfReadings: ppfRes.data ?? [],
-  };
+  if (error) throw error;
+  return data ?? [];
 }
 
 /** Dismiss key is tied to the oldest expiring date so the banner re-surfaces
@@ -72,7 +52,7 @@ function daysUntilPurge(createdAt: string): number {
 }
 
 export interface ReadingExpiryState {
-  /** Total rows (readings + ppf) about to be purged. 0 means nothing to warn about. */
+  /** Readings about to be purged. 0 means nothing to warn about. */
   expiringCount: number;
   /** Days until the oldest expiring row is deleted. null when expiringCount is 0. */
   daysUntilOldest: number | null;
@@ -104,8 +84,7 @@ export function useReadingExpiry(
     gcTime: 2 * 60 * 60 * 1000,
   });
 
-  const allExpiring = [...(data?.readings ?? []), ...(data?.ppfReadings ?? [])];
-  const oldest = allExpiring[0] ?? null; // already sorted ASC
+  const oldest = data?.[0] ?? null; // already sorted ASC
 
   // Sync dismiss state from AsyncStorage whenever the oldest expiry bucket changes.
   useEffect(() => {
@@ -135,7 +114,7 @@ export function useReadingExpiry(
   }
 
   return {
-    expiringCount: allExpiring.length,
+    expiringCount: data?.length ?? 0,
     daysUntilOldest: oldest ? daysUntilPurge(oldest.created_at) : null,
     isDismissed,
     dismiss,

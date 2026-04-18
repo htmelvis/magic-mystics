@@ -19,7 +19,7 @@ export const spacing = {
   xxxl: 40, // 40px
 
   // Specific spacing tokens
-  screenPadding: 20,
+  screenPadding: 16,
   cardPadding: 16,
   sectionGap: 24,
   itemGap: 12,

@@ -7,10 +7,13 @@ import { supabase } from '@lib/supabase/client';
 import { ZodiacSign } from '@lib/astrology/calculate-signs';
 import { ZodiacAvatar } from '@components/ui';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 interface TarotAssociation {
+  cardId: number;
   cardName: string;
   zodiacName: string;
+  associationType: string | null;
   description: string | null;
 }
 
@@ -24,6 +27,7 @@ export default function TarotRevealScreen() {
   const [association, setAssociation] = useState<TarotAssociation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const theme = useAppTheme();
 
   capture('screen_viewed', { screen: 'onboarding tarot reveal' });
 
@@ -50,7 +54,7 @@ export default function TarotRevealScreen() {
 
         const { data, error: assocError } = await supabase
           .from('zodiac_tarot_associations')
-          .select('description, tarot_cards!tarot_card_id(name)')
+          .select('description, association_type, tarot_card_id, tarot_cards!tarot_card_id(id, name)')
           .eq('zodiac_sign_id', zodiacData.id)
           .single();
 
@@ -60,13 +64,25 @@ export default function TarotRevealScreen() {
           throw new Error(msg);
         }
 
-        const tarotCards = data.tarot_cards as { name: string } | null;
+        const tarotCards = data.tarot_cards as { id: number; name: string } | null;
 
         setAssociation({
+          cardId: tarotCards?.id ?? data.tarot_card_id,
           cardName: tarotCards?.name ?? '',
           zodiacName: zodiacData.name,
+          associationType: data.association_type ?? null,
           description: data.description,
         });
+
+        // Persist tarot card fields to the user row so the profile page reads
+        // everything from the existing user query — no extra round trip needed.
+        if (user && (tarotCards?.id ?? data.tarot_card_id)) {
+          supabase
+            .from('users')
+            .update({ tarot_card_id: tarotCards?.id ?? data.tarot_card_id })
+            .eq('id', user.id)
+            .then(() => queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] }));
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.warn('TarotReveal fetch error:', msg);
@@ -85,32 +101,47 @@ export default function TarotRevealScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container} bounces={false}>
+    <ScrollView
+      contentContainerStyle={[styles.container, { backgroundColor: theme.colors.surface.background }]}
+      style={{ backgroundColor: theme.colors.surface.background }}
+      bounces={false}
+    >
       <View style={styles.avatarContainer}>
         <ZodiacAvatar sign={sunSign as ZodiacSign} size={100} />
       </View>
 
-      <Text style={styles.heading}>Your Associated Card</Text>
+      <Text style={[styles.heading, { color: theme.colors.brand.primary }]}>
+        Your Associated Card
+      </Text>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#8b5cf6" style={styles.loader} />
+        <ActivityIndicator size="large" color={theme.colors.brand.primary} style={styles.loader} />
       ) : error || !association ? (
-        <Text style={styles.errorText}>{error ?? 'Could not load your tarot card.'}</Text>
+        <Text style={[styles.errorText, { color: theme.colors.text.muted }]}>
+          {error ?? 'Could not load your tarot card.'}
+        </Text>
       ) : (
         <View style={styles.cardContainer}>
-          <Text style={styles.cardTitle}>
+          <Text style={[styles.cardTitle, { color: theme.colors.text.primary }]}>
             {association.cardName}{' '}
-            <Text style={styles.separator}>&lt;&gt;</Text>{' '}
+            <Text style={[styles.separator, { color: theme.colors.brand.primary }]}>&lt;&gt;</Text>{' '}
             {association.zodiacName}
           </Text>
+          {association.associationType ? (
+            <Text style={[styles.associationType, { color: theme.colors.brand.primary }]}>
+              {association.associationType}
+            </Text>
+          ) : null}
           {association.description ? (
-            <Text style={styles.description}>{association.description}</Text>
+            <Text style={[styles.description, { color: theme.colors.text.secondary }]}>
+              {association.description}
+            </Text>
           ) : null}
         </View>
       )}
 
       <Pressable
-        style={styles.beginButton}
+        style={[styles.beginButton, { backgroundColor: theme.colors.brand.primary }]}
         onPress={handleBeginJourney}
         accessibilityRole="button"
         accessibilityLabel="Begin your journey"
@@ -135,7 +166,6 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#8b5cf6',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 20,
@@ -145,7 +175,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 15,
-    color: '#9ca3af',
     textAlign: 'center',
     marginVertical: 24,
     lineHeight: 22,
@@ -159,23 +188,26 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#1f2937',
     textAlign: 'center',
     lineHeight: 34,
   },
   separator: {
-    color: '#8b5cf6',
     fontWeight: '400',
+  },
+  associationType: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    textAlign: 'center',
   },
   description: {
     fontSize: 16,
-    color: '#4b5563',
     textAlign: 'center',
     lineHeight: 26,
     maxWidth: 320,
   },
   beginButton: {
-    backgroundColor: '#8b5cf6',
     paddingHorizontal: 40,
     paddingVertical: 16,
     borderRadius: 14,

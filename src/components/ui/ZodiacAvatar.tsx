@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, StyleProp, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ZodiacSign } from '@lib/astrology/calculate-signs';
 import { ZODIAC_THEMES } from '@lib/astrology/zodiac-themes';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 interface ZodiacAvatarProps {
   sign: ZodiacSign;
@@ -41,13 +42,14 @@ interface ZodiacAvatarPlaceholderProps {
  * once the real avatar is ready.
  */
 export function ZodiacAvatarPlaceholder({ size = 48, style }: ZodiacAvatarPlaceholderProps) {
+  const theme = useAppTheme();
   const glyphSize = size * 0.38;
   const borderRadius = size / 2;
 
   return (
     <View style={[{ width: size, height: size, borderRadius }, style]}>
       <LinearGradient
-        colors={['#7c3aed', '#a78bfa']}
+        colors={[theme.colors.brand.primaryDark, theme.colors.brand.primaryLight]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.gradient, { borderRadius }]}

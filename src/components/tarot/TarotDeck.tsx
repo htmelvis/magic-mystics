@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import { CardBackFace } from './TarotCard';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import {
   CARD,
   COLORS,
@@ -35,6 +36,7 @@ export function TarotDeck({
   onShuffle,
   onDraw,
 }: TarotDeckProps) {
+  const theme = useAppTheme();
   const phase = useRef(new Animated.Value(0)).current;
   const isAnimating = useRef(false);
 
@@ -82,7 +84,7 @@ export function TarotDeck({
         ))}
       </View>
 
-      <View style={styles.controls}>
+      {/* <View style={styles.controls}>
         <Pressable
           style={styles.button}
           onPress={handleShuffle}
@@ -102,10 +104,12 @@ export function TarotDeck({
             <Text style={styles.buttonText}>Draw</Text>
           </Pressable>
         )}
-      </View>
+      </View> */}
 
       {cardCount !== undefined && (
-        <Text style={styles.countLabel}>{cardCount} cards remaining</Text>
+        <Text style={[styles.countLabel, { color: theme.colors.text.secondary }]}>
+          {cardCount} cards remaining
+        </Text>
       )}
     </View>
   );
@@ -202,7 +206,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   countLabel: {
-    color: COLORS.front.textMuted,
     fontSize: 12,
     letterSpacing: 0.5,
   },

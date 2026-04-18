@@ -7,7 +7,8 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-import { theme } from '@theme';
+import { useAppTheme } from '@hooks/useAppTheme';
+import { borderRadius, spacing } from '@theme';
 
 // ── Base Skeleton ─────────────────────────────────────────────────────────────
 
@@ -16,7 +17,7 @@ interface SkeletonProps {
   width?: number | `${number}%`;
   /** Height in px. Default `16` */
   height?: number;
-  /** Override border radius. Default `theme.borderRadius.md` */
+  /** Override border radius. Default `borderRadius.md` */
   borderRadius?: number;
   /** Make it a circle (overrides borderRadius). */
   circle?: boolean;
@@ -30,6 +31,7 @@ export function Skeleton({
   circle = false,
   style,
 }: SkeletonProps) {
+  const theme = useAppTheme();
   const opacity = useSharedValue(0.35);
 
   useEffect(() => {
@@ -46,7 +48,7 @@ export function Skeleton({
 
   const resolvedRadius = circle
     ? (typeof width === 'number' ? width / 2 : 9999)
-    : (br ?? theme.borderRadius.md);
+    : (br ?? borderRadius.md);
 
   return (
     <Animated.View
@@ -70,7 +72,7 @@ export function Skeleton({
 export function SkeletonText({
   lines = 3,
   lineHeight = 14,
-  gap = theme.spacing.xs,
+  gap = spacing.xs,
   style,
 }: {
   lines?: number;
@@ -81,39 +83,30 @@ export function SkeletonText({
   return (
     <View style={[{ gap }, style]}>
       {Array.from({ length: lines }).map((_, i) => (
-        <Skeleton
-          key={i}
-          height={lineHeight}
-          width={i === lines - 1 ? '70%' : '100%'}
-        />
+        <Skeleton key={i} height={lineHeight} width={i === lines - 1 ? '70%' : '100%'} />
       ))}
     </View>
   );
 }
 
 /** Circle skeleton (avatar, icon placeholder). */
-export function SkeletonCircle({
-  size = 48,
-  style,
-}: {
-  size?: number;
-  style?: ViewStyle;
-}) {
+export function SkeletonCircle({ size = 48, style }: { size?: number; style?: ViewStyle }) {
   return <Skeleton width={size} height={size} circle style={style} />;
 }
 
 /** Card-shaped skeleton with a title bar and two text lines. */
 export function SkeletonCard({ style }: { style?: ViewStyle }) {
+  const theme = useAppTheme();
   return (
     <View
       style={[
         {
           backgroundColor: theme.colors.surface.card,
-          borderRadius: theme.borderRadius.card,
+          borderRadius: borderRadius.card,
           borderWidth: 1,
           borderColor: theme.colors.border.main,
-          padding: theme.spacing.cardPadding,
-          gap: theme.spacing.sm,
+          padding: spacing.cardPadding,
+          gap: spacing.sm,
         },
         style,
       ]}
@@ -126,17 +119,18 @@ export function SkeletonCard({ style }: { style?: ViewStyle }) {
 
 /** Row skeleton matching the history reading row layout. */
 export function SkeletonRow({ style }: { style?: ViewStyle }) {
+  const theme = useAppTheme();
   return (
     <View
       style={[
         {
           backgroundColor: theme.colors.surface.card,
-          borderRadius: theme.radius.lg,
+          borderRadius: borderRadius.lg,
           borderWidth: 1,
           borderColor: theme.colors.border.subtle,
-          padding: theme.spacing.lg,
-          marginBottom: theme.spacing.md,
-          gap: theme.spacing.xs,
+          padding: spacing.lg,
+          marginBottom: spacing.md,
+          gap: spacing.xs,
         },
         style,
       ]}
@@ -151,9 +145,9 @@ export function SkeletonRow({ style }: { style?: ViewStyle }) {
 /** Profile skeleton with avatar + info lines. */
 export function SkeletonProfile({ style }: { style?: ViewStyle }) {
   return (
-    <View style={[{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md }, style]}>
+    <View style={[{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }, style]}>
       <SkeletonCircle size={48} />
-      <View style={{ flex: 1, gap: theme.spacing.xs }}>
+      <View style={{ flex: 1, gap: spacing.xs }}>
         <Skeleton width="60%" height={16} />
         <Skeleton width="40%" height={12} />
       </View>

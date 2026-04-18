@@ -26,6 +26,7 @@ export interface Database {
           moon_sign: string | null;
           rising_sign: string | null;
           natal_chart_data: unknown;
+          tarot_card_id: number | null;
           onboarding_completed: boolean;
           created_at: string;
           updated_at: string;
@@ -46,6 +47,7 @@ export interface Database {
           moon_sign?: string | null;
           rising_sign?: string | null;
           natal_chart_data?: unknown;
+          tarot_card_id?: number | null;
           onboarding_completed?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -65,6 +67,7 @@ export interface Database {
           moon_sign?: string | null;
           rising_sign?: string | null;
           natal_chart_data?: unknown;
+          tarot_card_id?: number | null;
           onboarding_completed?: boolean;
           updated_at?: string;
         };
@@ -150,33 +153,6 @@ export interface Database {
         Update: {
           content?: string;
           updated_at?: string;
-        };
-        Relationships: [];
-      };
-      ppf_readings: {
-        Row: {
-          id: string;
-          user_id: string;
-          past_card: unknown;
-          present_card: unknown;
-          future_card: unknown;
-          ai_insight: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          past_card: unknown;
-          present_card: unknown;
-          future_card: unknown;
-          ai_insight?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          past_card?: unknown;
-          present_card?: unknown;
-          future_card?: unknown;
-          ai_insight?: string | null;
         };
         Relationships: [];
       };

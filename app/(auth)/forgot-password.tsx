@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@hooks/useAuth';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { Screen, Input, Button } from '@components/ui';
-import { theme } from '@theme';
+import { spacing } from '@theme';
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ export default function ForgotPasswordScreen() {
   const [sent, setSent] = useState(false);
   const { forgotPassword } = useAuth();
   const router = useRouter();
+  const theme = useAppTheme();
 
   const handleSubmit = async () => {
     if (!email) {
@@ -32,15 +34,17 @@ export default function ForgotPasswordScreen() {
   if (sent) {
     return (
       <Screen scroll={false} padding={false}>
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
           <View style={styles.header}>
             <Text style={styles.emoji} accessible={false}>✉️</Text>
-            <Text style={styles.title}>Check Your Email</Text>
-            <Text style={styles.subtitle}>
-              We sent a password reset link to{'\n'}
-              <Text style={styles.emailHighlight}>{email}</Text>
+            <Text style={[styles.title, { color: theme.colors.brand.primary }]}>
+              Check Your Email
             </Text>
-            <Text style={[styles.subtitle, { marginTop: theme.spacing.md }]}>
+            <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
+              We sent a password reset link to{'\n'}
+              <Text style={{ color: theme.colors.brand.primary, fontWeight: '600' }}>{email}</Text>
+            </Text>
+            <Text style={[styles.subtitle, { color: theme.colors.text.secondary, marginTop: spacing.md }]}>
               Click the link in the email to set a new password.
             </Text>
           </View>
@@ -58,11 +62,11 @@ export default function ForgotPasswordScreen() {
 
   return (
     <Screen scroll={false} padding={false}>
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
         <View style={styles.header}>
           <Text style={styles.emoji} accessible={false}>🔑</Text>
-          <Text style={styles.title}>Reset Password</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: theme.colors.brand.primary }]}>Reset Password</Text>
+          <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
             Enter your email and we'll send you a link to reset your password.
           </Text>
         </View>
@@ -83,16 +87,12 @@ export default function ForgotPasswordScreen() {
             onPress={handleSubmit}
             loading={loading}
             fullWidth
-            style={{ marginTop: theme.spacing.xs }}
+            style={{ marginTop: spacing.xs }}
           />
         </View>
 
         <View style={styles.footer}>
-          <Button
-            title="Back to Sign In"
-            onPress={() => router.back()}
-            variant="ghost"
-          />
+          <Button title="Back to Sign In" onPress={() => router.back()} variant="ghost" />
         </View>
       </View>
     </Screen>
@@ -103,8 +103,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'space-between',
-    padding: theme.spacing.xl,
-    backgroundColor: theme.colors.surface.card,
+    padding: spacing.xl,
   },
   header: {
     flex: 1,
@@ -113,28 +112,23 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: 64,
-    marginBottom: theme.spacing.xl,
+    marginBottom: spacing.xl,
   },
   title: {
-    ...theme.textStyles.display,
-    marginBottom: theme.spacing.xs,
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: spacing.xs,
     textAlign: 'center',
-    color: theme.colors.brand.primary,
   },
   subtitle: {
-    ...theme.textStyles.body,
-    color: theme.colors.text.secondary,
+    fontSize: 16,
     textAlign: 'center',
   },
-  emailHighlight: {
-    color: theme.colors.brand.primary,
-    fontWeight: '600',
-  },
   form: {
-    gap: theme.spacing.md,
+    gap: spacing.md,
   },
   footer: {
     alignItems: 'center',
-    paddingBottom: theme.spacing.lg,
+    paddingBottom: spacing.lg,
   },
 });

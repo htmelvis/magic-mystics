@@ -16,7 +16,8 @@ import { useReflection } from '@hooks/useReflection';
 import { useAuth } from '@hooks/useAuth';
 import { supabase } from '@lib/supabase/client';
 import { DrawerCardSection } from './DrawerCardSection';
-import { theme } from '@theme';
+import { spacing, borderRadius } from '@theme';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 const SENTIMENT_ICON: Record<string, string> = {
   positive: '👍',
@@ -47,43 +48,30 @@ interface ReadingDrawerProps {
 
 export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
   const { user } = useAuth();
+  const theme = useAppTheme();
 
-  // Keep the modal mounted through the close animation.
-  // isVisible drives Modal.visible; reading is kept until the sheet is gone.
   const [isVisible, setIsVisible] = useState(false);
 
   const slideY = useRef(new Animated.Value(900)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
 
-  // Stable ref so PanResponder never captures a stale dismiss.
   const dismissRef = useRef<() => void>(() => {});
   const sheetRef = useRef<View>(null);
 
   const dismiss = useCallback(() => {
     Animated.parallel([
-      Animated.timing(slideY, {
-        toValue: 900,
-        duration: 280,
-        useNativeDriver: true,
-      }),
-      Animated.timing(backdropOpacity, {
-        toValue: 0,
-        duration: 220,
-        useNativeDriver: true,
-      }),
+      Animated.timing(slideY, { toValue: 900, duration: 280, useNativeDriver: true }),
+      Animated.timing(backdropOpacity, { toValue: 0, duration: 220, useNativeDriver: true }),
     ]).start(() => {
       setIsVisible(false);
       onClose();
     });
   }, [onClose, slideY, backdropOpacity]);
 
-  // Keep dismissRef current so PanResponder always calls the latest version.
   useEffect(() => {
     dismissRef.current = dismiss;
   });
 
-  // Show the modal when a reading is selected.
-  // Animation starts in onShow once native views are actually mounted.
   useEffect(() => {
     if (!reading) return;
     slideY.setValue(900);
@@ -91,8 +79,6 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
     setIsVisible(true);
   }, [reading, slideY, backdropOpacity]);
 
-  // Called by Modal after its content is mounted on the native side —
-  // the only safe place to start a useNativeDriver animation.
   const handleShow = useCallback(() => {
     Animated.parallel([
       Animated.spring(slideY, {
@@ -102,20 +88,13 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
         mass: 1,
         useNativeDriver: true,
       }),
-      Animated.timing(backdropOpacity, {
-        toValue: 1,
-        duration: 250,
-        useNativeDriver: true,
-      }),
+      Animated.timing(backdropOpacity, { toValue: 1, duration: 250, useNativeDriver: true }),
     ]).start(() => {
-      // Move VoiceOver focus into the drawer once it finishes opening
       const node = findNodeHandle(sheetRef.current);
       if (node) AccessibilityInfo.setAccessibilityFocus(node);
     });
   }, [slideY, backdropOpacity]);
 
-  // Drag-to-dismiss — onStartShouldSetPanResponder:true so the handle zone
-  // claims the gesture immediately instead of racing other views.
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -139,7 +118,6 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
 
   const { reflection } = useReflection(reading?.id ?? null, user?.id ?? null);
 
-  // Fetch full tarot_cards rows for all cards in this reading.
   const [cardDetails, setCardDetails] = useState<Record<number, Record<string, unknown>>>({});
   useEffect(() => {
     if (!reading) return;
@@ -172,7 +150,6 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
       statusBarTranslucent
     >
       <View style={styles.root}>
-        {/* Backdrop — covers only the area above the sheet */}
         <Pressable
           style={StyleSheet.absoluteFill}
           onPress={() => dismissRef.current()}
@@ -182,14 +159,20 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
           <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]} />
         </Pressable>
 
-        {/* The sheet */}
         <Animated.View
           ref={sheetRef}
-          style={[styles.sheet, { transform: [{ translateY: slideY }] }]}
+          style={[
+            styles.sheet,
+            {
+              backgroundColor: theme.colors.surface.card,
+              transform: [{ translateY: slideY }],
+              ...theme.shadows.xl,
+            },
+          ]}
           accessibilityViewIsModal
           accessibilityRole="none"
         >
-          {/* Drag handle — full-width touch target */}
+          {/* Drag handle */}
           <View
             {...panResponder.panHandlers}
             style={styles.handleZone}
@@ -199,7 +182,7 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
             accessibilityHint="Swipe down to dismiss this drawer"
             hitSlop={{ top: 12, bottom: 12 }}
           >
-            <View style={styles.handle} />
+            <View style={[styles.handle, { backgroundColor: theme.colors.border.default }]} />
           </View>
 
           <ScrollView
@@ -211,14 +194,30 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
             {/* Header row */}
             {reading && (
               <View style={styles.sheetHeader}>
-                <View style={[styles.typeBadge, !isDaily && styles.typeBadgePPF]}>
+                <View
+                  style={[
+                    styles.typeBadge,
+                    {
+                      backgroundColor: isDaily
+                        ? theme.colors.brand.purple[50]
+                        : theme.colors.brand.cosmic.sky,
+                    },
+                  ]}
+                >
                   <Text
-                    style={[styles.typeBadgeText, !isDaily && styles.typeBadgeTextPPF]}
+                    style={[
+                      styles.typeBadgeText,
+                      {
+                        color: isDaily
+                          ? theme.colors.brand.purple[600]
+                          : theme.colors.brand.cosmic.ocean,
+                      },
+                    ]}
                   >
                     {isDaily ? 'Daily Draw' : '3-Card Spread'}
                   </Text>
                 </View>
-                <Text style={styles.sheetDate}>
+                <Text style={[styles.sheetDate, { color: theme.colors.text.muted }]}>
                   {formatDate(reading.created_at)} · {formatTime(reading.created_at)}
                 </Text>
               </View>
@@ -237,33 +236,74 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
 
             {/* AI insight */}
             {reading?.ai_insight && (
-              <View style={styles.insightBox}>
-                <Text style={styles.insightLabel}>✦ AI Insight</Text>
-                <Text style={styles.insightBody}>{reading.ai_insight}</Text>
+              <View
+                style={[
+                  styles.insightBox,
+                  {
+                    backgroundColor: theme.colors.tarot.insight.background,
+                    borderColor: theme.colors.tarot.insight.border,
+                  },
+                ]}
+              >
+                <Text style={[styles.insightLabel, { color: theme.colors.tarot.insight.text }]}>
+                  ✦ AI Insight
+                </Text>
+                <Text style={[styles.insightBody, { color: theme.colors.tarot.insight.text }]}>
+                  {reading.ai_insight}
+                </Text>
               </View>
             )}
 
             {/* Reflection (read-only) */}
             {reflection && (
-              <View style={styles.reflectionBox}>
-                <Text style={styles.reflectionLabel}>✦ Your Reflection</Text>
-                <View style={styles.sentimentRow}>
+              <View
+                style={[
+                  styles.reflectionBox,
+                  {
+                    backgroundColor: theme.colors.brand.purple[50],
+                    borderColor: theme.colors.brand.purple[200],
+                  },
+                ]}
+              >
+                <Text style={[styles.reflectionLabel, { color: theme.colors.brand.primaryDark }]}>
+                  ✦ Your Reflection
+                </Text>
+                <View
+                  style={[
+                    styles.sentimentRow,
+                    {
+                      backgroundColor: theme.colors.surface.card,
+                      borderColor: theme.colors.brand.purple[100],
+                    },
+                  ]}
+                >
                   <View style={styles.sentimentItem}>
-                    <Text style={styles.sentimentCaption}>Feeling</Text>
+                    <Text style={[styles.sentimentCaption, { color: theme.colors.text.muted }]}>
+                      Feeling
+                    </Text>
                     <Text style={styles.sentimentIcon}>
                       {reflection.feeling ? SENTIMENT_ICON[reflection.feeling] : '—'}
                     </Text>
                   </View>
-                  <View style={styles.sentimentDivider} />
+                  <View
+                    style={[
+                      styles.sentimentDivider,
+                      { backgroundColor: theme.colors.brand.purple[100] },
+                    ]}
+                  />
                   <View style={styles.sentimentItem}>
-                    <Text style={styles.sentimentCaption}>Alignment</Text>
+                    <Text style={[styles.sentimentCaption, { color: theme.colors.text.muted }]}>
+                      Alignment
+                    </Text>
                     <Text style={styles.sentimentIcon}>
                       {reflection.alignment ? SENTIMENT_ICON[reflection.alignment] : '—'}
                     </Text>
                   </View>
                 </View>
                 {reflection.content.length > 0 && (
-                  <Text style={styles.reflectionContent}>{reflection.content}</Text>
+                  <Text style={[styles.reflectionContent, { color: theme.colors.text.secondary }]}>
+                    {reflection.content}
+                  </Text>
                 )}
               </View>
             )}
@@ -286,123 +326,97 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.48)',
   },
   sheet: {
-    backgroundColor: theme.colors.surface.card,
-    borderTopLeftRadius: theme.radius['2xl'],
-    borderTopRightRadius: theme.radius['2xl'],
+    borderTopLeftRadius: borderRadius['2xl'],
+    borderTopRightRadius: borderRadius['2xl'],
     maxHeight: '85%',
-    ...theme.shadows.xl,
     overflow: 'hidden',
   },
   handleZone: {
     alignItems: 'center',
-    paddingVertical: theme.spacing.md,
+    paddingVertical: spacing.md,
     minHeight: 44,
     justifyContent: 'center',
   },
   handle: {
     width: 36,
     height: 4,
-    backgroundColor: theme.colors.border.default,
     borderRadius: 2,
   },
   scroll: { flexGrow: 0 },
   scrollContent: {
-    paddingHorizontal: theme.spacing.xl,
+    paddingHorizontal: spacing.xl,
     paddingBottom: 44,
   },
   sheetHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: theme.spacing.xl,
+    marginBottom: spacing.xl,
   },
   typeBadge: {
-    backgroundColor: theme.colors.brand.purple[50],
     paddingVertical: 5,
     paddingHorizontal: 12,
     borderRadius: 20,
   },
-  typeBadgePPF: { backgroundColor: theme.colors.brand.cosmic.sky },
-  typeBadgeText: { 
-    fontSize: theme.typography.fontSize.xs, 
-    fontWeight: '700', 
-    color: theme.colors.brand.purple[600] 
-  },
-  typeBadgeTextPPF: { color: theme.colors.brand.cosmic.ocean },
-  sheetDate: { 
-    fontSize: theme.typography.fontSize.sm, 
-    color: theme.colors.text.muted, 
-    fontWeight: '500' 
-  },
+  typeBadgeText: { fontSize: 12, fontWeight: '700' },
+  sheetDate: { fontSize: 14, fontWeight: '500' },
   insightBox: {
-    marginTop: theme.spacing.sm,
-    backgroundColor: theme.colors.tarot.insight.background,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.lg,
+    marginTop: spacing.sm,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
     borderWidth: 1,
-    borderColor: theme.colors.tarot.insight.border,
   },
   insightLabel: {
     fontSize: 10,
     fontWeight: '800',
-    color: theme.colors.tarot.insight.text,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
-    marginBottom: theme.spacing.sm,
+    marginBottom: spacing.sm,
   },
   insightBody: {
-    fontSize: theme.typography.fontSize.base,
-    color: theme.colors.tarot.insight.text,
+    fontSize: 16,
     lineHeight: 23,
   },
   reflectionBox: {
-    marginTop: theme.spacing.sm,
-    backgroundColor: theme.colors.brand.purple[50],
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.lg,
+    marginTop: spacing.sm,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
     borderWidth: 1,
-    borderColor: theme.colors.brand.purple[200],
   },
   reflectionLabel: {
     fontSize: 10,
     fontWeight: '800',
-    color: theme.colors.brand.primaryDark,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
-    marginBottom: theme.spacing.md,
+    marginBottom: spacing.md,
   },
   sentimentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surface.card,
-    borderRadius: theme.radius.md,
+    borderRadius: borderRadius.md,
     borderWidth: 1,
-    borderColor: theme.colors.brand.purple[100],
     overflow: 'hidden',
-    marginBottom: theme.spacing.md,
+    marginBottom: spacing.md,
   },
   sentimentItem: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: theme.spacing.md,
+    paddingVertical: spacing.md,
     gap: 4,
   },
   sentimentDivider: {
     width: 1,
     height: 30,
-    backgroundColor: theme.colors.brand.purple[100],
   },
   sentimentCaption: {
     fontSize: 10,
     fontWeight: '600',
-    color: theme.colors.text.muted,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
   sentimentIcon: { fontSize: 22 },
   reflectionContent: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 14,
     lineHeight: 21,
   },
 });

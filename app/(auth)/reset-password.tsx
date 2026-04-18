@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@hooks/useAuth';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { Screen, Input, Button } from '@components/ui';
-import { theme } from '@theme';
+import { spacing } from '@theme';
 
 export default function ResetPasswordScreen() {
   const [password, setPassword] = useState('');
@@ -11,6 +12,7 @@ export default function ResetPasswordScreen() {
   const [loading, setLoading] = useState(false);
   const { updatePassword } = useAuth();
   const router = useRouter();
+  const theme = useAppTheme();
 
   const handleSubmit = async () => {
     if (!password || !confirmPassword) {
@@ -43,11 +45,13 @@ export default function ResetPasswordScreen() {
 
   return (
     <Screen scroll={false} padding={false}>
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
         <View style={styles.header}>
           <Text style={styles.emoji} accessible={false}>🔐</Text>
-          <Text style={styles.title}>New Password</Text>
-          <Text style={styles.subtitle}>Choose a strong password for your account.</Text>
+          <Text style={[styles.title, { color: theme.colors.brand.primary }]}>New Password</Text>
+          <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
+            Choose a strong password for your account.
+          </Text>
         </View>
 
         <View style={styles.form}>
@@ -74,7 +78,7 @@ export default function ResetPasswordScreen() {
             onPress={handleSubmit}
             loading={loading}
             fullWidth
-            style={{ marginTop: theme.spacing.xs }}
+            style={{ marginTop: spacing.xs }}
           />
         </View>
 
@@ -88,8 +92,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'space-between',
-    padding: theme.spacing.xl,
-    backgroundColor: theme.colors.surface.card,
+    padding: spacing.xl,
   },
   header: {
     flex: 1,
@@ -98,23 +101,22 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: 64,
-    marginBottom: theme.spacing.xl,
+    marginBottom: spacing.xl,
   },
   title: {
-    ...theme.textStyles.display,
-    marginBottom: theme.spacing.xs,
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: spacing.xs,
     textAlign: 'center',
-    color: theme.colors.brand.primary,
   },
   subtitle: {
-    ...theme.textStyles.body,
-    color: theme.colors.text.secondary,
+    fontSize: 16,
     textAlign: 'center',
   },
   form: {
-    gap: theme.spacing.md,
+    gap: spacing.md,
   },
   footer: {
-    paddingBottom: theme.spacing.lg,
+    paddingBottom: spacing.lg,
   },
 });

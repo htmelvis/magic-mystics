@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import type { TarotCard as TarotCardType, TarotCardOrientation } from '@/types/tarot';
 import { CARD, COLORS, ANIMATION } from './card-constants';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 interface TarotCardProps {
   card?: TarotCardType;
@@ -147,10 +148,17 @@ export function CardBackFace() {
 // ── Card front ───────────────────────────────────────────────────────────────
 
 function CardFrontFace({ card }: { card?: TarotCardType }) {
+  const theme = useAppTheme();
+
   if (!card) {
     return (
-      <View style={front.card}>
-        <Text style={front.unknown}>?</Text>
+      <View
+        style={[
+          front.card,
+          { backgroundColor: theme.colors.surface.elevated, borderColor: theme.colors.border.main },
+        ]}
+      >
+        <Text style={[front.unknown, { color: theme.colors.text.secondary }]}>?</Text>
       </View>
     );
   }
@@ -158,20 +166,33 @@ function CardFrontFace({ card }: { card?: TarotCardType }) {
   const symbol = SUIT_SYMBOLS[card.suit] ?? '';
 
   return (
-    <View style={front.card}>
+    <View
+      style={[
+        front.card,
+        { backgroundColor: theme.colors.surface.elevated, borderColor: theme.colors.border.main },
+      ]}
+    >
       <View style={front.cornerLabel}>
-        <Text style={front.suitSymbol}>{symbol}</Text>
-        {card.number !== null && <Text style={front.cornerNumber}>{card.number}</Text>}
+        <Text style={[front.suitSymbol, { color: COLORS.front.accentGold }]}>{symbol}</Text>
+        {card.number !== null && (
+          <Text style={[front.cornerNumber, { color: theme.colors.text.secondary }]}>
+            {card.number}
+          </Text>
+        )}
       </View>
 
       <View style={front.center}>
         <Text style={front.suitLarge}>{symbol}</Text>
-        <Text style={front.cardName}>{card.name}</Text>
+        <Text style={[front.cardName, { color: theme.colors.text.primary }]}>{card.name}</Text>
       </View>
 
       <View style={[front.cornerLabel, front.cornerLabelBottom]}>
-        <Text style={front.suitSymbol}>{symbol}</Text>
-        {card.number !== null && <Text style={front.cornerNumber}>{card.number}</Text>}
+        <Text style={[front.suitSymbol, { color: COLORS.front.accentGold }]}>{symbol}</Text>
+        {card.number !== null && (
+          <Text style={[front.cornerNumber, { color: theme.colors.text.secondary }]}>
+            {card.number}
+          </Text>
+        )}
       </View>
     </View>
   );
@@ -303,10 +324,8 @@ const back = StyleSheet.create({
 const front = StyleSheet.create({
   card: {
     flex: 1,
-    backgroundColor: COLORS.front.bg,
     borderRadius: CARD.borderRadius,
     borderWidth: 1,
-    borderColor: COLORS.front.border,
     padding: 10,
     justifyContent: 'space-between',
   },
@@ -319,11 +338,9 @@ const front = StyleSheet.create({
   },
   suitSymbol: {
     fontSize: 14,
-    color: COLORS.front.accentGold,
   },
   cornerNumber: {
     fontSize: 11,
-    color: COLORS.front.textMuted,
     marginTop: 1,
   },
   center: {
@@ -335,7 +352,6 @@ const front = StyleSheet.create({
   },
   cardName: {
     fontSize: 11,
-    color: COLORS.front.textPrimary,
     textAlign: 'center',
     fontWeight: '500',
     letterSpacing: 0.5,
@@ -343,7 +359,6 @@ const front = StyleSheet.create({
   },
   unknown: {
     fontSize: 40,
-    color: COLORS.front.textMuted,
     textAlign: 'center',
   },
 });

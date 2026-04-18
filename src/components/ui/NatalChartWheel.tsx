@@ -1,7 +1,9 @@
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path, Line, Text as SvgText, G } from 'react-native-svg';
 import type { StoredNatalChart } from '@lib/astrology/natal-chart';
 import { FREE_PLANETS } from '@lib/astrology/natal-chart';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import { useTheme } from '@/context/ThemeContext';
 
 interface NatalChartWheelProps {
   chart: StoredNatalChart;
@@ -26,11 +28,17 @@ const SIGNS = [
   { glyph: '♓', element: 'water' },
 ] as const;
 
-const ELEMENT_FILLS: Record<string, string> = {
+const ELEMENT_FILLS_LIGHT: Record<string, string> = {
   fire:  '#fff3ef',
   earth: '#f0fdf4',
   air:   '#eff6ff',
   water: '#f5f0ff',
+};
+const ELEMENT_FILLS_DARK: Record<string, string> = {
+  fire:  '#2d1208',
+  earth: '#0a1f0e',
+  air:   '#0a1420',
+  water: '#190d2e',
 };
 const ELEMENT_STROKES: Record<string, string> = {
   fire:  '#f87171',
@@ -77,6 +85,10 @@ function ringArcPath(cx: number, cy: number, rInner: number, rOuter: number, lon
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function NatalChartWheel({ chart, size, showOuterPlanets }: NatalChartWheelProps) {
+  const appTheme = useAppTheme();
+  const { activeColorScheme } = useTheme();
+  const isDark = activeColorScheme === 'dark';
+
   const cx = size / 2;
   const cy = size / 2;
   const pad = 6;
@@ -85,13 +97,20 @@ export function NatalChartWheel({ chart, size, showOuterPlanets }: NatalChartWhe
   const rPlanet     = rOuter * 0.52;      // planet glyph placement
   const rInnerFill  = rOuter * 0.38;      // inner circle (empty sky)
 
+  const elementFills = isDark ? ELEMENT_FILLS_DARK : ELEMENT_FILLS_LIGHT;
+  const borderColor = appTheme.colors.border.main;
+  const subtleBorderColor = appTheme.colors.border.subtle;
+  const textPrimary = appTheme.colors.text.primary;
+  const textSecondary = appTheme.colors.text.secondary;
+  const bgColor = appTheme.colors.surface.background;
+
   const freePlanetNames = new Set<string>(FREE_PLANETS);
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
       <Svg width={size} height={size}>
         {/* ── Inner background ── */}
-        <Circle cx={cx} cy={cy} r={rInnerFill} fill="#fafafa" />
+        <Circle cx={cx} cy={cy} r={rInnerFill} fill={bgColor} />
 
         {/* ── Sign ring segments ── */}
         {SIGNS.map((sign, i) => {
@@ -101,7 +120,7 @@ export function NatalChartWheel({ chart, size, showOuterPlanets }: NatalChartWhe
             <G key={i}>
               <Path
                 d={ringArcPath(cx, cy, rSignInner, rOuter, lon1, lon2)}
-                fill={ELEMENT_FILLS[sign.element]}
+                fill={elementFills[sign.element]}
                 stroke={ELEMENT_STROKES[sign.element]}
                 strokeWidth={0.5}
               />
@@ -116,7 +135,7 @@ export function NatalChartWheel({ chart, size, showOuterPlanets }: NatalChartWhe
                     textAnchor="middle"
                     alignmentBaseline="central"
                     fontSize={rOuter * 0.10}
-                    fill="#374151"
+                    fill={textPrimary}
                   >
                     {sign.glyph}
                   </SvgText>
@@ -127,11 +146,11 @@ export function NatalChartWheel({ chart, size, showOuterPlanets }: NatalChartWhe
         })}
 
         {/* ── Outer border ── */}
-        <Circle cx={cx} cy={cy} r={rOuter} fill="none" stroke="#d1d5db" strokeWidth={1} />
+        <Circle cx={cx} cy={cy} r={rOuter} fill="none" stroke={borderColor} strokeWidth={1} />
         {/* ── Sign ring inner border ── */}
-        <Circle cx={cx} cy={cy} r={rSignInner} fill="none" stroke="#d1d5db" strokeWidth={0.75} />
+        <Circle cx={cx} cy={cy} r={rSignInner} fill="none" stroke={borderColor} strokeWidth={0.75} />
         {/* ── Inner fill border ── */}
-        <Circle cx={cx} cy={cy} r={rInnerFill} fill="none" stroke="#e5e7eb" strokeWidth={0.5} />
+        <Circle cx={cx} cy={cy} r={rInnerFill} fill="none" stroke={subtleBorderColor} strokeWidth={0.5} />
 
         {/* ── ASC / MC lines ── */}
         {chart.ascendant !== null && (() => {
@@ -171,14 +190,14 @@ export function NatalChartWheel({ chart, size, showOuterPlanets }: NatalChartWhe
           return (
             <G key={planet.name} opacity={opacity}>
               {/* Small background circle for readability */}
-              <Circle cx={p.x} cy={p.y} r={fontSize * 0.85} fill="white" opacity={0.8} />
+              <Circle cx={p.x} cy={p.y} r={fontSize * 0.85} fill={bgColor} opacity={0.8} />
               <SvgText
                 x={p.x}
                 y={p.y}
                 textAnchor="middle"
                 alignmentBaseline="central"
                 fontSize={fontSize}
-                fill={isFree ? '#1f2937' : '#6b7280'}
+                fill={isFree ? textPrimary : textSecondary}
               >
                 {planet.glyph}
               </SvgText>
