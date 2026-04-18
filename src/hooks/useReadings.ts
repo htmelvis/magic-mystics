@@ -4,7 +4,7 @@ import type { DrawnCardRecord } from '@/types/tarot';
 
 export interface ReadingRow {
   id: string;
-  spread_type: 'daily' | 'past-present-future';
+  spread_type: 'daily' | 'past-present-future' | 'relationship' | 'situation-obstacle-solution' | 'mind-body-spirit' | 'path-choice';
   drawn_cards: DrawnCardRecord[];
   ai_insight: string | null;
   created_at: string;
