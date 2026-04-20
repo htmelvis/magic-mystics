@@ -11,6 +11,7 @@ import {
   astrologyDataSchema,
   userOnboardingUpdateSchema,
 } from '@lib/validation/onboarding';
+import { geocodeLocation, getTimezone } from '@lib/geocoding/geocode';
 import { ZodiacAvatar } from '@components/ui';
 import { useAppTheme } from '@/hooks/useAppTheme';
 
@@ -60,11 +61,21 @@ export default function CalculatingScreen() {
       const astrologyData = astrologyDataSchema.parse(rawAstrologyData);
       setSunSign(astrologyData.sunSign);
 
-      // Compute natal chart without coords — ASC/MC will be null.
-      // The profile screen will geocode birth_location on first visit and
-      // recompute the chart with coordinates to fill in ASC/MC.
+      // Geocode birth location — non-blocking, falls back to null coords on failure
+      setStatus('Locating your birthplace...');
+      let birthLat: number | null = null;
+      let birthLng: number | null = null;
+      let birthTimezone: string | null = null;
+      const coords = await geocodeLocation(validatedParams.birthLocation);
+      if (coords) {
+        birthLat = coords.lat;
+        birthLng = coords.lng;
+        birthTimezone = await getTimezone(coords.lat, coords.lng);
+      }
+
+      // Compute natal chart — with real coords if geocoding succeeded, ASC/MC filled in
       setStatus('Charting your sky...');
-      const natalChart = computeNatalChart(birthDate, validatedParams.birthTime, null, null);
+      const natalChart = computeNatalChart(birthDate, validatedParams.birthTime, birthLat, birthLng);
 
       // Validate the full DB update payload
       const updatePayload = userOnboardingUpdateSchema.parse({
@@ -72,9 +83,9 @@ export default function CalculatingScreen() {
         birth_date: validatedParams.birthDate,
         birth_time: validatedParams.birthTime,
         birth_location: validatedParams.birthLocation,
-        birth_lat: null,
-        birth_lng: null,
-        birth_timezone: null,
+        birth_lat: birthLat,
+        birth_lng: birthLng,
+        birth_timezone: birthTimezone,
         sun_sign: astrologyData.sunSign,
         moon_sign: astrologyData.moonSign,
         rising_sign: astrologyData.risingSign,
@@ -92,9 +103,9 @@ export default function CalculatingScreen() {
           birth_date: updatePayload.birth_date,
           birth_time: updatePayload.birth_time,
           birth_location: updatePayload.birth_location,
-          birth_lat: null,
-          birth_lng: null,
-          birth_timezone: null,
+          birth_lat: birthLat,
+          birth_lng: birthLng,
+          birth_timezone: birthTimezone,
           sun_sign: updatePayload.sun_sign,
           moon_sign: updatePayload.moon_sign,
           rising_sign: updatePayload.rising_sign,
@@ -136,9 +147,9 @@ export default function CalculatingScreen() {
         birthDate: updatePayload.birth_date,
         birthTime: updatePayload.birth_time,
         birthLocation: updatePayload.birth_location,
-        birthLat: null,
-        birthLng: null,
-        birthTimezone: null,
+        birthLat,
+        birthLng,
+        birthTimezone,
         birthDetailsEditedAt: null,
         sunSign: astrologyData.sunSign,
         moonSign: astrologyData.moonSign,

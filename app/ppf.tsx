@@ -29,9 +29,12 @@ import type {
   TarotCard as TarotCardType,
   TarotCardRow,
 } from '@/types/tarot';
-import { TarotCard, TarotDeck } from '@components/tarot';
+import { TarotCard, TarotDeck, AIInsightSection } from '@components/tarot';
 import { ANIMATION } from '@components/tarot/card-constants';
 import { ReflectionSheet } from '@components/history';
+import { useGenerateInsight } from '@hooks/useGenerateInsight';
+import { useSubscription } from '@hooks/useSubscription';
+import type { AIInsight } from '@/types/ai-insight';
 
 const POSITIONS = ['past', 'present', 'future'] as const;
 const POSITION_LABELS = ['Past', 'Present', 'Future'];
@@ -46,6 +49,8 @@ export default function PPFScreen() {
   const { cardIds, isLoading: deckLoading, error: deckError } = useTarotDeck();
   const invalidateReadings = useInvalidateReadings();
   const invalidateJourneyStats = useInvalidateJourneyStats();
+  const { isPremium } = useSubscription(user?.id);
+  const { mutate: generateInsight, isPending: isGeneratingInsight } = useGenerateInsight(user?.id);
 
   const [phase, setPhase] = useState<Phase>('shuffle');
   const [cards, setCards] = useState<TarotCardRow[]>([]);
@@ -54,6 +59,7 @@ export default function PPFScreen() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [readingId, setReadingId] = useState<string | null>(null);
+  const [insight, setInsight] = useState<AIInsight | null>(null);
   const [reflectionSheetOpen, setReflectionSheetOpen] = useState(false);
 
   const {
@@ -131,7 +137,10 @@ export default function PPFScreen() {
     setReadingId(reading.id);
     invalidateReadings(user!.id);
     invalidateJourneyStats(user!.id);
-  }, [user, cardIds, invalidateReadings, invalidateJourneyStats]);
+    if (isPremium) {
+      generateInsight(reading.id, { onSuccess: setInsight });
+    }
+  }, [user, cardIds, invalidateReadings, invalidateJourneyStats, isPremium, generateInsight]);
 
   const handleShuffleComplete = useCallback(async () => {
     if (hasDrawn.current) return;
@@ -182,7 +191,7 @@ export default function PPFScreen() {
         ]}
       >
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/draw')}
           style={styles.backButton}
           accessibilityRole="button"
           accessibilityLabel="Go back"
@@ -299,6 +308,9 @@ export default function PPFScreen() {
                   reflection={i === 2 ? reflection : undefined}
                   onAddReflection={i === 2 ? () => setReflectionSheetOpen(true) : undefined}
                   onEditReflection={i === 2 ? () => setReflectionSheetOpen(true) : undefined}
+                  insight={i === 2 ? insight : undefined}
+                  isGeneratingInsight={i === 2 ? isGeneratingInsight : false}
+                  isPremium={i === 2 ? isPremium : false}
                 />
               ))}
             </ScrollView>
@@ -332,6 +344,9 @@ interface CardPageProps {
   reflection?: Reflection | null;
   onAddReflection?: () => void;
   onEditReflection?: () => void;
+  insight?: AIInsight | null;
+  isGeneratingInsight?: boolean;
+  isPremium?: boolean;
 }
 
 function CardPage({
@@ -345,6 +360,9 @@ function CardPage({
   reflection,
   onAddReflection,
   onEditReflection,
+  insight,
+  isGeneratingInsight = false,
+  isPremium = false,
 }: CardPageProps) {
   const theme = useAppTheme();
   const detailOpacity = useRef(new Animated.Value(0)).current;
@@ -428,8 +446,9 @@ function CardPage({
                 ]}
               >
                 <Text style={[styles.pillText, { color: theme.colors.text.secondary }]}>
-                  {card.arcana === 'Major' ? 'Major Arcana' : (card.suit ?? 'Minor Arcana')}
-                  {card.number != null ? ` · ${card.number}` : ''}
+                  {card.arcana === 'Major'
+                    ? 'Major Arcana'
+                    : `${card.suit ?? 'Minor Arcana'}${card.number != null ? ` · ${card.number}` : ''}`}
                 </Text>
               </View>
             )}
@@ -520,6 +539,14 @@ function CardPage({
             >
               Swipe left for {nextLabel} →
             </Text>
+          )}
+
+          {isLast && (
+            <AIInsightSection
+              insight={insight ?? null}
+              isLoading={isGeneratingInsight}
+              isPremium={isPremium}
+            />
           )}
 
           {isLast && onAddReflection && onEditReflection && (

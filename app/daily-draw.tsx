@@ -25,9 +25,12 @@ import type {
   TarotCard as TarotCardType,
   TarotCardRow,
 } from '@/types/tarot';
-import { TarotCard, TarotDeck } from '@components/tarot';
+import { TarotCard, TarotDeck, AIInsightSection } from '@components/tarot';
 import { ANIMATION } from '@components/tarot/card-constants';
 import { ReflectionSheet } from '@components/history';
+import { useGenerateInsight } from '@hooks/useGenerateInsight';
+import { useSubscription } from '@hooks/useSubscription';
+import type { AIInsight } from '@/types/ai-insight';
 
 function getTodayBounds() {
   const start = new Date();
@@ -44,6 +47,8 @@ export default function DrawScreen() {
   const { cardIds, isLoading: deckLoading, error: deckError } = useTarotDeck();
   const invalidateReadings = useInvalidateReadings();
   const invalidateJourneyStats = useInvalidateJourneyStats();
+  const { isPremium } = useSubscription(user?.id);
+  const { mutate: generateInsight, isPending: isGeneratingInsight } = useGenerateInsight(user?.id);
 
   const [card, setCard] = useState<TarotCardRow | null>(null);
   const [orientation, setOrientation] = useState<TarotCardOrientation | null>(null);
@@ -52,6 +57,7 @@ export default function DrawScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [shuffleComplete, setShuffleComplete] = useState(false);
+  const [insight, setInsight] = useState<AIInsight | null>(null);
 
   const [reflectionSheetOpen, setReflectionSheetOpen] = useState(false);
   const {
@@ -146,6 +152,7 @@ export default function DrawScreen() {
     setCard(null);
     setOrientation(null);
     setReadingId(null);
+    setInsight(null);
 
     try {
       const result = __DEV__ ? drawCard(cardIds) : drawDailyCard(cardIds, user.id);
@@ -182,6 +189,9 @@ export default function DrawScreen() {
       setReadingId(reading.id);
       invalidateReadings(user.id);
       invalidateJourneyStats(user.id);
+      if (isPremium) {
+        generateInsight(reading.id, { onSuccess: setInsight });
+      }
     } catch (err) {
       setError(extractMessage(err));
     } finally {
@@ -206,7 +216,7 @@ export default function DrawScreen() {
         ]}
       >
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/draw')}
           style={styles.backButton}
           accessibilityRole="button"
           accessibilityLabel="Go back"
@@ -329,6 +339,14 @@ export default function DrawScreen() {
 
               {card && orientation && <CardDetail card={card} orientation={orientation} />}
 
+              {card && (
+                <AIInsightSection
+                  insight={insight}
+                  isLoading={isGeneratingInsight}
+                  isPremium={isPremium}
+                />
+              )}
+
               {readingId && card && (
                 <ReflectionSection
                   reflection={reflection}
@@ -371,7 +389,7 @@ function CardDetail({
     ? (card.reversed_meaning_long ?? '')
     : (card.upright_meaning_long ?? '');
   const keywords = isReversed ? (card.keywords_reversed ?? []) : (card.keywords_upright ?? []);
-  const { element, astrology_association: astrology, arcana, suit, number } = card;
+  const { element, astrology_association: astrology, arcana, suit, number, name } = card;
 
   return (
     <View
@@ -383,8 +401,7 @@ function CardDetail({
       <View style={detailStyles.metaRow}>
         {arcana && (
           <Text style={[detailStyles.arcanaText, { color: theme.colors.text.primary }]}>
-            {number != null ? ` ${number} of ` : ''}
-            {arcana === 'Major' ? 'Major Arcana' : (suit ?? 'Minor Arcana')}
+            {arcana === 'Major' ? name : `${number != null ? `${number} of ` : ''}${suit ?? 'Minor Arcana'}`}
           </Text>
         )}
         <Text

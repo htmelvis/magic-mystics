@@ -192,11 +192,11 @@ export const darkColors = {
     accentLight: '#fcd34d',
     accentDark: '#f59e0b',
 
-    // Purple scale
+    // Purple scale (dark mode: 50-200 inverted to dark tints for backgrounds/borders)
     purple: {
-      50: '#faf5ff',
-      100: '#f3e8ff',
-      200: '#e9d5ff',
+      50: '#1c1033',
+      100: '#2e1a52',
+      200: '#4a2387',
       300: '#d8b4fe',
       400: '#c084fc',
       500: '#a855f7',

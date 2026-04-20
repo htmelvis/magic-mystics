@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { TextInput as TextInputType } from 'react-native';
 import {
   Animated,
   KeyboardAvoidingView,
@@ -144,6 +145,7 @@ export function ReflectionSheet({
 
   const slideY = useRef(new Animated.Value(600)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const textInputRef = useRef<TextInputType>(null);
 
   const handleShow = useCallback(() => {
     Animated.parallel([
@@ -179,7 +181,10 @@ export function ReflectionSheet({
 
   const handleNext = () => {
     if (step === 1 && feeling) setStep(2);
-    else if (step === 2 && alignment) setStep(3);
+    else if (step === 2 && alignment) {
+      setStep(3);
+      setTimeout(() => textInputRef.current?.focus(), 350);
+    }
   };
 
   const handleSave = () => {
@@ -269,6 +274,7 @@ export function ReflectionSheet({
                   Write freely — this is just for you.
                 </Text>
                 <TextInput
+                  ref={textInputRef}
                   style={[
                     styles.textArea,
                     {
@@ -284,7 +290,6 @@ export function ReflectionSheet({
                   multiline
                   numberOfLines={5}
                   textAlignVertical="top"
-                  autoFocus
                   maxLength={2000}
                 />
                 <Text style={[styles.charCount, { color: theme.colors.text.muted }]}>

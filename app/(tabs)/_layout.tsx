@@ -3,7 +3,6 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@/context/ThemeContext';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { ErrorBoundary } from '@components/ui/ErrorBoundary';
-import { UpgradeSheetProvider } from '@/context/UpgradeSheetContext';
 
 export default function TabsLayout() {
   const { activeColorScheme } = useTheme();
@@ -13,8 +12,7 @@ export default function TabsLayout() {
 
   return (
     <ErrorBoundary>
-      <UpgradeSheetProvider>
-        <Tabs
+      <Tabs
           screenOptions={{
             headerShown: false,
             tabBarActiveTintColor: theme.colors.brand.primary,
@@ -85,7 +83,6 @@ export default function TabsLayout() {
           <Tabs.Screen name="edit-birth-details" options={{ href: null }} />
           <Tabs.Screen name="support" options={{ href: null }} />
         </Tabs>
-      </UpgradeSheetProvider>
     </ErrorBoundary>
   );
 }
