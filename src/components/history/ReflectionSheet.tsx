@@ -179,12 +179,17 @@ export function ReflectionSheet({
     }
   }, [visible, slideY, backdropOpacity]);
 
-  const handleNext = () => {
-    if (step === 1 && feeling) setStep(2);
-    else if (step === 2 && alignment) {
+  const handleFeelingChange = (v: ReflectionSentiment) => {
+    setFeeling(v);
+    setTimeout(() => setStep(2), 300);
+  };
+
+  const handleAlignmentChange = (v: ReflectionSentiment) => {
+    setAlignment(v);
+    setTimeout(() => {
       setStep(3);
       setTimeout(() => textInputRef.current?.focus(), 350);
-    }
+    }, 300);
   };
 
   const handleSave = () => {
@@ -253,7 +258,7 @@ export function ReflectionSheet({
               <SentimentPicker
                 question="How do you feel about this reading?"
                 value={feeling}
-                onChange={setFeeling}
+                onChange={handleFeelingChange}
               />
             )}
 
@@ -261,7 +266,7 @@ export function ReflectionSheet({
               <SentimentPicker
                 question="Does this align with your journey?"
                 value={alignment}
-                onChange={setAlignment}
+                onChange={handleAlignmentChange}
               />
             )}
 
@@ -300,8 +305,8 @@ export function ReflectionSheet({
           </View>
 
           {/* Footer actions */}
-          <View style={[styles.footer, { borderTopColor: theme.colors.border.subtle }]}>
-            {step > 1 && (
+          {step === 3 && (
+            <View style={[styles.footer, { borderTopColor: theme.colors.border.subtle }]}>
               <TouchableOpacity
                 style={[styles.backBtn, { borderColor: theme.colors.border.default }]}
                 onPress={() => setStep(s => (s - 1) as Step)}
@@ -312,24 +317,7 @@ export function ReflectionSheet({
                   Back
                 </Text>
               </TouchableOpacity>
-            )}
 
-            {step < 3 ? (
-              <TouchableOpacity
-                style={[
-                  styles.nextBtn,
-                  { backgroundColor: theme.colors.brand.primary },
-                  step === 1 && !feeling && styles.btnDisabled,
-                  step === 2 && !alignment && styles.btnDisabled,
-                ]}
-                onPress={handleNext}
-                disabled={(step === 1 && !feeling) || (step === 2 && !alignment)}
-                accessibilityRole="button"
-                accessibilityLabel="Next step"
-              >
-                <Text style={styles.nextBtnText}>Next →</Text>
-              </TouchableOpacity>
-            ) : (
               <TouchableOpacity
                 style={[
                   styles.nextBtn,
@@ -343,8 +331,8 @@ export function ReflectionSheet({
               >
                 <Text style={styles.nextBtnText}>{isSaving ? 'Saving…' : 'Save Reflection'}</Text>
               </TouchableOpacity>
-            )}
-          </View>
+            </View>
+          )}
         </Animated.View>
       </KeyboardAvoidingView>
     </Modal>
