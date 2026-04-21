@@ -36,10 +36,61 @@ import { useGenerateInsight } from '@hooks/useGenerateInsight';
 import { useSubscription } from '@hooks/useSubscription';
 import type { AIInsight } from '@/types/ai-insight';
 
-const POSITIONS = ['past', 'present', 'future'] as const;
-const POSITION_LABELS = ['Past', 'Present', 'Future'];
 
-type Phase = 'shuffle' | 'reading';
+export type SpreadTypeId =
+  | 'past-present-future'
+  | 'relationship'
+  | 'situation-obstacle-solution'
+  | 'mind-body-spirit'
+  | 'accept-embrace-let-go';
+
+export interface SpreadType {
+  id: SpreadTypeId;
+  name: string;
+  icon: string;
+  labels: [string, string, string];
+  description: string;
+}
+
+export const SPREAD_TYPES: SpreadType[] = [
+  {
+    id: 'past-present-future',
+    name: 'Past · Present · Future',
+    icon: '⏳',
+    labels: ['Past', 'Present', 'Future'],
+    description: "Reflect on where you've been, where you are, and where you're headed.",
+  },
+  {
+    id: 'relationship',
+    name: 'You · Them · Relationship',
+    icon: '💞',
+    labels: ['You', 'Them', 'Relationship'],
+    description: 'Gain clarity on yourself, another person, and the dynamic between you.',
+  },
+  {
+    id: 'situation-obstacle-solution',
+    name: 'Situation · Obstacle · Solution',
+    icon: '🔑',
+    labels: ['Situation', 'Obstacle', 'Solution'],
+    description: "Understand what's at play, what's blocking you, and how to move through it.",
+  },
+  {
+    id: 'mind-body-spirit',
+    name: 'Mind · Body · Spirit',
+    icon: '🌿',
+    labels: ['Mind', 'Body', 'Spirit'],
+    description: 'Explore your mental, physical, and spiritual energies in balance.',
+  },
+  {
+    id: 'accept-embrace-let-go',
+    name: 'Accept · Embrace · Let Go',
+    icon: '🍃',
+    labels: ['Accept', 'Embrace', 'Let Go'],
+    description: 'Find what to acknowledge, what to welcome, and what to release.',
+  },
+];
+
+type Phase = 'select' | 'shuffle' | 'reading';
 
 export default function PPFScreen() {
   const { user } = useAuth();
@@ -52,7 +103,8 @@ export default function PPFScreen() {
   const { isPremium } = useSubscription(user?.id);
   const { mutate: generateInsight, isPending: isGeneratingInsight } = useGenerateInsight(user?.id);
 
-  const [phase, setPhase] = useState<Phase>('shuffle');
+  const [phase, setPhase] = useState<Phase>('select');
+  const [spreadType, setSpreadType] = useState<SpreadType>(SPREAD_TYPES[0]);
   const [cards, setCards] = useState<TarotCardRow[]>([]);
   const [orientations, setOrientations] = useState<TarotCardOrientation[]>([]);
   const [flipped, setFlipped] = useState([false, false, false]);
@@ -117,14 +169,14 @@ export default function PPFScreen() {
       arcana: fetchedCards[i].arcana as DrawnCardRecord['arcana'],
       suit: (fetchedCards[i].suit ?? null) as DrawnCardRecord['suit'],
       orientation: r.orientation,
-      position: POSITIONS[i],
+      position: spreadType.labels[i].toLowerCase(),
     }));
 
     const { data: reading, error: insertError } = await supabase
       .from('readings')
       .insert({
         user_id: user!.id,
-        spread_type: 'past-present-future',
+        spread_type: spreadType.id,
         drawn_cards: drawnCards,
       })
       .select('id')
@@ -140,7 +192,7 @@ export default function PPFScreen() {
     if (isPremium) {
       generateInsight(reading.id, { onSuccess: setInsight });
     }
-  }, [user, cardIds, invalidateReadings, invalidateJourneyStats, isPremium, generateInsight]);
+  }, [user, cardIds, spreadType, invalidateReadings, invalidateJourneyStats, isPremium, generateInsight]);
 
   const handleShuffleComplete = useCallback(async () => {
     if (hasDrawn.current) return;
@@ -199,7 +251,7 @@ export default function PPFScreen() {
           <Text style={[styles.backText, { color: theme.colors.brand.primary }]}>← Back</Text>
         </Pressable>
         <Text style={[styles.title, { color: theme.colors.text.primary }]}>
-          Past · Present · Future
+          {phase === 'select' ? '3-Card Spread' : spreadType.name}
         </Text>
       </View>
 
@@ -213,7 +265,7 @@ export default function PPFScreen() {
             },
           ]}
         >
-          {POSITION_LABELS.map((label, i) => (
+          {spreadType.labels.map((label, i) => (
             <Pressable
               key={i}
               style={styles.progressItem}
@@ -254,7 +306,15 @@ export default function PPFScreen() {
       )}
 
       <View style={styles.main}>
-        {(deckLoading || !cardIds.length) && !error && !deckError && (
+        {phase === 'select' && (
+          <SpreadSelector
+            selected={spreadType}
+            onSelect={setSpreadType}
+            onConfirm={() => setPhase('shuffle')}
+          />
+        )}
+
+        {phase !== 'select' && (deckLoading || !cardIds.length) && !error && !deckError && (
           <ActivityIndicator color={theme.colors.brand.primary} size="large" />
         )}
 
@@ -275,7 +335,7 @@ export default function PPFScreen() {
           </View>
         )}
 
-        {!deckLoading && !!cardIds.length && !!user && (
+        {phase !== 'select' && !deckLoading && !!cardIds.length && !!user && (
           <Animated.View
             style={[StyleSheet.absoluteFill, styles.deckLayer, { opacity: deckOpacity }]}
             pointerEvents={phase === 'shuffle' ? 'auto' : 'none'}
@@ -300,7 +360,7 @@ export default function PPFScreen() {
                   key={i}
                   card={card}
                   orientation={orientations[i]}
-                  positionLabel={POSITION_LABELS[i]}
+                  positionLabel={spreadType.labels[i]}
                   isFlipped={flipped[i]}
                   isActive={i === activeIndex}
                   isLast={i === 2}
@@ -330,6 +390,176 @@ export default function PPFScreen() {
     </View>
   );
 }
+
+// ── Spread selector ───────────────────────────────────────────────────────────
+
+function SpreadSelector({
+  selected,
+  onSelect,
+  onConfirm,
+}: {
+  selected: SpreadType;
+  onSelect: (s: SpreadType) => void;
+  onConfirm: () => void;
+}) {
+  const theme = useAppTheme();
+
+  return (
+    <ScrollView
+      style={spreadSelectorStyles.scroll}
+      contentContainerStyle={spreadSelectorStyles.content}
+      showsVerticalScrollIndicator={false}
+    >
+      <Text style={[spreadSelectorStyles.heading, { color: theme.colors.text.primary }]}>
+        Choose your spread
+      </Text>
+      <Text style={[spreadSelectorStyles.subheading, { color: theme.colors.text.secondary }]}>
+        What lens would you like to read through?
+      </Text>
+
+      {SPREAD_TYPES.map(spread => {
+        const isSelected = spread.id === selected.id;
+        return (
+          <Pressable
+            key={spread.id}
+            onPress={() => onSelect(spread)}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: isSelected }}
+            accessibilityLabel={spread.name}
+            style={[
+              spreadSelectorStyles.card,
+              {
+                backgroundColor: theme.colors.surface.card,
+                borderColor: isSelected ? theme.colors.brand.primary : theme.colors.border.main,
+              },
+              isSelected && { borderWidth: 2 },
+            ]}
+          >
+            <View style={spreadSelectorStyles.cardTop}>
+              <Text style={spreadSelectorStyles.cardIcon}>{spread.icon}</Text>
+              <View style={spreadSelectorStyles.cardMeta}>
+                <Text style={[spreadSelectorStyles.cardName, { color: theme.colors.text.primary }]}>
+                  {spread.name}
+                </Text>
+                <Text
+                  style={[spreadSelectorStyles.cardDesc, { color: theme.colors.text.secondary }]}
+                >
+                  {spread.description}
+                </Text>
+              </View>
+              {isSelected && (
+                <View
+                  style={[
+                    spreadSelectorStyles.check,
+                    { backgroundColor: theme.colors.brand.primary },
+                  ]}
+                >
+                  <Text style={spreadSelectorStyles.checkMark}>✓</Text>
+                </View>
+              )}
+            </View>
+
+            <View style={[spreadSelectorStyles.pillRow, { borderTopColor: theme.colors.border.light }]}>
+              {spread.labels.map((label, i) => (
+                <View
+                  key={i}
+                  style={[
+                    spreadSelectorStyles.positionPill,
+                    {
+                      backgroundColor: isSelected
+                        ? theme.colors.brand.purple[100]
+                        : theme.colors.surface.elevated,
+                      borderColor: isSelected
+                        ? theme.colors.brand.purple[200]
+                        : theme.colors.border.main,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      spreadSelectorStyles.positionText,
+                      {
+                        color: isSelected
+                          ? theme.colors.brand.primaryDark
+                          : theme.colors.text.secondary,
+                      },
+                    ]}
+                  >
+                    {label}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </Pressable>
+        );
+      })}
+
+      <TouchableOpacity
+        style={[spreadSelectorStyles.confirmBtn, { backgroundColor: theme.colors.brand.primary }]}
+        onPress={onConfirm}
+        accessibilityRole="button"
+        accessibilityLabel="Begin reading"
+      >
+        <Text style={[spreadSelectorStyles.confirmBtnText, { color: theme.colors.text.inverse }]}>
+          Begin Reading
+        </Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+}
+
+const spreadSelectorStyles = StyleSheet.create({
+  scroll: { flex: 1, width: '100%' },
+  content: { padding: 20, paddingBottom: 40, gap: 12 },
+  heading: { fontSize: 22, fontWeight: 'bold', marginBottom: 4 },
+  subheading: { fontSize: 14, lineHeight: 20, marginBottom: 8 },
+  card: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  cardTop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 16,
+    gap: 12,
+  },
+  cardIcon: { fontSize: 26, marginTop: 2 },
+  cardMeta: { flex: 1, gap: 4 },
+  cardName: { fontSize: 15, fontWeight: '700' },
+  cardDesc: { fontSize: 13, lineHeight: 18 },
+  check: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  checkMark: { color: '#fff', fontSize: 13, fontWeight: '700' },
+  pillRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+    paddingTop: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  positionPill: {
+    borderRadius: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+  },
+  positionText: { fontSize: 12, fontWeight: '600' },
+  confirmBtn: {
+    marginTop: 8,
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  confirmBtnText: { fontSize: 16, fontWeight: '700' },
+});
 
 // ── Card page ─────────────────────────────────────────────────────────────────
 

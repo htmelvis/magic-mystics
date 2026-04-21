@@ -110,7 +110,7 @@ export interface Database {
         Row: {
           id: string;
           user_id: string;
-          spread_type: 'daily' | 'past-present-future' | 'relationship' | 'situation-obstacle-solution' | 'mind-body-spirit' | 'path-choice';
+          spread_type: 'daily' | 'past-present-future' | 'relationship' | 'situation-obstacle-solution' | 'mind-body-spirit' | 'path-choice' | 'accept-embrace-let-go';
           drawn_cards: unknown;
           ai_insight: string | null;
           created_at: string;
@@ -119,7 +119,7 @@ export interface Database {
         Insert: {
           id?: string;
           user_id: string;
-          spread_type: 'daily' | 'past-present-future' | 'relationship' | 'situation-obstacle-solution' | 'mind-body-spirit' | 'path-choice';
+          spread_type: 'daily' | 'past-present-future' | 'relationship' | 'situation-obstacle-solution' | 'mind-body-spirit' | 'path-choice' | 'accept-embrace-let-go';
           drawn_cards: unknown;
           ai_insight?: string | null;
           created_at?: string;
