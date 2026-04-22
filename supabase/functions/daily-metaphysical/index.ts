@@ -24,7 +24,7 @@ import {
   SIGN_ELEMENTS,
   type DailyZodiacSign,
   type ZodiacElement,
-} from '../../src/lib/metaphysical/daily-helpers.ts';
+} from '../_shared/daily-helpers.ts';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 

@@ -266,6 +266,45 @@ export interface Database {
         };
         Relationships: [];
       };
+      daily_planetary_alignment: {
+        Row: {
+          id: number;
+          date: string;
+          dominant_planet: string;
+          dominant_planet_sign: string;
+          dominant_planet_symbol: string | null;
+          alignment_theme: string | null;
+          supported_endeavors: string[] | null;
+          all_planet_positions: unknown;
+          advice: string | null;
+          metadata: unknown;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          date: string;
+          dominant_planet: string;
+          dominant_planet_sign: string;
+          dominant_planet_symbol?: string | null;
+          alignment_theme?: string | null;
+          supported_endeavors?: string[] | null;
+          all_planet_positions?: unknown;
+          advice?: string | null;
+          metadata?: unknown;
+          created_at?: string;
+        };
+        Update: {
+          dominant_planet?: string;
+          dominant_planet_sign?: string;
+          dominant_planet_symbol?: string | null;
+          alignment_theme?: string | null;
+          supported_endeavors?: string[] | null;
+          all_planet_positions?: unknown;
+          advice?: string | null;
+          metadata?: unknown;
+        };
+        Relationships: [];
+      };
       support_tickets: {
         Row: {
           id: string;
