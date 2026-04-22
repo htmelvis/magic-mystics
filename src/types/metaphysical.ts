@@ -93,8 +93,32 @@ export interface Planet {
   meaning: string;
   rulesSign: string[];
   keywords: string[];
+  supportedEndeavors: string[] | null;
+  transitMeaning: string | null;
+  dayOfWeek: string | null;
+  archetype: string | null;
+  color: string[] | null;
   metadata: Record<string, any>;
   createdAt: string;
+}
+
+// ============== DAILY PLANETARY ALIGNMENT ==============
+export interface PlanetPositionSnapshot {
+  planet: string;
+  symbol: string;
+  sign: string;
+  isRetrograde: boolean;
+}
+
+export interface DailyPlanetaryAlignment {
+  date: string;
+  dominant_planet: string;
+  dominant_planet_sign: string;
+  dominant_planet_symbol: string | null;
+  alignment_theme: string | null;
+  supported_endeavors: string[] | null;
+  all_planet_positions: PlanetPositionSnapshot[] | null;
+  advice: string | null;
 }
 
 // ============== ASSOCIATIONS ==============

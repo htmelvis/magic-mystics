@@ -68,8 +68,8 @@ export default function DrawScreen() {
           accessibilityRole="button"
           accessibilityLabel={
             isPremium
-              ? 'Past, Present, Future spread'
-              : 'Past, Present, Future spread, Premium feature'
+              ? '3-Card spread'
+              : '3-Card spread, Premium feature'
           }
           accessibilityHint={
             isPremium ? 'Three-card spread reading' : 'Upgrade to Premium to unlock this feature'
@@ -80,10 +80,10 @@ export default function DrawScreen() {
             🔮
           </Text>
           <Text style={[styles.secondaryCardTitle, { color: theme.colors.text.primary }]}>
-            Past / Present / Future{!isPremium && ' (Premium)'}
+            3-Card Spread{!isPremium && ' (Premium)'}
           </Text>
           <Text style={[styles.secondaryCardSubtitle, { color: theme.colors.text.secondary }]}>
-            {isPremium ? 'Three-card spread' : 'Upgrade to unlock'}
+            {isPremium ? 'Choose your spread type' : 'Upgrade to unlock'}
           </Text>
         </Pressable>
       </View>

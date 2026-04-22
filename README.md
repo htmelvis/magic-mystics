@@ -105,13 +105,6 @@ OPENAI_API_KEY=your-openai-api-key
 ANTHROPIC_API_KEY=your-anthropic-api-key
 ```
 
-### Supabase Setup
-
-1. Create a new Supabase project at [https://supabase.com]
-2. Run the database migrations in `supabase/migrations/`
-3. Enable Row Level Security (RLS) on all tables
-4. Copy your project URL and anon key to `.env`
-
 ### Running the App
 
 Start the development server:
@@ -166,17 +159,6 @@ This is a personal project, but feel free to fork and customize!
 
 MIT
 
-## Roadmap
-
-- [ ] Complete card shuffle animation
-- [ ] Integrate Rider-Waite card images
-- [ ] Build Supabase edge function for AI insights
-- [ ] Implement PPF spread UI
-- [ ] Add RevenueCat for in-app purchases
-- [ ] Create onboarding flow
-- [ ] Add custom card deck support
-- [ ] Implement more spread types (Celtic Cross, etc.)
-
 ---
 
-Built with ✨ by Edward Wieczorek
+Built with ✨ by htmelvis

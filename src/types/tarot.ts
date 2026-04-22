@@ -30,7 +30,7 @@ export interface DrawnCardRecord {
   arcana: 'Major' | 'Minor';
   suit: 'Wands' | 'Cups' | 'Swords' | 'Pentacles' | null;
   orientation: TarotCardOrientation;
-  position: 'past' | 'present' | 'future' | null;
+  position: string | null;
 }
 
 export type TarotCardOrientation = 'upright' | 'reversed';

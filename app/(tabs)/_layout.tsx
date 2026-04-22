@@ -69,6 +69,16 @@ export default function TabsLayout() {
             }}
           />
           <Tabs.Screen
+            name="path"
+            options={{
+              title: 'Path',
+              tabBarAccessibilityLabel: 'Path tab',
+              tabBarIcon: ({ color, size }) => (
+                <MaterialCommunityIcons name="compass-outline" size={size} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
             name="settings"
             options={{
               title: 'Settings',

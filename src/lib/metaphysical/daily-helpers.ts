@@ -87,6 +87,42 @@ export function generateLuckyColors(
   return [pool[Math.abs(i1)], pool[Math.abs(second)]];
 }
 
+// Traditional planetary rulerships for dignity checks
+export const PLANET_RULING_SIGNS: Record<string, string[]> = {
+  Sun: ['Leo'],
+  Moon: ['Cancer'],
+  Mercury: ['Gemini', 'Virgo'],
+  Venus: ['Taurus', 'Libra'],
+  Mars: ['Aries'],
+  Jupiter: ['Sagittarius'],
+  Saturn: ['Capricorn'],
+  Uranus: ['Aquarius'],
+  Neptune: ['Pisces'],
+  Pluto: ['Scorpio'],
+};
+
+// Orbs for each major aspect in degrees
+const ASPECTS: Array<{ angle: number; orb: number }> = [
+  { angle: 0, orb: 8 },    // conjunction
+  { angle: 60, orb: 6 },   // sextile
+  { angle: 90, orb: 8 },   // square
+  { angle: 120, orb: 8 },  // trine
+  { angle: 180, orb: 8 },  // opposition
+];
+
+/** Returns the shortest angular distance between two ecliptic longitudes [0, 180]. */
+export function angularSeparation(lon1: number, lon2: number): number {
+  let diff = Math.abs(lon1 - lon2) % 360;
+  if (diff > 180) diff = 360 - diff;
+  return diff;
+}
+
+/** Returns true if the angular separation falls within any major aspect orb. */
+export function hasMajorAspect(lon1: number, lon2: number): boolean {
+  const sep = angularSeparation(lon1, lon2);
+  return ASPECTS.some(({ angle, orb }) => Math.abs(sep - angle) <= orb);
+}
+
 /**
  * Generates 5 unique lucky numbers in [1, 44], seeded by date + moon phase.
  * Deterministic: same inputs always produce the same numbers.
