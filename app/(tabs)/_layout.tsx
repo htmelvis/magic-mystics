@@ -78,6 +78,16 @@ export default function TabsLayout() {
               ),
             }}
           />
+          <Tabs.Screen
+            name="journal"
+            options={{
+              title: 'Journal',
+              tabBarAccessibilityLabel: 'Journal tab',
+              tabBarIcon: ({ color, size }) => (
+                <MaterialCommunityIcons name="book-open-outline" size={size} color={color} />
+              ),
+            }}
+          />
           <Tabs.Screen name="settings" options={{ href: null }} />
           <Tabs.Screen name="history" options={{ href: null }} />
           <Tabs.Screen name="natal-chart" options={{ href: null }} />

@@ -9,12 +9,15 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import type { ReadingRow } from '@hooks/useReadings';
 import { useReflection } from '@hooks/useReflection';
 import { useAuth } from '@hooks/useAuth';
 import { useSubscription } from '@hooks/useSubscription';
+import { useJournalByReading } from '@hooks/useJournals';
 import { supabase } from '@lib/supabase/client';
 import { DrawerCardSection } from './DrawerCardSection';
 import { AIInsightSection } from '@components/tarot';
@@ -53,6 +56,7 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
   const { user } = useAuth();
   const { isPremium } = useSubscription(user?.id);
   const theme = useAppTheme();
+  const router = useRouter();
 
   const [isVisible, setIsVisible] = useState(false);
 
@@ -121,6 +125,7 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
   ).current;
 
   const { reflection } = useReflection(reading?.id ?? null, user?.id ?? null);
+  const { data: linkedJournal } = useJournalByReading(reading?.id, user?.id);
 
   const [cardDetails, setCardDetails] = useState<Record<number, Record<string, unknown>>>({});
   useEffect(() => {
@@ -298,6 +303,43 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
                 )}
               </View>
             )}
+
+            {/* Linked journal entry */}
+            {linkedJournal && (
+              <TouchableOpacity
+                style={[
+                  styles.journalLink,
+                  {
+                    backgroundColor: theme.colors.surface.elevated,
+                    borderColor: theme.colors.border.main,
+                  },
+                ]}
+                onPress={() => {
+                  router.push({ pathname: '/journal-entry', params: { id: linkedJournal.id } });
+                  dismissRef.current();
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="View linked journal entry"
+              >
+                <View style={styles.journalLinkInner}>
+                  <Text style={styles.journalLinkIcon}>📓</Text>
+                  <View style={styles.journalLinkText}>
+                    <Text style={[styles.journalLinkLabel, { color: theme.colors.text.muted }]}>
+                      JOURNAL ENTRY
+                    </Text>
+                    <Text
+                      style={[styles.journalLinkTitle, { color: theme.colors.text.primary }]}
+                      numberOfLines={1}
+                    >
+                      {linkedJournal.title ?? 'Untitled entry'}
+                    </Text>
+                  </View>
+                  <Text style={[styles.journalLinkChevron, { color: theme.colors.text.muted }]}>
+                    →
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
           </ScrollView>
         </Animated.View>
       </View>
@@ -393,4 +435,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
   },
+  journalLink: {
+    marginTop: spacing.md,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  journalLinkInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    gap: spacing.md,
+  },
+  journalLinkIcon: { fontSize: 20 },
+  journalLinkText: { flex: 1, gap: 2 },
+  journalLinkLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  journalLinkTitle: { fontSize: 14, fontWeight: '600' },
+  journalLinkChevron: { fontSize: 16, fontWeight: '600' },
 });

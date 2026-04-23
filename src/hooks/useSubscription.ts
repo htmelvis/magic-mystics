@@ -7,12 +7,14 @@ const FREE_TIER_LIMITS: UserLimits = {
   maxReadingHistory: 30,
   canAccessPPF: false,
   hasAIContext: false,
+  hasJournal: false,
 };
 
 const PREMIUM_TIER_LIMITS: UserLimits = {
   maxReadingHistory: -1,
   canAccessPPF: true,
   hasAIContext: true,
+  hasJournal: true,
 };
 
 type SubscriptionRow = Database['public']['Tables']['subscriptions']['Row'];

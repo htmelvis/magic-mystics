@@ -122,9 +122,28 @@ export default function PPFScreen() {
   const handleReflectionSave = useCallback(
     async (feeling: ReflectionSentiment, alignment: ReflectionSentiment, content: string) => {
       await saveReflection({ feeling, alignment, content });
-      setReflectionSheetOpen(false);
+      // sheet self-closes (free) or advances to step 4 (premium) — no explicit close here
     },
     [saveReflection]
+  );
+
+  const handleAddToJournal = useCallback(
+    (reflectionContent: string) => {
+      const shortDate = new Date().toLocaleDateString('en-US', {
+        month: 'numeric',
+        day: 'numeric',
+        year: '2-digit',
+      });
+      router.push({
+        pathname: '/journal-entry',
+        params: {
+          seedTitle: `${spreadType.name} - ${shortDate}`,
+          seedReflection: reflectionContent,
+          ...(readingId ? { readingId } : {}),
+        },
+      });
+    },
+    [router, readingId, spreadType.name]
   );
 
   const deckOpacity = useRef(new Animated.Value(1)).current;
@@ -385,6 +404,7 @@ export default function PPFScreen() {
         isSaving={isReflectionSaving}
         onSave={handleReflectionSave}
         onClose={() => setReflectionSheetOpen(false)}
+        onAddToJournal={isPremium ? handleAddToJournal : undefined}
       />
     </View>
   );
