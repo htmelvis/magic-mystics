@@ -10,22 +10,32 @@ interface PlanetaryAlignmentCardProps {
   isLoading: boolean;
 }
 
-export function PlanetaryAlignmentCard({ alignment, isLoading }: PlanetaryAlignmentCardProps) {
+export function PlanetaryAlignmentCard({
+  alignment,
+  isLoading,
+  showFull = false,
+}: PlanetaryAlignmentCardProps & { showFull?: boolean }) {
   const theme = useAppTheme();
   const DEEP_SPACE = theme.colors.brand.cosmic.deepSpace;
 
   if (isLoading) {
     return (
       <View style={[styles.card, { backgroundColor: DEEP_SPACE }]}>
-        <View style={{ gap: spacing.sm }} accessible accessibilityLabel="Loading planetary alignment">
+        <View
+          style={{ gap: spacing.sm }}
+          accessible
+          accessibilityLabel="Loading planetary alignment"
+        >
           <Skeleton width="45%" height={11} borderRadius={4} />
           <Skeleton width="60%" height={26} borderRadius={6} />
           <Skeleton width="85%" height={14} />
-          <View style={styles.pillRow}>
-            <Skeleton width={80} height={24} borderRadius={12} />
-            <Skeleton width={90} height={24} borderRadius={12} />
-            <Skeleton width={70} height={24} borderRadius={12} />
-          </View>
+          {showFull && (
+            <View style={styles.pillRow}>
+              <Skeleton width={80} height={24} borderRadius={12} />
+              <Skeleton width={90} height={24} borderRadius={12} />
+              <Skeleton width={70} height={24} borderRadius={12} />
+            </View>
+          )}
         </View>
       </View>
     );
@@ -37,10 +47,11 @@ export function PlanetaryAlignmentCard({ alignment, isLoading }: PlanetaryAlignm
     ? `${alignment.dominant_planet_symbol} ${alignment.dominant_planet} in ${alignment.dominant_planet_sign}`
     : `${alignment.dominant_planet} in ${alignment.dominant_planet_sign}`;
 
-  const retrogradeText = alignment.all_planet_positions
-    ?.filter((p) => p.isRetrograde)
-    .map((p) => `${p.symbol ?? p.planet} ℞`)
-    .join('  ') ?? null;
+  const retrogradeText =
+    alignment.all_planet_positions
+      ?.filter(p => p.isRetrograde)
+      .map(p => `${p.symbol ?? p.planet} ℞`)
+      .join('  ') ?? null;
 
   return (
     <View style={[styles.card, { backgroundColor: DEEP_SPACE }]}>
@@ -68,25 +79,35 @@ export function PlanetaryAlignmentCard({ alignment, isLoading }: PlanetaryAlignm
         </Text>
       )}
 
-      {alignment.advice && (
-        <Text style={[styles.advice, { color: theme.colors.brand.cosmic.aurora }]}>
+      {showFull && alignment.advice && (
+        <Text style={[styles.advice, { color: theme.colors.text.primary }]}>
           {alignment.advice}
         </Text>
       )}
 
-      {alignment.supported_endeavors && alignment.supported_endeavors.length > 0 && (
-        <View style={styles.pillRow} accessibilityLabel="Supported endeavors">
-          {alignment.supported_endeavors.map((endeavor) => (
-            <View key={endeavor} style={[styles.pill, { backgroundColor: 'rgba(99,102,241,0.22)' }]}>
-              <Text style={[styles.pillText, { color: theme.colors.brand.cosmic.stardust }]}>
-                {endeavor}
-              </Text>
-            </View>
-          ))}
-        </View>
+      {showFull && alignment.supported_endeavors && alignment.supported_endeavors.length > 0 && (
+        <>
+          <Text
+            style={[
+              styles.label,
+              { color: theme.colors.brand.cosmic.stardust, marginBottom: 0, marginTop: 8 },
+            ]}
+          >
+            Supported Endeavors
+          </Text>
+          <View style={styles.pillRow} accessibilityLabel="Supported endeavors">
+            {alignment.supported_endeavors.map((endeavor: string, i: number) => (
+              <View key={endeavor}>
+                <Text style={[styles.pillText, { color: theme.colors.brand.cosmic.stardust }]}>
+                  {endeavor + `${(alignment.supported_endeavors?.length ?? 0) == i + 1 ? '' : ','}`}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </>
       )}
 
-      {retrogradeText && (
+      {showFull && retrogradeText && (
         <View style={[styles.pill, styles.pillWarning]}>
           <Text style={[styles.pillText, styles.pillTextWarning]}>{retrogradeText}</Text>
         </View>

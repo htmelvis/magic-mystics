@@ -45,7 +45,7 @@ export default function NatalChartScreen() {
       openUpgradeSheet();
       return;
     }
-    setShowOuterPlanets((v) => !v);
+    setShowOuterPlanets(v => !v);
   };
 
   const handleRecalculate = useCallback(async () => {
@@ -58,7 +58,7 @@ export default function NatalChartScreen() {
         birthDate,
         userProfile.birthTime,
         userProfile.birthLat,
-        userProfile.birthLng,
+        userProfile.birthLng
       );
       await supabase
         .from('users')
@@ -81,15 +81,7 @@ export default function NatalChartScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
       {/* Header */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: theme.colors.surface.elevated,
-            borderBottomColor: theme.colors.border.main,
-          },
-        ]}
-      >
+      <View style={[styles.header]}>
         <Pressable
           onPress={() => router.back()}
           style={styles.backButton}
@@ -112,13 +104,17 @@ export default function NatalChartScreen() {
             },
           ]}
           accessibilityRole="button"
-          accessibilityLabel={isPremium ? 'Toggle extended planets' : 'Upgrade to unlock extended planets'}
+          accessibilityLabel={
+            isPremium ? 'Toggle extended planets' : 'Upgrade to unlock extended planets'
+          }
           accessibilityState={{ selected: showOuterPlanets }}
         >
           <Text
             style={[
               styles.toggleText,
-              { color: showOuterPlanets ? theme.colors.brand.primary : theme.colors.text.secondary },
+              {
+                color: showOuterPlanets ? theme.colors.brand.primary : theme.colors.text.secondary,
+              },
             ]}
           >
             {isPremium ? (showOuterPlanets ? '♃♄✓' : '♃♄') : '♃♄ 🔒'}
@@ -129,7 +125,9 @@ export default function NatalChartScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {!chart ? (
           <View style={styles.emptyState}>
-            <Text style={[styles.emptyTitle, { color: theme.colors.text.primary }]}>No chart yet</Text>
+            <Text style={[styles.emptyTitle, { color: theme.colors.text.primary }]}>
+              No chart yet
+            </Text>
             <Text style={[styles.emptySubtitle, { color: theme.colors.text.secondary }]}>
               {userProfile?.birthDate && userProfile?.birthTime
                 ? 'Tap below to generate your natal chart.'
@@ -143,21 +141,18 @@ export default function NatalChartScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Generate natal chart"
               >
-                {recalculating
-                  ? <ActivityIndicator color="#fff" />
-                  : <Text style={styles.generateButtonText}>Generate Chart</Text>
-                }
+                {recalculating ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.generateButtonText}>Generate Chart</Text>
+                )}
               </Pressable>
             )}
           </View>
         ) : (
           <>
             {/* Wheel */}
-            <NatalChartWheel
-              chart={chart}
-              size={wheelSize}
-              showOuterPlanets={showOuterPlanets}
-            />
+            <NatalChartWheel chart={chart} size={wheelSize} showOuterPlanets={showOuterPlanets} />
 
             {/* ASC / MC note */}
             {chart.ascendant === null && (
@@ -187,7 +182,7 @@ export default function NatalChartScreen() {
               >
                 Planets
               </Text>
-              {chart.planets.map((planet) => {
+              {chart.planets.map(planet => {
                 const isFree = FREE_SET.has(planet.name);
                 const isRevealed = isFree || (isPremium && showOuterPlanets);
                 return (
@@ -236,15 +231,29 @@ export default function NatalChartScreen() {
               {chart.ascendant !== null && (
                 <View style={[styles.planetRow, { borderBottomColor: theme.colors.border.subtle }]}>
                   <Text style={[styles.planetGlyph, { color: theme.colors.text.primary }]}>↑</Text>
-                  <Text style={[styles.planetName, { color: theme.colors.text.primary }]}>Ascendant</Text>
+                  <Text style={[styles.planetName, { color: theme.colors.text.primary }]}>
+                    Ascendant
+                  </Text>
                   <Text style={[styles.planetPosition, { color: theme.colors.text.secondary }]}>
                     {(() => {
                       const lon = chart.ascendant!;
-                      const sign = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo',
-                        'Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'][Math.floor(lon/30)];
+                      const sign = [
+                        'Aries',
+                        'Taurus',
+                        'Gemini',
+                        'Cancer',
+                        'Leo',
+                        'Virgo',
+                        'Libra',
+                        'Scorpio',
+                        'Sagittarius',
+                        'Capricorn',
+                        'Aquarius',
+                        'Pisces',
+                      ][Math.floor(lon / 30)];
                       const deg = Math.floor(lon % 30);
                       const min = Math.floor((lon % 1) * 60);
-                      return `${sign}  ${deg}°${min.toString().padStart(2,'0')}′`;
+                      return `${sign}  ${deg}°${min.toString().padStart(2, '0')}′`;
                     })()}
                   </Text>
                 </View>
@@ -252,15 +261,29 @@ export default function NatalChartScreen() {
               {chart.midheaven !== null && (
                 <View style={[styles.planetRow, { borderBottomColor: theme.colors.border.subtle }]}>
                   <Text style={[styles.planetGlyph, { color: theme.colors.text.primary }]}>MC</Text>
-                  <Text style={[styles.planetName, { color: theme.colors.text.primary }]}>Midheaven</Text>
+                  <Text style={[styles.planetName, { color: theme.colors.text.primary }]}>
+                    Midheaven
+                  </Text>
                   <Text style={[styles.planetPosition, { color: theme.colors.text.secondary }]}>
                     {(() => {
                       const lon = chart.midheaven!;
-                      const sign = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo',
-                        'Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'][Math.floor(lon/30)];
+                      const sign = [
+                        'Aries',
+                        'Taurus',
+                        'Gemini',
+                        'Cancer',
+                        'Leo',
+                        'Virgo',
+                        'Libra',
+                        'Scorpio',
+                        'Sagittarius',
+                        'Capricorn',
+                        'Aquarius',
+                        'Pisces',
+                      ][Math.floor(lon / 30)];
                       const deg = Math.floor(lon % 30);
                       const min = Math.floor((lon % 1) * 60);
-                      return `${sign}  ${deg}°${min.toString().padStart(2,'0')}′`;
+                      return `${sign}  ${deg}°${min.toString().padStart(2, '0')}′`;
                     })()}
                   </Text>
                 </View>
@@ -275,10 +298,13 @@ export default function NatalChartScreen() {
               accessibilityRole="button"
               accessibilityLabel="Recalculate natal chart"
             >
-              {recalculating
-                ? <ActivityIndicator color={theme.colors.brand.primary} size="small" />
-                : <Text style={[styles.recalcText, { color: theme.colors.brand.primary }]}>Recalculate</Text>
-              }
+              {recalculating ? (
+                <ActivityIndicator color={theme.colors.brand.primary} size="small" />
+              ) : (
+                <Text style={[styles.recalcText, { color: theme.colors.brand.primary }]}>
+                  Recalculate
+                </Text>
+              )}
             </Pressable>
 
             <Text style={[styles.computedAt, { color: theme.colors.text.muted }]}>
@@ -304,8 +330,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   backButton: { padding: 4 },
-  backText: { fontSize: 16, fontWeight: '600' },
-  title: { fontSize: 18, fontWeight: 'bold', flex: 1 },
+  backText: { fontSize: 12, fontWeight: '600' },
+  title: { fontSize: 14, flex: 1 },
   toggleButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,

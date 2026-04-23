@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Pressable, Alert, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -152,6 +153,14 @@ export default function ProfileScreen() {
           <Text style={[styles.title, { color: theme.colors.text.primary }]}>{userProfile?.displayName || 'Profile'}</Text>
           <Text style={[styles.email, { color: theme.colors.text.secondary }]}>{user?.email}</Text>
         </View>
+        <TouchableOpacity
+          onPress={() => router.push('/(tabs)/settings')}
+          accessibilityRole="button"
+          accessibilityLabel="Open settings"
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <MaterialCommunityIcons name="cog-outline" size={26} color={theme.colors.text.muted} />
+        </TouchableOpacity>
       </View>
 
       {/* Tarot card associated with sun sign */}

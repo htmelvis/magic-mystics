@@ -1,5 +1,12 @@
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useAuth } from '@hooks/useAuth';
 import { useSubscription } from '@hooks/useSubscription';
 import { useReadings } from '@hooks/useReadings';
@@ -66,7 +73,7 @@ export default function HistoryScreen() {
   const isFilterActive = query.length > 0 || spreadFilter !== 'all' || dateRangeFilter !== 'all';
 
   const ListHeader = (
-    <View style={styles.listHeader}>
+    <View>
       <Text style={[styles.title, { color: theme.colors.text.primary }]}>Reading History</Text>
       <Text style={[styles.subtitle, { color: theme.colors.text.muted }]}>
         {isPremium
@@ -75,18 +82,20 @@ export default function HistoryScreen() {
       </Text>
       <ExpiryWarningBanner expiry={expiry} onUpgradePress={openUpgradeSheet} />
       {readings.length > 0 && (
-        <SearchFilterBar
-          query={query}
-          onChangeSearch={onChangeSearch}
-          clearSearch={clearSearch}
-          spreadFilter={spreadFilter}
-          setSpreadFilter={setSpreadFilter}
-          dateRangeFilter={dateRangeFilter}
-          setDateRangeFilter={setDateRangeFilter}
-          clearAllFilters={clearAllFilters}
-          resultCount={filtered.length}
-          totalCount={readings.length}
-        />
+        <View style={{ marginTop: spacing.lg, marginBottom: 0 }}>
+          <SearchFilterBar
+            query={query}
+            onChangeSearch={onChangeSearch}
+            clearSearch={clearSearch}
+            spreadFilter={spreadFilter}
+            setSpreadFilter={setSpreadFilter}
+            dateRangeFilter={dateRangeFilter}
+            setDateRangeFilter={setDateRangeFilter}
+            clearAllFilters={clearAllFilters}
+            resultCount={filtered.length}
+            totalCount={readings.length}
+          />
+        </View>
       )}
     </View>
   );
@@ -128,7 +137,10 @@ export default function HistoryScreen() {
       </Text>
       <TouchableOpacity
         style={[styles.actionButton, { backgroundColor: theme.colors.brand.primary }]}
-        onPress={() => { clearSearch(); clearAllFilters(); }}
+        onPress={() => {
+          clearSearch();
+          clearAllFilters();
+        }}
         accessibilityRole="button"
         accessibilityLabel="Clear all filters"
       >
@@ -157,12 +169,7 @@ export default function HistoryScreen() {
         />
       )}
       {!isPremium && !isLoading && readings.length >= limits.maxReadingHistory && (
-        <View
-          style={[
-            styles.upgradePrompt,
-            { backgroundColor: theme.colors.brand.purple[50] },
-          ]}
-        >
+        <View style={[styles.upgradePrompt, { backgroundColor: theme.colors.brand.purple[50] }]}>
           <Text style={[styles.upgradeText, { color: theme.colors.brand.purple[600] }]}>
             Upgrade to Premium to unlock your full reading history.
           </Text>
@@ -182,7 +189,7 @@ export default function HistoryScreen() {
         data={filtered}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
-        style={[styles.list, { backgroundColor: theme.colors.surface.subtle }]}
+        style={[styles.list, { backgroundColor: theme.colors.surface.background }]}
         contentContainerStyle={styles.content}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={ListEmpty}
@@ -207,7 +214,7 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   list: { flex: 1 },
   content: { padding: spacing.lg, paddingBottom: 40 },
-  listHeader: { paddingTop: spacing.lg, marginBottom: spacing.lg },
+  // listHeader: { paddingTop: spacing.lg, marginBottom: spacing.lg },
   title: { fontSize: 28, fontWeight: 'bold', marginBottom: 4 },
   subtitle: { fontSize: 14 },
   skeletons: { gap: 0 },

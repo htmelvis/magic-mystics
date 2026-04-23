@@ -36,7 +36,6 @@ import { useGenerateInsight } from '@hooks/useGenerateInsight';
 import { useSubscription } from '@hooks/useSubscription';
 import type { AIInsight } from '@/types/ai-insight';
 
-
 export type SpreadTypeId =
   | 'past-present-future'
   | 'relationship'
@@ -192,7 +191,15 @@ export default function PPFScreen() {
     if (isPremium) {
       generateInsight(reading.id, { onSuccess: setInsight });
     }
-  }, [user, cardIds, spreadType, invalidateReadings, invalidateJourneyStats, isPremium, generateInsight]);
+  }, [
+    user,
+    cardIds,
+    spreadType,
+    invalidateReadings,
+    invalidateJourneyStats,
+    isPremium,
+    generateInsight,
+  ]);
 
   const handleShuffleComplete = useCallback(async () => {
     if (hasDrawn.current) return;
@@ -233,24 +240,16 @@ export default function PPFScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: theme.colors.surface.card,
-            borderBottomColor: theme.colors.border.main,
-          },
-        ]}
-      >
+      <View style={[styles.header]}>
         <Pressable
-          onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/draw')}
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/draw'))}
           style={styles.backButton}
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
           <Text style={[styles.backText, { color: theme.colors.brand.primary }]}>← Back</Text>
         </Pressable>
-        <Text style={[styles.title, { color: theme.colors.text.primary }]}>
+        <Text style={{ color: theme.colors.text.primary }}>
           {phase === 'select' ? '3-Card Spread' : spreadType.name}
         </Text>
       </View>
@@ -410,9 +409,6 @@ function SpreadSelector({
       contentContainerStyle={spreadSelectorStyles.content}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={[spreadSelectorStyles.heading, { color: theme.colors.text.primary }]}>
-        Choose your spread
-      </Text>
       <Text style={[spreadSelectorStyles.subheading, { color: theme.colors.text.secondary }]}>
         What lens would you like to read through?
       </Text>
@@ -459,7 +455,9 @@ function SpreadSelector({
               )}
             </View>
 
-            <View style={[spreadSelectorStyles.pillRow, { borderTopColor: theme.colors.border.light }]}>
+            <View
+              style={[spreadSelectorStyles.pillRow, { borderTopColor: theme.colors.border.light }]}
+            >
               {spread.labels.map((label, i) => (
                 <View
                   key={i}

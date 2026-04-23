@@ -67,7 +67,7 @@ function ChipRow<T extends string>({
         accessibilityRole="tablist"
         accessibilityLabel={label}
       >
-        {chips.map((chip) => {
+        {chips.map(chip => {
           const active = value === chip.key;
           return (
             <Pressable
@@ -75,7 +75,9 @@ function ChipRow<T extends string>({
               style={[
                 styles.chip,
                 {
-                  backgroundColor: active ? theme.colors.brand.primary : theme.colors.surface.subtle,
+                  backgroundColor: active
+                    ? theme.colors.brand.primary
+                    : theme.colors.surface.subtle,
                   borderColor: active ? theme.colors.brand.primary : theme.colors.border.main,
                 },
               ]}
@@ -145,7 +147,7 @@ export const SearchFilterBar = memo(function SearchFilterBar({
 
   const toggleDrawer = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setDrawerOpen((prev) => !prev);
+    setDrawerOpen(prev => !prev);
   }, []);
 
   const handleClearAll = useCallback(() => {
@@ -156,11 +158,7 @@ export const SearchFilterBar = memo(function SearchFilterBar({
   const isFiltering = query.length > 0 || activeFilterCount > 0;
 
   return (
-    <View
-      style={styles.container}
-      accessibilityRole="search"
-      accessibilityLabel="Filter readings"
-    >
+    <View style={styles.container} accessibilityRole="search" accessibilityLabel="Filter readings">
       {/* Search input */}
       <View
         style={[
@@ -171,7 +169,9 @@ export const SearchFilterBar = memo(function SearchFilterBar({
           },
         ]}
       >
-        <Text style={styles.searchIcon} accessible={false}>🔍</Text>
+        <Text style={styles.searchIcon} accessible={false}>
+          🔍
+        </Text>
         <TextInput
           ref={inputRef}
           style={[styles.input, { color: theme.colors.text.primary }]}
@@ -224,7 +224,6 @@ export const SearchFilterBar = memo(function SearchFilterBar({
         </Text>
       </Pressable>
 
-      {/* Collapsible drawer */}
       {drawerOpen && (
         <View
           style={[

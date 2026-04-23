@@ -14,19 +14,6 @@ async function fetchUserProfile(userId: string): Promise<UserProfile> {
   const d = data as any;
   const tc = d.tarot_cards as { id: number; name: string; upright_summary: string | null } | null;
 
-  let assocType: string | null = null;
-  let assocDesc: string | null = null;
-
-  if (tc?.id) {
-    const { data: assoc } = await supabase
-      .from('zodiac_tarot_associations')
-      .select('association_type, description')
-      .eq('tarot_card_id', tc.id)
-      .maybeSingle();
-    assocType = assoc?.association_type ?? null;
-    assocDesc = assoc?.description ?? null;
-  }
-
   return {
     id: d.id,
     email: d.email,
@@ -49,8 +36,8 @@ async function fetchUserProfile(userId: string): Promise<UserProfile> {
           id: tc.id,
           name: tc.name,
           uprightSummary: tc.upright_summary ?? null,
-          associationType: assocType,
-          associationDescription: assocDesc,
+          associationType: d.tarot_association_type ?? null,
+          associationDescription: d.tarot_association_description ?? null,
         }
       : null,
     onboardingCompleted: d.onboarding_completed,
