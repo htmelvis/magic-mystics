@@ -93,6 +93,7 @@ export default function TabsLayout() {
           <Tabs.Screen name="natal-chart" options={{ href: null }} />
           <Tabs.Screen name="edit-birth-details" options={{ href: null }} />
           <Tabs.Screen name="support" options={{ href: null }} />
+          <Tabs.Screen name="update-email" options={{ href: null }} />
         </Tabs>
     </ErrorBoundary>
   );
