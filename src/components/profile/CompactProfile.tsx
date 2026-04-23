@@ -47,7 +47,7 @@ export function CompactProfile({ userProfile }: { userProfile: UserProfile | nul
               accessibilityHint="Opens a guide explaining your sun, moon, and rising signs"
             >
               <Badge
-                label={`☀️ ${sunSign} • 🌙 ${moonSign ?? '—'} • ⬆️ ${risingSign ?? '—'}`}
+                label={`☉ ${sunSign} • ☽ ${moonSign ?? '—'} • ↑ ${risingSign ?? '—'}`}
                 variant="outline"
                 size="md"
               />

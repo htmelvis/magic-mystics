@@ -45,9 +45,9 @@ export default function PathScreen() {
     <Screen style={{ paddingBottom: 84 }}>
       <CompactProfile userProfile={userProfile} />
 
-      <PathCosmicHeader cosmic={cosmic} userProfile={userProfile} isLoading={cosmicLoading} />
+      {/* <PathCosmicHeader cosmic={cosmic} userProfile={userProfile} isLoading={cosmicLoading} /> */}
 
-      <PlanetaryAlignmentCard alignment={planetary} isLoading={planetaryLoading} />
+      <PlanetaryAlignmentCard alignment={planetary} isLoading={planetaryLoading} showFull={true} />
 
       <StreakCard
         currentStreak={streak?.currentStreak ?? 0}

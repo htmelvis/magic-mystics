@@ -22,18 +22,14 @@ interface CosmicWeatherCardProps {
   isLoading: boolean;
 }
 
-export function CosmicWeatherCard({ cosmic, isLoading }: CosmicWeatherCardProps) {
+export function Horoscope({ cosmic, isLoading }: CosmicWeatherCardProps) {
   const theme = useAppTheme();
   const DEEP_SPACE = theme.colors.brand.cosmic.deepSpace;
 
   if (isLoading) {
     return (
       <View style={[styles.card, { backgroundColor: DEEP_SPACE }]}>
-        <View
-          style={{ gap: spacing.sm }}
-          accessible
-          accessibilityLabel="Loading daily celestial insights"
-        >
+        <View style={{ gap: spacing.sm }} accessible accessibilityLabel="Loading cosmic weather">
           <Skeleton width="45%" height={11} borderRadius={4} />
           <Skeleton width="80%" height={22} borderRadius={6} />
           <Skeleton width="100%" height={14} />

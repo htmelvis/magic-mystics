@@ -4,9 +4,11 @@ import { useAuth } from '@hooks/useAuth';
 import { useSubscription } from '@hooks/useSubscription';
 import { useUserProfile } from '@hooks/useUserProfile';
 import { useDailyMetaphysical } from '@hooks/useDailyMetaphysical';
+import { useDailyPlanetaryAlignment } from '@hooks/useDailyPlanetaryAlignment';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { Screen, Skeleton, SkeletonCard, ZodiacAvatarPlaceholder } from '@components/ui';
 import { CosmicWeatherCard } from '@/components/home/CosmicWeatherCard';
+import { PlanetaryAlignmentCard } from '@/components/path/PlanetaryAlignmentCard';
 import { spacing, borderRadius } from '@theme';
 import { DrawBanner } from '@/components/tarot/DrawBanner';
 import { PremiumUnlockBanner } from '@/components/promo/PremiumUnlockBanner';
@@ -17,6 +19,7 @@ export default function HomeScreen() {
   const { isPremium } = useSubscription(user?.id);
   const { userProfile, loading: profileLoading } = useUserProfile(user?.id);
   const { data: cosmic, isLoading: cosmicLoading } = useDailyMetaphysical();
+  const { data: planetary, isLoading: planetaryLoading } = useDailyPlanetaryAlignment();
   const theme = useAppTheme();
 
   const isLoading = authLoading || profileLoading;
@@ -46,6 +49,7 @@ export default function HomeScreen() {
         <View style={{ marginBottom: 48 }}>
           <ExpandedProfile userProfile={userProfile} />
           <CosmicWeatherCard cosmic={cosmic} isLoading={cosmicLoading} />
+          <PlanetaryAlignmentCard alignment={planetary} isLoading={planetaryLoading} />
           <DrawBanner />
 
           {/* Premium Promo */}
