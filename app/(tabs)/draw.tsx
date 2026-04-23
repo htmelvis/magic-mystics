@@ -5,10 +5,14 @@ import { useSubscription } from '@hooks/useSubscription';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { Screen } from '@components/ui';
 import { useUpgradeSheet } from '@/context/UpgradeSheetContext';
+import { ReadingHistory } from '@/components/history/ReadingHistory';
 import { spacing, borderRadius } from '@theme';
+import { CompactProfile } from '@/components/profile/CompactProfile';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 export default function DrawScreen() {
   const { user } = useAuth();
+  const { userProfile } = useUserProfile(user?.id);
   const { isPremium } = useSubscription(user?.id);
   const router = useRouter();
   const theme = useAppTheme();
@@ -28,12 +32,7 @@ export default function DrawScreen() {
 
   return (
     <Screen>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.colors.text.primary }]}>Read your cards </Text>
-        <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
-          Choose a spread to begin your reading
-        </Text>
-      </View>
+      <CompactProfile userProfile={userProfile} />
 
       <View style={styles.spreads}>
         <Pressable
@@ -44,7 +43,7 @@ export default function DrawScreen() {
           onPress={handleDrawCard}
           accessibilityRole="button"
           accessibilityLabel="Draw Your Daily Card"
-          accessibilityHint="Discover today's tarot message"
+          accessibilityHint="Pull today's tarot message"
         >
           <Text style={styles.cardIcon} accessible={false}>
             ✨
@@ -66,11 +65,7 @@ export default function DrawScreen() {
           ]}
           onPress={handlePPFSpread}
           accessibilityRole="button"
-          accessibilityLabel={
-            isPremium
-              ? '3-Card spread'
-              : '3-Card spread, Premium feature'
-          }
+          accessibilityLabel={isPremium ? '3-Card spread' : '3-Card spread, Premium feature'}
           accessibilityHint={
             isPremium ? 'Three-card spread reading' : 'Upgrade to Premium to unlock this feature'
           }
@@ -88,23 +83,7 @@ export default function DrawScreen() {
         </Pressable>
       </View>
 
-      <Pressable
-        style={[
-          styles.historyRow,
-          {
-            backgroundColor: theme.colors.surface.card,
-            borderColor: theme.colors.border.main,
-          },
-        ]}
-        onPress={() => router.push('/(tabs)/history')}
-        accessibilityRole="button"
-        accessibilityLabel="View reading history"
-      >
-        <Text style={[styles.historyRowLabel, { color: theme.colors.text.primary }]}>
-          Reading History
-        </Text>
-        <Text style={[styles.historyRowChevron, { color: theme.colors.text.muted }]}>›</Text>
-      </Pressable>
+      <ReadingHistory onPress={() => router.push('/(tabs)/history')} />
     </Screen>
   );
 }
@@ -159,22 +138,5 @@ const styles = StyleSheet.create({
   },
   secondaryCardSubtitle: {
     fontSize: 14,
-  },
-  historyRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderRadius: borderRadius.card,
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.xl,
-    borderWidth: 1,
-  },
-  historyRowLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  historyRowChevron: {
-    fontSize: 20,
-    lineHeight: 22,
   },
 });

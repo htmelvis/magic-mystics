@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@hooks/useAuth';
 import { useSubscription } from '@hooks/useSubscription';
@@ -10,7 +9,6 @@ import { useJourneyStats } from '@hooks/useJourneyStats';
 import { useStreak } from '@hooks/useStreak';
 import { useSpreadStats } from '@hooks/useSpreadStats';
 import { useReadings } from '@hooks/useReadings';
-import { useAppTheme } from '@/hooks/useAppTheme';
 import { Screen } from '@components/ui/Screen';
 import { ReadingDrawer } from '@/components/history/ReadingDrawer';
 import { PathCosmicHeader } from '@/components/path/PathCosmicHeader';
@@ -20,9 +18,9 @@ import { JourneyStatsGrid } from '@/components/path/JourneyStatsGrid';
 import { MonthlyActivityChart } from '@/components/path/MonthlyActivityChart';
 import { SpreadBreakdown } from '@/components/path/SpreadBreakdown';
 import { LastReadingCard } from '@/components/path/LastReadingCard';
-import { HistoryAccessCard } from '@/components/path/HistoryAccessCard';
-import { spacing } from '@theme';
+import { ReadingHistory } from '@/components/history/ReadingHistory';
 import type { ReadingRow } from '@hooks/useReadings';
+import { CompactProfile } from '@/components/profile/CompactProfile';
 
 export default function PathScreen() {
   const { user } = useAuth();
@@ -38,17 +36,14 @@ export default function PathScreen() {
     limits.maxReadingHistory
   );
   const router = useRouter();
-  const theme = useAppTheme();
 
   const [selectedReading, setSelectedReading] = useState<ReadingRow | null>(null);
 
   const lastReading = useMemo(() => readingsData?.pages[0]?.[0] ?? null, [readingsData]);
 
   return (
-    <Screen edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.colors.text.primary }]}>Your Path</Text>
-      </View>
+    <Screen style={{ paddingBottom: 84 }}>
+      <CompactProfile userProfile={userProfile} />
 
       <PathCosmicHeader cosmic={cosmic} userProfile={userProfile} isLoading={cosmicLoading} />
 
@@ -77,22 +72,9 @@ export default function PathScreen() {
 
       <SpreadBreakdown stats={spreadStats ?? []} isLoading={spreadLoading} />
 
-      <HistoryAccessCard
-        readingCount={stats?.readings ?? 0}
-        onPress={() => router.push('/history')}
-      />
+      <ReadingHistory readingCount={stats?.readings ?? 0} onPress={() => router.push('/history')} />
 
       <ReadingDrawer reading={selectedReading} onClose={() => setSelectedReading(null)} />
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    marginBottom: spacing.lg,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-  },
-});

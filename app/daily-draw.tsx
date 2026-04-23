@@ -209,14 +209,14 @@ export default function DrawScreen() {
         style={[
           styles.header,
           {
-            backgroundColor: theme.colors.surface.card,
-            borderBottomColor: theme.colors.border.main,
+            // backgroundColor: theme.colors.surface.card,
+            // borderBottomColor: theme.colors.border.main,
             zIndex: 99,
           },
         ]}
       >
         <Pressable
-          onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/draw')}
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/draw'))}
           style={styles.backButton}
           accessibilityRole="button"
           accessibilityLabel="Go back"
@@ -278,17 +278,16 @@ export default function DrawScreen() {
               </Animated.View>
             </>
           )}
-          {canDraw && (
+          {/* {canDraw && (
             <Text
               style={[styles.tapHint, { color: theme.colors.text.muted }]}
               accessibilityElementsHidden
             >
               Tap to draw your card
             </Text>
-          )}
+          )} */}
         </View>
 
-        {/* ScrollView overlaid on top — transparent spacer reveals pinned card */}
         <ScrollView
           style={[StyleSheet.absoluteFill, styles.scroll]}
           contentContainerStyle={styles.scrollContent}
@@ -337,7 +336,11 @@ export default function DrawScreen() {
                 </View>
               )}
 
-              {card && orientation && <CardDetail card={card} orientation={orientation} />}
+              {card && (
+                <Text style={[styles.title, { color: theme.colors.text.primary }]}>
+                  {card.name}
+                </Text>
+              )}
 
               {card && (
                 <AIInsightSection
@@ -347,6 +350,7 @@ export default function DrawScreen() {
                 />
               )}
 
+              {card && orientation && <CardDetail card={card} orientation={orientation} />}
               {readingId && card && (
                 <ReflectionSection
                   reflection={reflection}
@@ -401,7 +405,9 @@ function CardDetail({
       <View style={detailStyles.metaRow}>
         {arcana && (
           <Text style={[detailStyles.arcanaText, { color: theme.colors.text.primary }]}>
-            {arcana === 'Major' ? name : `${number != null ? `${number} of ` : ''}${suit ?? 'Minor Arcana'}`}
+            {arcana === 'Major'
+              ? name
+              : `${number != null ? `${number} of ` : ''}${suit ?? 'Minor Arcana'}`}
           </Text>
         )}
         <Text

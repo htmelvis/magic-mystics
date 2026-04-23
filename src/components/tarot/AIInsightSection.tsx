@@ -17,6 +17,7 @@ interface Section {
   label: string | null;
   text: string;
   isResonance?: boolean;
+  order?: number;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -25,21 +26,21 @@ function getSections(insight: AIInsight): Section[] {
   if (insight.kind === 'single') {
     const s = insight as SingleCardInsight;
     return [
-      { label: null, text: s.opening },
-      { label: 'THE CARD', text: s.card_essence },
-      { label: 'CELESTIAL', text: s.celestial_overlay },
-      { label: 'GUIDANCE', text: s.guidance },
-      { label: null, text: s.resonance, isResonance: true },
+      { label: null, text: s.opening, order: 1 },
+      { label: 'THE CARD & YOU', text: s.card_essence, order: 2 },
+      { label: 'CELESTIAL', text: s.celestial_overlay, order: 3 },
+      { label: 'GUIDANCE', text: s.guidance, order: 4 },
+      { label: null, text: s.resonance, isResonance: true, order: 0 },
     ];
   }
 
   if (insight.kind === 'spread') {
     const s = insight as SpreadInsight;
     return [
-      { label: null, text: s.opening },
-      { label: 'THE READING', text: s.spread_reading },
-      { label: 'GUIDANCE', text: s.guidance },
-      { label: null, text: s.resonance, isResonance: true },
+      { label: null, text: s.opening, order: 1 },
+      { label: 'THE READING', text: s.spread_reading, order: 2 },
+      { label: 'GUIDANCE', text: s.guidance, order: 3 },
+      { label: null, text: s.resonance, isResonance: true, order: 0 },
     ];
   }
 
@@ -64,19 +65,61 @@ function InsightSkeleton() {
   const bg = theme.colors.tarot.insight.background;
 
   return (
-    <View style={[styles.container, { backgroundColor: bg, borderColor: theme.colors.tarot.insight.border }]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: bg, borderColor: theme.colors.tarot.insight.border },
+      ]}
+    >
       <View style={styles.header}>
         <Animated.View
-          style={[styles.skeletonLabel, { backgroundColor: theme.colors.tarot.insight.border, opacity: pulse }]}
+          style={[
+            styles.skeletonLabel,
+            { backgroundColor: theme.colors.tarot.insight.border, opacity: pulse },
+          ]}
         />
       </View>
       <Animated.View style={{ opacity: pulse, gap: spacing.md }}>
-        <View style={[styles.skeletonLine, { width: '90%', backgroundColor: theme.colors.tarot.insight.border }]} />
-        <View style={[styles.skeletonLine, { width: '75%', backgroundColor: theme.colors.tarot.insight.border }]} />
-        <View style={[styles.skeletonLine, { width: '82%', backgroundColor: theme.colors.tarot.insight.border, marginTop: spacing.xs }]} />
-        <View style={[styles.skeletonLine, { width: '68%', backgroundColor: theme.colors.tarot.insight.border }]} />
-        <View style={[styles.skeletonLine, { width: '55%', backgroundColor: theme.colors.tarot.insight.border }]} />
-        <View style={[styles.skeletonResonance, { backgroundColor: theme.colors.tarot.insight.border, marginTop: spacing.sm }]} />
+        <View
+          style={[
+            styles.skeletonLine,
+            { width: '90%', backgroundColor: theme.colors.tarot.insight.border },
+          ]}
+        />
+        <View
+          style={[
+            styles.skeletonLine,
+            { width: '75%', backgroundColor: theme.colors.tarot.insight.border },
+          ]}
+        />
+        <View
+          style={[
+            styles.skeletonLine,
+            {
+              width: '82%',
+              backgroundColor: theme.colors.tarot.insight.border,
+              marginTop: spacing.xs,
+            },
+          ]}
+        />
+        <View
+          style={[
+            styles.skeletonLine,
+            { width: '68%', backgroundColor: theme.colors.tarot.insight.border },
+          ]}
+        />
+        <View
+          style={[
+            styles.skeletonLine,
+            { width: '55%', backgroundColor: theme.colors.tarot.insight.border },
+          ]}
+        />
+        <View
+          style={[
+            styles.skeletonResonance,
+            { backgroundColor: theme.colors.tarot.insight.border, marginTop: spacing.sm },
+          ]}
+        />
       </Animated.View>
     </View>
   );
@@ -105,10 +148,11 @@ function InsightLocked() {
     >
       <Text style={styles.lockedIcon}>✦</Text>
       <Text style={[styles.lockedTitle, { color: theme.colors.subscription.premium.text }]}>
-        AI Reading
+        Insights from the Oracle
       </Text>
       <Text style={[styles.lockedBody, { color: theme.colors.subscription.premium.text }]}>
-        Upgrade to Premium for a personalized AI reading that weaves your birth chart, the cards, and today's celestial energy into a single insight.
+        Upgrade to Premium for a personalized AI reading that weaves your birth chart, the cards,
+        and today's celestial energy into a single insight.
       </Text>
       <View style={[styles.lockedCta, { backgroundColor: theme.colors.brand.accent }]}>
         <Text style={styles.lockedCtaText}>Unlock with Premium</Text>
@@ -121,7 +165,7 @@ function InsightLocked() {
 
 function InsightContent({ insight }: { insight: AIInsight }) {
   const theme = useAppTheme();
-  const sections = getSections(insight);
+  const sections = getSections(insight).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const anims = useRef(sections.map(() => new Animated.Value(0))).current;
   const hasAnimated = useRef(false);
 
@@ -145,11 +189,16 @@ function InsightContent({ insight }: { insight: AIInsight }) {
     <View
       style={[
         styles.container,
-        { backgroundColor: theme.colors.tarot.insight.background, borderColor: theme.colors.tarot.insight.border },
+        {
+          backgroundColor: theme.colors.tarot.insight.background,
+          borderColor: theme.colors.tarot.insight.border,
+        },
       ]}
     >
       <View style={styles.header}>
-        <Text style={[styles.headerLabel, { color: theme.colors.tarot.insight.text }]}>✦ AI Reading</Text>
+        <Text style={[styles.headerLabel, { color: theme.colors.tarot.insight.text }]}>
+          ✦ From the Oracle
+        </Text>
       </View>
 
       <View style={styles.sectionsContainer}>
@@ -163,7 +212,11 @@ function InsightContent({ insight }: { insight: AIInsight }) {
                   {
                     borderColor: theme.colors.brand.accent,
                     opacity: anims[i],
-                    transform: [{ scale: anims[i].interpolate({ inputRange: [0, 1], outputRange: [0.96, 1] }) }],
+                    transform: [
+                      {
+                        scale: anims[i].interpolate({ inputRange: [0, 1], outputRange: [0.96, 1] }),
+                      },
+                    ],
                   },
                 ]}
               >
@@ -186,14 +239,16 @@ function InsightContent({ insight }: { insight: AIInsight }) {
                   section.label === null
                     ? [styles.openingText, { color: theme.colors.tarot.insight.text }]
                     : section.label === 'GUIDANCE'
-                    ? [styles.guidanceText, { color: theme.colors.tarot.insight.text }]
-                    : [styles.bodyText, { color: theme.colors.tarot.insight.text }]
+                      ? [styles.guidanceText, { color: theme.colors.tarot.insight.text }]
+                      : [styles.bodyText, { color: theme.colors.tarot.insight.text }]
                 }
               >
                 {section.text}
               </Text>
               {i < sections.length - 1 && (
-                <View style={[styles.divider, { backgroundColor: theme.colors.tarot.insight.border }]} />
+                <View
+                  style={[styles.divider, { backgroundColor: theme.colors.tarot.insight.border }]}
+                />
               )}
             </Animated.View>
           );

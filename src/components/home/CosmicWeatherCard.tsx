@@ -60,7 +60,7 @@ export function CosmicWeatherCard({ cosmic, isLoading }: CosmicWeatherCardProps)
       {/* Header row */}
       <View style={styles.cardHeader}>
         <Text style={[styles.cardLabel, { color: theme.colors.brand.cosmic.sunGold }]}>
-          DAILY INSIGHT
+          DAILY CELESTIAL INSIGHT
         </Text>
       </View>
 

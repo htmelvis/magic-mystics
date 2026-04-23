@@ -3,13 +3,16 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { spacing, borderRadius } from '@theme';
 
-interface HistoryAccessCardProps {
-  readingCount: number;
+interface ReadingHistoryProps {
   onPress: () => void;
+  readingCount?: number;
 }
 
-export function HistoryAccessCard({ readingCount, onPress }: HistoryAccessCardProps) {
+export function ReadingHistory({ onPress, readingCount }: ReadingHistoryProps) {
   const theme = useAppTheme();
+
+  const accessibilityLabel =
+    readingCount != null ? `Reading History, ${readingCount} readings` : 'Reading History';
 
   return (
     <Pressable
@@ -23,7 +26,7 @@ export function HistoryAccessCard({ readingCount, onPress }: HistoryAccessCardPr
       ]}
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`Reading History, ${readingCount} readings`}
+      accessibilityLabel={accessibilityLabel}
       accessibilityHint="Double-tap to view all readings"
     >
       <View style={styles.left}>
@@ -34,16 +37,14 @@ export function HistoryAccessCard({ readingCount, onPress }: HistoryAccessCardPr
         />
         <View>
           <Text style={[styles.title, { color: theme.colors.text.primary }]}>Reading History</Text>
-          <Text style={[styles.subtitle, { color: theme.colors.text.muted }]}>
-            {readingCount} {readingCount === 1 ? 'reading' : 'readings'} total
-          </Text>
+          {readingCount != null && (
+            <Text style={[styles.subtitle, { color: theme.colors.text.muted }]}>
+              {readingCount} {readingCount === 1 ? 'reading' : 'readings'} total
+            </Text>
+          )}
         </View>
       </View>
-      <MaterialCommunityIcons
-        name="chevron-right"
-        size={20}
-        color={theme.colors.text.muted}
-      />
+      <MaterialCommunityIcons name="chevron-right" size={20} color={theme.colors.text.muted} />
     </Pressable>
   );
 }
