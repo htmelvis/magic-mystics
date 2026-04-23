@@ -33,28 +33,24 @@ export default function PathScreen() {
   const { data: stats, isLoading: statsLoading } = useJourneyStats(user?.id);
   const { data: streak, isLoading: streakLoading } = useStreak(user?.id);
   const { data: spreadStats, isLoading: spreadLoading } = useSpreadStats(user?.id);
-  const { data: readingsData, isLoading: readingsLoading } = useReadings(user?.id, limits.maxReadingHistory);
+  const { data: readingsData, isLoading: readingsLoading } = useReadings(
+    user?.id,
+    limits.maxReadingHistory
+  );
   const router = useRouter();
   const theme = useAppTheme();
 
   const [selectedReading, setSelectedReading] = useState<ReadingRow | null>(null);
 
-  const lastReading = useMemo(
-    () => readingsData?.pages[0]?.[0] ?? null,
-    [readingsData]
-  );
+  const lastReading = useMemo(() => readingsData?.pages[0]?.[0] ?? null, [readingsData]);
 
   return (
     <Screen edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.colors.text.primary }]}>Path</Text>
+        <Text style={[styles.title, { color: theme.colors.text.primary }]}>Your Path</Text>
       </View>
 
-      <PathCosmicHeader
-        cosmic={cosmic}
-        userProfile={userProfile}
-        isLoading={cosmicLoading}
-      />
+      <PathCosmicHeader cosmic={cosmic} userProfile={userProfile} isLoading={cosmicLoading} />
 
       <PlanetaryAlignmentCard alignment={planetary} isLoading={planetaryLoading} />
 
@@ -77,25 +73,16 @@ export default function PathScreen() {
         onPress={setSelectedReading}
       />
 
-      <MonthlyActivityChart
-        data={streak?.monthlyActivity ?? []}
-        isLoading={streakLoading}
-      />
+      <MonthlyActivityChart data={streak?.monthlyActivity ?? []} isLoading={streakLoading} />
 
-      <SpreadBreakdown
-        stats={spreadStats ?? []}
-        isLoading={spreadLoading}
-      />
+      <SpreadBreakdown stats={spreadStats ?? []} isLoading={spreadLoading} />
 
       <HistoryAccessCard
         readingCount={stats?.readings ?? 0}
         onPress={() => router.push('/history')}
       />
 
-      <ReadingDrawer
-        reading={selectedReading}
-        onClose={() => setSelectedReading(null)}
-      />
+      <ReadingDrawer reading={selectedReading} onClose={() => setSelectedReading(null)} />
     </Screen>
   );
 }
