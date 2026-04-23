@@ -78,16 +78,7 @@ export default function TabsLayout() {
               ),
             }}
           />
-          <Tabs.Screen
-            name="settings"
-            options={{
-              title: 'Settings',
-              tabBarAccessibilityLabel: 'Settings tab',
-              tabBarIcon: ({ color, size }) => (
-                <MaterialCommunityIcons name="cog-outline" size={size} color={color} />
-              ),
-            }}
-          />
+          <Tabs.Screen name="settings" options={{ href: null }} />
           <Tabs.Screen name="history" options={{ href: null }} />
           <Tabs.Screen name="natal-chart" options={{ href: null }} />
           <Tabs.Screen name="edit-birth-details" options={{ href: null }} />
