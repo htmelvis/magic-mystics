@@ -214,16 +214,14 @@ const styles = StyleSheet.create({
     height: CARD.height,
   },
   face: {
-    width: CARD.width,
-    height: CARD.height,
+    flex: 1,
+    alignSelf: 'stretch',
     borderRadius: CARD.borderRadius,
     overflow: 'hidden',
     backfaceVisibility: 'hidden',
   },
   frontAbsolute: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
+    ...StyleSheet.absoluteFillObject,
   },
 });
 
