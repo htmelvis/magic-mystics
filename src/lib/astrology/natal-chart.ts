@@ -150,6 +150,28 @@ function computeAngles(
   return { ascendant: asc, midheaven: mc };
 }
 
+// ── Timezone handling ─────────────────────────────────────────────────────────
+
+/**
+ * Convert a wall-clock moment in the given IANA zone to the equivalent UTC Date.
+ * Uses Intl.DateTimeFormat to read the offset at that instant so DST is honored.
+ * Returns the input unchanged if the offset can't be parsed.
+ */
+function shiftToUTC(wall: Date, tz: string): Date {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    timeZoneName: 'shortOffset',
+  }).formatToParts(wall);
+  const tzPart = parts.find((p) => p.type === 'timeZoneName')?.value ?? 'GMT';
+  const match = /GMT(?:([+-])(\d{1,2})(?::?(\d{2}))?)?/.exec(tzPart);
+  if (!match) return wall;
+  const sign = match[1] === '-' ? -1 : 1;
+  const hrs = parseInt(match[2] ?? '0', 10);
+  const mins = parseInt(match[3] ?? '0', 10);
+  const offsetMin = sign * (hrs * 60 + mins);
+  return new Date(wall.getTime() - offsetMin * 60_000);
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export function computeNatalChart(
@@ -157,15 +179,36 @@ export function computeNatalChart(
   birthTime: string,
   birthLat: number | null,
   birthLng: number | null,
+  birthTimezone: string | null = null,
 ): StoredNatalChart {
   const [h, m] = birthTime.split(':').map(Number);
-  const fractionalDay = birthDate.getDate() + (h + m / 60) / 24;
 
-  const jd: number = julian.CalendarGregorianToJD(
-    birthDate.getFullYear(),
-    birthDate.getMonth() + 1,
-    fractionalDay,
-  );
+  let jdYear: number;
+  let jdMonth: number;
+  let jdFractionalDay: number;
+
+  if (birthTimezone) {
+    const wall = new Date(
+      birthDate.getFullYear(),
+      birthDate.getMonth(),
+      birthDate.getDate(),
+      h,
+      m,
+      0,
+    );
+    const utc = shiftToUTC(wall, birthTimezone);
+    jdYear = utc.getUTCFullYear();
+    jdMonth = utc.getUTCMonth() + 1;
+    jdFractionalDay = utc.getUTCDate() + (utc.getUTCHours() + utc.getUTCMinutes() / 60) / 24;
+  } else {
+    // No timezone known — treat the wall-clock reading as UTC. This preserves
+    // historical behavior and avoids adding a per-device offset bias.
+    jdYear = birthDate.getFullYear();
+    jdMonth = birthDate.getMonth() + 1;
+    jdFractionalDay = birthDate.getDate() + (h + m / 60) / 24;
+  }
+
+  const jd: number = julian.CalendarGregorianToJD(jdYear, jdMonth, jdFractionalDay);
   const T = (jd - 2451545.0) / 36525;
 
   // Shared: Earth heliocentric position for geocentric conversions

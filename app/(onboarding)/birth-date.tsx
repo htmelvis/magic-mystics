@@ -12,7 +12,10 @@ export default function BirthDateScreen() {
   const { capture } = useAnalytics();
   const theme = useAppTheme();
   const params = useLocalSearchParams();
-  const [date, setDate] = useState(new Date());
+  const [date, setDate] = useState(() => {
+    const t = new Date();
+    return new Date(2000, t.getMonth(), t.getDate());
+  });
   const [showPicker, setShowPicker] = useState(Platform.OS === 'ios');
   const [error, setError] = useState<string | null>(null);
 

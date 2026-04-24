@@ -3,6 +3,7 @@ import {
   calculateMoonSign,
   calculateRisingSign,
   calculateAstrologyData,
+  longitudeToSign,
 } from '@lib/astrology/calculate-signs';
 
 describe('calculateSunSign', () => {
@@ -132,6 +133,32 @@ describe('calculateAstrologyData', () => {
     expect(validSigns).toContain(result.sunSign);
     expect(validSigns).toContain(result.moonSign);
     expect(validSigns).toContain(result.risingSign);
+  });
+});
+
+// ── longitudeToSign ───────────────────────────────────────────────────────────
+
+describe('longitudeToSign', () => {
+  const table: [number, string][] = [
+    [0, 'Aries'],
+    [29.9, 'Aries'],
+    [30, 'Taurus'],
+    [59.99, 'Taurus'],
+    [60, 'Gemini'],
+    [120, 'Leo'],
+    [180, 'Libra'],
+    [270, 'Capricorn'],
+    [330, 'Pisces'],
+    [359.999, 'Pisces'],
+    [360, 'Aries'],
+    [720, 'Aries'],
+    [-1, 'Pisces'],
+    [-30, 'Pisces'],
+    [-31, 'Aquarius'],
+  ];
+
+  test.each(table)('longitude %p → %s', (lon, expected) => {
+    expect(longitudeToSign(lon)).toBe(expected);
   });
 });
 

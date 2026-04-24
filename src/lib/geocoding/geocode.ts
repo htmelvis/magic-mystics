@@ -8,13 +8,15 @@ export interface LocationSuggestion {
   displayName: string;
   /** Compact form stored as birth_location */
   shortName: string;
+  lat: number;
+  lng: number;
 }
 
 /**
- * Autocomplete city/town search using Nominatim (same service as geocodeLocation).
- * Filters to populated places only (featureClass=P).
- * Caller must debounce — Nominatim allows 1 req/sec.
- * Returns [] on any failure so the input degrades to free-text gracefully.
+ * Autocomplete location search using Nominatim. Accepts cities, regions, states,
+ * and countries so users can pick a country-level fallback when they don't want
+ * to share a specific city. Caller must debounce — Nominatim allows 1 req/sec.
+ * Returns [] on any failure so the input degrades gracefully.
  */
 export async function searchLocations(
   query: string,
@@ -26,7 +28,7 @@ export async function searchLocations(
   try {
     const url =
       `https://nominatim.openstreetmap.org/search` +
-      `?q=${encodeURIComponent(trimmed)}&format=json&limit=6&featureClass=P&addressdetails=1`;
+      `?q=${encodeURIComponent(trimmed)}&format=json&limit=6&addressdetails=1`;
 
     const response = await fetch(url, {
       signal,
@@ -43,17 +45,20 @@ export async function searchLocations(
 
     for (const item of data) {
       const addr = (item.address ?? {}) as Record<string, string>;
-      const city =
-        addr.city ?? addr.town ?? addr.village ?? addr.municipality ?? addr.county ?? '';
+      const city = addr.city ?? addr.town ?? addr.village ?? addr.municipality ?? '';
+      const county = addr.county ?? '';
       const state = addr.state ?? addr.province ?? addr.region ?? '';
       const country = addr.country ?? '';
 
-      const displayName = [city, state, country].filter(Boolean).join(', ')
-        || (item.display_name as string);
+      const parts = [city || county, state, country].filter(Boolean);
+      const displayName = parts.length ? parts.join(', ') : (item.display_name as string);
 
-      if (!displayName || seen.has(displayName)) continue;
+      const lat = parseFloat(item.lat);
+      const lng = parseFloat(item.lon);
+      if (!displayName || seen.has(displayName) || isNaN(lat) || isNaN(lng)) continue;
+
       seen.add(displayName);
-      results.push({ displayName, shortName: displayName });
+      results.push({ displayName, shortName: displayName, lat, lng });
     }
 
     return results;

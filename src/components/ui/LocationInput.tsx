@@ -21,9 +21,12 @@ export interface LocationInputProps {
   hint?: string;
   value: string;
   onChangeValue: (value: string) => void;
+  /** Called when the user picks a suggestion — parent gets the full record (lat/lng included). */
+  onConfirmed?: (suggestion: LocationSuggestion) => void;
   placeholder?: string;
   containerStyle?: ViewStyle;
   onBlur?: () => void;
+  editable?: boolean;
   /** Override the search function — useful for tests and Storybook. Defaults to Nominatim. */
   onSearch?: (query: string, signal: AbortSignal) => Promise<LocationSuggestion[]>;
 }
@@ -34,9 +37,11 @@ export function LocationInput({
   hint,
   value,
   onChangeValue,
+  onConfirmed,
   placeholder = 'e.g. Los Angeles, USA',
   containerStyle,
   onBlur,
+  editable = true,
   onSearch,
 }: LocationInputProps) {
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
@@ -82,6 +87,7 @@ export function LocationInput({
     setConfirmed(true);
     setSuggestions([]);
     onChangeValue(suggestion.shortName);
+    onConfirmed?.(suggestion);
   };
 
   const handleChangeText = (text: string) => {
@@ -100,6 +106,7 @@ export function LocationInput({
         value={value}
         onChangeText={handleChangeText}
         onBlur={onBlur}
+        editable={editable}
         placeholder={placeholder}
         autoCapitalize="words"
         autoCorrect={false}

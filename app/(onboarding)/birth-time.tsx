@@ -13,6 +13,7 @@ export default function BirthTimeScreen() {
   const [time, setTime] = useState(new Date());
   const [showPicker, setShowPicker] = useState(Platform.OS === 'ios');
   const [error, setError] = useState<string | null>(null);
+  const [timeUnknown, setTimeUnknown] = useState(false);
 
   capture('screen_viewed', { screen: 'onboarding birth time' });
 
@@ -22,6 +23,19 @@ export default function BirthTimeScreen() {
   };
 
   const handleContinue = () => {
+    if (timeUnknown) {
+      router.push({
+        pathname: '/(onboarding)/birth-location',
+        params: {
+          displayName: params.displayName as string,
+          birthDate: params.birthDate as string,
+          birthTime: '',
+          timeKnown: 'false',
+        },
+      });
+      return;
+    }
+
     const validationError = validate(time);
     if (validationError) {
       setError(validationError);
@@ -38,6 +52,7 @@ export default function BirthTimeScreen() {
         displayName: params.displayName as string,
         birthDate: params.birthDate as string,
         birthTime,
+        timeKnown: 'true',
       },
     });
   };
@@ -61,43 +76,74 @@ export default function BirthTimeScreen() {
           Your birth time helps us calculate your rising sign (ascendant)
         </Text>
 
-        <View style={styles.pickerContainer}>
-          {Platform.OS === 'android' && !showPicker && (
-            <Pressable
-              style={[
-                styles.timeButton,
-                {
-                  backgroundColor: theme.colors.brand.primaryMuted,
-                  borderColor: theme.colors.brand.primary,
-                },
-              ]}
-              onPress={() => setShowPicker(true)}
-              accessibilityRole="button"
-              accessibilityLabel={`Selected birth time: ${time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
-              accessibilityHint="Double-tap to open time picker"
-            >
-              <Text style={[styles.timeButtonText, { color: theme.colors.brand.primary }]}>
-                {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </Text>
-            </Pressable>
-          )}
-          {showPicker && (
-            <DateTimePicker
-              value={time}
-              mode="time"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={onChange}
-              textColor={theme.colors.text.primary}
-            />
-          )}
-        </View>
+        {!timeUnknown && (
+          <View style={styles.pickerContainer}>
+            {Platform.OS === 'android' && !showPicker && (
+              <Pressable
+                style={[
+                  styles.timeButton,
+                  {
+                    backgroundColor: theme.colors.brand.primaryMuted,
+                    borderColor: theme.colors.brand.primary,
+                  },
+                ]}
+                onPress={() => setShowPicker(true)}
+                accessibilityRole="button"
+                accessibilityLabel={`Selected birth time: ${time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                accessibilityHint="Double-tap to open time picker"
+              >
+                <Text style={[styles.timeButtonText, { color: theme.colors.brand.primary }]}>
+                  {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+              </Pressable>
+            )}
+            {showPicker && (
+              <DateTimePicker
+                value={time}
+                mode="time"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={onChange}
+                textColor={theme.colors.text.primary}
+              />
+            )}
+          </View>
+        )}
 
-        {error ? (
+        {error && !timeUnknown ? (
           <Text style={[styles.errorText, { color: theme.colors.error.main }]}>{error}</Text>
         ) : null}
-        <Text style={[styles.hint, { color: theme.colors.text.muted }]}>
-          Don't know your exact birth time? That's okay!
-        </Text>
+
+        <Pressable
+          style={styles.toggleRow}
+          onPress={() => {
+            setTimeUnknown((v) => !v);
+            setError(null);
+          }}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: timeUnknown }}
+          accessibilityLabel="I don't know my birth time"
+        >
+          <View
+            style={[
+              styles.checkbox,
+              {
+                borderColor: theme.colors.brand.primary,
+                backgroundColor: timeUnknown ? theme.colors.brand.primary : 'transparent',
+              },
+            ]}
+          >
+            {timeUnknown && <Text style={styles.checkmark}>✓</Text>}
+          </View>
+          <Text style={[styles.toggleLabel, { color: theme.colors.text.primary }]}>
+            I don't know my birth time
+          </Text>
+        </Pressable>
+
+        {timeUnknown && (
+          <Text style={[styles.disclosure, { color: theme.colors.text.secondary }]}>
+            We'll compute your sun and moon signs, but your rising sign needs a birth time.
+          </Text>
+        )}
       </View>
 
       <Pressable
@@ -129,7 +175,24 @@ const styles = StyleSheet.create({
   },
   timeButtonText: { fontSize: 18, fontWeight: '600' },
   errorText: { marginTop: 6, fontSize: 13, textAlign: 'center' },
-  hint: { fontSize: 14, textAlign: 'center', marginTop: 20 },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 24,
+    paddingVertical: 8,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    borderWidth: 2,
+    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkmark: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  toggleLabel: { fontSize: 15, fontWeight: '500' },
+  disclosure: { fontSize: 14, lineHeight: 20, marginTop: 12 },
   button: { padding: 18, borderRadius: 12, alignItems: 'center', marginBottom: 20 },
   buttonText: { color: '#fff', fontSize: 18, fontWeight: '600' },
 });
