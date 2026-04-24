@@ -59,13 +59,23 @@ function RootLayoutNav() {
     }
   }, [user?.id]);
 
-  // Handle deep links for password reset (magic-mystics://reset-password?code=...)
+  // Handle deep links:
+  //   - magic-mystics://reset-password?code=...            (Supabase auth code exchange)
+  //   - https://links.magicmystics.com/reading/<uuid>      (universal link from shared reading)
+  //   - magic-mystics://reading/<uuid>                     (custom scheme fallback)
   useEffect(() => {
     const handleUrl = async ({ url }: { url: string }) => {
       const parsed = new URL(url);
+
       const code = parsed.searchParams.get('code');
       if (code) {
         await supabase.auth.exchangeCodeForSession(code);
+        return;
+      }
+
+      const readingMatch = parsed.pathname.match(/^\/reading\/([0-9a-f-]{36})/i);
+      if (readingMatch) {
+        router.push({ pathname: '/reading/[id]', params: { id: readingMatch[1].toLowerCase() } });
       }
     };
 
@@ -75,7 +85,7 @@ function RootLayoutNav() {
     });
 
     return () => subscription.remove();
-  }, []);
+  }, [router]);
 
   // Hide the splash once we know where to route the user
   useEffect(() => {
@@ -134,6 +144,7 @@ function RootLayoutNav() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="daily-draw" options={{ headerShown: false, presentation: 'card' }} />
       <Stack.Screen name="journal-entry" options={{ headerShown: false, presentation: 'modal' }} />
+      <Stack.Screen name="reading/[id]" options={{ headerShown: false, presentation: 'card' }} />
       <Stack.Protected guard={__DEV__}>
         <Stack.Screen name="storybook" options={{ headerShown: false }} />
       </Stack.Protected>

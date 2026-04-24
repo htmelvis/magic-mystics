@@ -1,0 +1,19 @@
+{
+  "name": "magic-mystics-links",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "dependencies": {
+    "workers-og": "^0.0.26"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241106.0",
+    "typescript": "^5.9.2",
+    "wrangler": "^3.85.0"
+  }
+}
