@@ -379,6 +379,7 @@ export default function PPFScreen() {
                   card={card}
                   orientation={orientations[i]}
                   positionLabel={spreadType.labels[i]}
+                  nextLabel={spreadType.labels[i + 1]}
                   isFlipped={flipped[i]}
                   isActive={i === activeIndex}
                   isLast={i === 2}
@@ -585,6 +586,7 @@ interface CardPageProps {
   card: TarotCardRow;
   orientation: TarotCardOrientation;
   positionLabel: string;
+  nextLabel?: string;
   isFlipped: boolean;
   isActive: boolean;
   isLast: boolean;
@@ -601,6 +603,7 @@ function CardPage({
   card,
   orientation,
   positionLabel,
+  nextLabel,
   isFlipped,
   isActive,
   isLast,
@@ -631,7 +634,6 @@ function CardPage({
     ? (card.reversed_meaning_long ?? '')
     : (card.upright_meaning_long ?? '');
   const keywords = isReversed ? (card.keywords_reversed ?? []) : (card.keywords_upright ?? []);
-  const nextLabel = positionLabel === 'Past' ? 'Present' : 'Future';
 
   return (
     <ScrollView
