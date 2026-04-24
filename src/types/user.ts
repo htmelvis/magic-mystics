@@ -46,4 +46,5 @@ export interface UserLimits {
   maxReadingHistory: number; // -1 for unlimited
   canAccessPPF: boolean;
   hasAIContext: boolean; // Whether AI uses historical context
+  hasJournal: boolean;
 }

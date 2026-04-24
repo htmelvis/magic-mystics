@@ -104,7 +104,7 @@ const pickerStyles = StyleSheet.create({
 
 // ── Steps ─────────────────────────────────────────────────────────────────────
 
-type Step = 1 | 2 | 3;
+type Step = 1 | 2 | 3 | 4;
 
 // ── Sheet ─────────────────────────────────────────────────────────────────────
 
@@ -114,8 +114,9 @@ interface ReflectionSheetProps {
   initialAlignment?: ReflectionSentiment | null;
   initialContent?: string;
   isSaving: boolean;
-  onSave: (feeling: ReflectionSentiment, alignment: ReflectionSentiment, content: string) => void;
+  onSave: (feeling: ReflectionSentiment, alignment: ReflectionSentiment, content: string) => Promise<void>;
   onClose: () => void;
+  onAddToJournal?: (content: string) => void;
 }
 
 export function ReflectionSheet({
@@ -126,6 +127,7 @@ export function ReflectionSheet({
   isSaving,
   onSave,
   onClose,
+  onAddToJournal,
 }: ReflectionSheetProps) {
   const theme = useAppTheme();
   const [step, setStep] = useState<Step>(1);
@@ -192,9 +194,14 @@ export function ReflectionSheet({
     }, 300);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!feeling || !alignment) return;
-    onSave(feeling, alignment, content.trim());
+    await onSave(feeling, alignment, content.trim());
+    if (onAddToJournal) {
+      setStep(4);
+    } else {
+      dismiss();
+    }
   };
 
   const stepLabel = step === 1 ? 'Step 1 of 3' : step === 2 ? 'Step 2 of 3' : 'Step 3 of 3';
@@ -234,22 +241,26 @@ export function ReflectionSheet({
             <View style={[styles.handle, { backgroundColor: theme.colors.border.default }]} />
             <View style={styles.titleRow}>
               <Text style={[styles.title, { color: theme.colors.text.primary }]}>
-                Add Reflection
+                {step < 4 ? 'Add Reflection' : 'Reflection Saved'}
               </Text>
-              <Text style={[styles.stepLabel, { color: theme.colors.text.muted }]}>
-                {stepLabel}
-              </Text>
+              {step < 4 && (
+                <Text style={[styles.stepLabel, { color: theme.colors.text.muted }]}>
+                  {stepLabel}
+                </Text>
+              )}
             </View>
 
             {/* Progress bar */}
-            <View style={[styles.progressTrack, { backgroundColor: theme.colors.border.subtle }]}>
-              <View
-                style={[
-                  styles.progressFill,
-                  { width: `${(step / 3) * 100}%`, backgroundColor: theme.colors.brand.primary },
-                ]}
-              />
-            </View>
+            {step < 4 && (
+              <View style={[styles.progressTrack, { backgroundColor: theme.colors.border.subtle }]}>
+                <View
+                  style={[
+                    styles.progressFill,
+                    { width: `${(step / 3) * 100}%`, backgroundColor: theme.colors.brand.primary },
+                  ]}
+                />
+              </View>
+            )}
           </View>
 
           {/* Body */}
@@ -302,6 +313,17 @@ export function ReflectionSheet({
                 </Text>
               </View>
             )}
+
+            {step === 4 && (
+              <View>
+                <Text style={[styles.textLabel, { color: theme.colors.text.primary }]}>
+                  Carry this into your Journal?
+                </Text>
+                <Text style={[styles.textHint, { color: theme.colors.text.muted }]}>
+                  Your reflection is saved. You can also write it into a private journal entry.
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Footer actions */}
@@ -330,6 +352,33 @@ export function ReflectionSheet({
                 accessibilityLabel="Save reflection"
               >
                 <Text style={styles.nextBtnText}>{isSaving ? 'Saving…' : 'Save Reflection'}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {step === 4 && (
+            <View style={[styles.footer, { borderTopColor: theme.colors.border.subtle }]}>
+              <TouchableOpacity
+                style={[styles.backBtn, { borderColor: theme.colors.border.default }]}
+                onPress={dismiss}
+                accessibilityRole="button"
+                accessibilityLabel="Done"
+              >
+                <Text style={[styles.backBtnText, { color: theme.colors.text.secondary }]}>
+                  Done
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.nextBtn, { backgroundColor: theme.colors.brand.primary }]}
+                onPress={() => {
+                  onAddToJournal!(content.trim());
+                  dismiss();
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Add to Journal"
+              >
+                <Text style={styles.nextBtnText}>Add to Journal</Text>
               </TouchableOpacity>
             </View>
           )}

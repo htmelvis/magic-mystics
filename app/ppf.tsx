@@ -122,9 +122,28 @@ export default function PPFScreen() {
   const handleReflectionSave = useCallback(
     async (feeling: ReflectionSentiment, alignment: ReflectionSentiment, content: string) => {
       await saveReflection({ feeling, alignment, content });
-      setReflectionSheetOpen(false);
+      // sheet self-closes (free) or advances to step 4 (premium) — no explicit close here
     },
     [saveReflection]
+  );
+
+  const handleAddToJournal = useCallback(
+    (reflectionContent: string) => {
+      const shortDate = new Date().toLocaleDateString('en-US', {
+        month: 'numeric',
+        day: 'numeric',
+        year: '2-digit',
+      });
+      router.push({
+        pathname: '/journal-entry',
+        params: {
+          seedTitle: `${spreadType.name} - ${shortDate}`,
+          seedReflection: reflectionContent,
+          ...(readingId ? { readingId } : {}),
+        },
+      });
+    },
+    [router, readingId, spreadType.name]
   );
 
   const deckOpacity = useRef(new Animated.Value(1)).current;
@@ -360,6 +379,7 @@ export default function PPFScreen() {
                   card={card}
                   orientation={orientations[i]}
                   positionLabel={spreadType.labels[i]}
+                  nextLabel={spreadType.labels[i + 1]}
                   isFlipped={flipped[i]}
                   isActive={i === activeIndex}
                   isLast={i === 2}
@@ -385,6 +405,7 @@ export default function PPFScreen() {
         isSaving={isReflectionSaving}
         onSave={handleReflectionSave}
         onClose={() => setReflectionSheetOpen(false)}
+        onAddToJournal={isPremium ? handleAddToJournal : undefined}
       />
     </View>
   );
@@ -565,6 +586,7 @@ interface CardPageProps {
   card: TarotCardRow;
   orientation: TarotCardOrientation;
   positionLabel: string;
+  nextLabel?: string;
   isFlipped: boolean;
   isActive: boolean;
   isLast: boolean;
@@ -581,6 +603,7 @@ function CardPage({
   card,
   orientation,
   positionLabel,
+  nextLabel,
   isFlipped,
   isActive,
   isLast,
@@ -611,7 +634,6 @@ function CardPage({
     ? (card.reversed_meaning_long ?? '')
     : (card.upright_meaning_long ?? '');
   const keywords = isReversed ? (card.keywords_reversed ?? []) : (card.keywords_upright ?? []);
-  const nextLabel = positionLabel === 'Past' ? 'Present' : 'Future';
 
   return (
     <ScrollView

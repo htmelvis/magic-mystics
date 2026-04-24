@@ -156,6 +156,35 @@ export interface Database {
         };
         Relationships: [];
       };
+      journals: {
+        Row: {
+          id: string;
+          user_id: string;
+          reading_id: string | null;
+          title: string | null;
+          body: string;
+          ai_prompt: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          reading_id?: string | null;
+          title?: string | null;
+          body?: string;
+          ai_prompt?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          title?: string | null;
+          body?: string;
+          ai_prompt?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       tarot_cards: {
         Row: {
           id: number;

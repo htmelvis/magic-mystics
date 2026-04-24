@@ -87,7 +87,7 @@ export default function SettingsScreen() {
       {/* Account */}
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>Account</Text>
-        <Card variant="outlined">
+        <Card style={{ flexDirection: 'column', gap: 12 }} variant="outlined">
           <Pressable
             style={styles.row}
             onPress={() => router.push('/(tabs)/edit-birth-details')}
@@ -112,6 +112,28 @@ export default function SettingsScreen() {
             {!userProfile?.birthDetailsEditedAt && (
               <Text style={[styles.chevron, { color: theme.colors.text.muted }]}>›</Text>
             )}
+          </Pressable>
+          <View
+            style={{
+              height: 1,
+              backgroundColor: theme.colors.border.main,
+            }}
+          />
+          <Pressable
+            style={styles.row}
+            onPress={() => router.push('/(tabs)/update-email')}
+            accessibilityRole="button"
+            accessibilityLabel="Update email address"
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.rowLabel, { color: theme.colors.text.primary }]}>
+                Update Email
+              </Text>
+              <Text style={[styles.rowSubtitle, { color: theme.colors.text.muted }]}>
+                Change your account email address
+              </Text>
+            </View>
+            <Text style={[styles.chevron, { color: theme.colors.text.muted }]}>›</Text>
           </Pressable>
         </Card>
       </View>

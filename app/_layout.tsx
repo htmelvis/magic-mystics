@@ -122,6 +122,7 @@ function RootLayoutNav() {
       <Stack.Screen name="(onboarding)" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="daily-draw" options={{ headerShown: false, presentation: 'card' }} />
+      <Stack.Screen name="journal-entry" options={{ headerShown: false, presentation: 'modal' }} />
       <Stack.Protected guard={__DEV__}>
         <Stack.Screen name="storybook" options={{ headerShown: false }} />
       </Stack.Protected>
