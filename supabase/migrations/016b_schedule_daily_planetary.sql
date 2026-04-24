@@ -1,0 +1,42 @@
+-- =====================================================
+-- Migration 016b: Schedule daily-planetary edge function
+-- Registers a pg_cron job at 00:02 UTC daily.
+-- =====================================================
+
+-- pg_cron and pg_net must already be enabled (see migration 004).
+--
+-- Run the block below in the Supabase SQL Editor:
+--
+--   SELECT cron.schedule(
+--     'daily-planetary',
+--     '2 0 * * *',
+--     $$
+--     SELECT net.http_post(
+--       url        := 'https://rbfrnhjlirnsgigozdbc.supabase.co/functions/v1/daily-planetary',
+--       headers    := '{"Content-Type":"application/json","Authorization":"Bearer <SERVICE_ROLE_KEY>"}'::jsonb,
+--       body       := '{}'::jsonb,
+--       timeout_milliseconds := 55000
+--     );
+--     $$
+--   );
+--
+-- Find <SERVICE_ROLE_KEY>: Dashboard → Settings → API → Project API keys → service_role
+--
+-- NOTE: timeout_milliseconds is 55000 (not 30000) because this function cold-starts
+-- Deno, loads astronomy-engine + @anthropic-ai/sdk, computes 10 planet positions with
+-- aspect detection, and calls Claude Haiku — which regularly exceeds 30 s.
+-- Edge Functions have a 60 s hard limit; 55 s leaves a safety margin.
+--
+-- Verify the job is registered:
+--   SELECT jobname, schedule FROM cron.job;
+--
+-- Check run history and errors:
+--   SELECT * FROM cron.job_run_details ORDER BY start_time DESC LIMIT 20;
+--
+-- To update an existing job's timeout (if you previously registered it with 30000):
+--   SELECT cron.unschedule('daily-planetary');
+--   -- then re-run the cron.schedule block above
+--
+-- Backfill a specific date:
+--   GET /functions/v1/daily-planetary?date=YYYY-MM-DD
+-- ─────────────────────────────────────────────────────────────────────────────
