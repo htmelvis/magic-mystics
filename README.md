@@ -40,17 +40,14 @@ magic-mystics/
 │   │   └── sign-up.tsx
 │   ├── (tabs)/              # Main app tabs
 │   │   ├── home.tsx
-│   │   ├── history.tsx
-│   │   └── profile.tsx
+│   │   ├── etc.tsx
 │   └── _layout.tsx          # Root layout with auth
 ├── src/
-│   ├── components/          # React components
-│   │   ├── cards/          # Card display components
+│   ├── components/         # React components
 │   │   ├── ui/             # Shared UI components
-│   │   └── reflections/    # Reflection components
+│   │   ├── componentName/  # Shared UI components
 │   ├── lib/
 │   │   ├── supabase/       # Supabase client config
-│   │   ├── ai/             # AI SDK integration
 │   │   └── tarot/          # Tarot deck data and logic
 │   ├── hooks/              # Custom React hooks
 │   │   ├── useAuth.ts
@@ -60,65 +57,9 @@ magic-mystics/
 │       ├── user.ts
 │       └── database.ts
 ├── assets/
-│   └── tarot-cards/        # Tarot card images
 └── supabase/
     ├── migrations/          # Database migrations
     └── functions/           # Edge functions
-```
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+ and npm
-- Expo CLI (`npm install -g expo-cli`)
-- iOS Simulator (Mac) or Android Emulator
-- Supabase account
-
-### Installation
-
-- Clone the repository:
-
-```bash
-git clone <repository-url>
-cd magic-mystics
-```
-
-- Install dependencies:
-
-```bash
-npm install
-```
-
-- Set up environment variables:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and add your keys:
-
-```bash
-EXPO_PUBLIC_SUPABASE_URL=your-supabase-project-url
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-OPENAI_API_KEY=your-openai-api-key
-ANTHROPIC_API_KEY=your-anthropic-api-key
-```
-
-### Running the App
-
-Start the development server:
-
-```bash
-npm start
-```
-
-Run on specific platforms:
-
-```bash
-npm run ios      # iOS Simulator
-npm run android  # Android Emulator
-npm run web      # Web browser
 ```
 
 ## Database Schema
@@ -129,8 +70,7 @@ npm run web      # Web browser
 - **subscriptions**: User subscription status and tiers
 - **readings**: Reading history with drawn cards
 - **reflections**: User reflections on readings
-- **ppf_readings**: Monthly Past/Present/Future spreads
-
+  
 See `src/types/database.ts` for full schema types.
 
 ## Development
