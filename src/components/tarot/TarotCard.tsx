@@ -13,7 +13,7 @@ import type { TarotCard as TarotCardType, TarotCardOrientation } from '@/types/t
 import { CARD, COLORS, ANIMATION } from './card-constants';
 import { useAppTheme } from '@/hooks/useAppTheme';
 
-interface TarotCardProps {
+export interface TarotCardProps {
   card?: TarotCardType;
   /** true = front (card face) visible, false = back visible */
   isFlipped: boolean;
