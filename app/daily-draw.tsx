@@ -19,6 +19,7 @@ import { useAppTheme } from '@/hooks/useAppTheme';
 import type { Reflection, ReflectionSentiment } from '@hooks/useReflection';
 import { supabase } from '@lib/supabase/client';
 import { drawDailyCard, drawCard } from '@lib/tarot/draw';
+import { getTodayBounds } from '@lib/tarot/date';
 import type {
   DrawnCardRecord,
   TarotCardOrientation,
@@ -31,14 +32,6 @@ import { ReflectionSheet } from '@components/history';
 import { useGenerateInsight } from '@hooks/useGenerateInsight';
 import { useSubscription } from '@hooks/useSubscription';
 import type { AIInsight } from '@/types/ai-insight';
-
-function getTodayBounds() {
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  const end = new Date();
-  end.setHours(23, 59, 59, 999);
-  return { start: start.toISOString(), end: end.toISOString() };
-}
 
 export default function DrawScreen() {
   const { user } = useAuth();

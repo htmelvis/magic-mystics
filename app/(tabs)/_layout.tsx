@@ -2,11 +2,17 @@ import { Tabs } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@/context/ThemeContext';
 import { useAppTheme } from '@/hooks/useAppTheme';
+import { useAuth } from '@hooks/useAuth';
+import { useSubscription } from '@hooks/useSubscription';
+import { useInAppNotifications } from '@hooks/useInAppNotifications';
 import { ErrorBoundary } from '@components/ui/ErrorBoundary';
 
 export default function TabsLayout() {
   const { activeColorScheme } = useTheme();
   const theme = useAppTheme();
+  const { user } = useAuth();
+  const { isPremium } = useSubscription(user?.id);
+  useInAppNotifications(user?.id, isPremium);
   const tabBarBg =
     activeColorScheme === 'dark' ? 'rgba(26, 26, 26, 0.92)' : 'rgba(255, 255, 255, 0.85)';
 
