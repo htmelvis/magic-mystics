@@ -35,9 +35,10 @@ export function useInAppNotifications(userId: string | undefined, isPremium: boo
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const shownAnnouncementsRef = useRef<Set<string>>(new Set());
 
-  // Daily card CTA — throttled per cooldown window
+  // Daily card CTA — only fires once the query has settled (dailyStatus !== undefined)
+  // so we never show the toast based on the loading/undefined state.
   useEffect(() => {
-    if (!userId || dailyStatus?.hasDrawnToday) return;
+    if (!userId || dailyStatus === undefined || dailyStatus.hasDrawnToday) return;
 
     isCooldownExpired(DAILY_CARD_COOLDOWN_KEY, DAILY_CARD_COOLDOWN_MS).then((expired) => {
       if (!expired) return;
@@ -58,14 +59,12 @@ export function useInAppNotifications(userId: string | undefined, isPremium: boo
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [userId, dailyStatus?.hasDrawnToday]);
+  }, [userId, dailyStatus]);
 
-  // Dismiss the daily card toast if user draws during the session
+  // Dismiss the daily card toast mid-session if the user draws their card
   useEffect(() => {
-    if (dailyStatus?.hasDrawnToday) {
-      dismissToast('daily-card');
-    }
-  }, [dailyStatus?.hasDrawnToday]);
+    if (dailyStatus?.hasDrawnToday) dismissToast('daily-card');
+  }, [dailyStatus]);
 
   // Supabase-driven announcements — queue unread ones, mark read on dismiss
   useEffect(() => {

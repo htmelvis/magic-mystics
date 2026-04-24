@@ -1,12 +1,5 @@
 import { useEffect, useRef } from 'react';
-import {
-  Animated,
-  PanResponder,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Animated, PanResponder, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '@hooks/useAppTheme';
 import { springs, durations } from '@/theme/animations';
@@ -25,7 +18,15 @@ interface ToastProps extends ToastConfig {
   onDismiss: () => void;
 }
 
-export function Toast({ type, title, message, actionLabel, onAction, autoDismissMs, onDismiss }: ToastProps) {
+export function Toast({
+  type,
+  title,
+  message,
+  actionLabel,
+  onAction,
+  autoDismissMs,
+  onDismiss,
+}: ToastProps) {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(140)).current;
@@ -34,7 +35,7 @@ export function Toast({ type, title, message, actionLabel, onAction, autoDismiss
   const triggerDismiss = () => {
     if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
     Animated.timing(slideAnim, {
-      toValue: 140,
+      toValue: 210,
       duration: durations.toast,
       useNativeDriver: true,
     }).start(() => onDismiss());
@@ -64,7 +65,7 @@ export function Toast({ type, title, message, actionLabel, onAction, autoDismiss
           triggerDismiss();
         }
       },
-    }),
+    })
   ).current;
 
   const accentColor =
@@ -112,7 +113,9 @@ export function Toast({ type, title, message, actionLabel, onAction, autoDismiss
             accessibilityRole="button"
             accessibilityLabel={actionLabel}
           >
-            <Text style={[styles.action, { color: theme.colors.brand.primary }]}>{actionLabel}</Text>
+            <Text style={[styles.action, { color: theme.colors.brand.primary }]}>
+              {actionLabel}
+            </Text>
           </Pressable>
         ) : null}
       </View>

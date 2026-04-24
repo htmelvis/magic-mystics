@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Linking } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
 import { Stack, useNavigationContainerRef, useRouter, useSegments } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,6 +18,8 @@ import { ToastProvider } from '@/context/ToastContext';
 import { ErrorBoundary } from '@components/ui/ErrorBoundary';
 import { supabase } from '@lib/supabase/client';
 import { posthog } from '@lib/analytics/posthog';
+
+SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -73,6 +76,13 @@ function RootLayoutNav() {
 
     return () => subscription.remove();
   }, []);
+
+  // Hide the splash once we know where to route the user
+  useEffect(() => {
+    if (!authLoading && !(user && onboardingLoading)) {
+      SplashScreen.hideAsync();
+    }
+  }, [authLoading, onboardingLoading, user]);
 
   useEffect(() => {
     // Wait until the navigation container is ready before routing
