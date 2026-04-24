@@ -13,6 +13,7 @@ import { useAnalytics } from '@hooks/useAnalytics';
 import { useAppTheme } from '@hooks/useAppTheme';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { UpgradeSheetProvider } from '@/context/UpgradeSheetContext';
+import { ToastProvider } from '@/context/ToastContext';
 import { ErrorBoundary } from '@components/ui/ErrorBoundary';
 import { supabase } from '@lib/supabase/client';
 import { posthog } from '@lib/analytics/posthog';
@@ -138,9 +139,11 @@ export default function RootLayout() {
           <SafeAreaProvider>
             <QueryClientProvider client={queryClient}>
               <UpgradeSheetProvider>
-                <ErrorBoundary>
-                  <RootLayoutNav />
-                </ErrorBoundary>
+                <ToastProvider>
+                  <ErrorBoundary>
+                    <RootLayoutNav />
+                  </ErrorBoundary>
+                </ToastProvider>
               </UpgradeSheetProvider>
             </QueryClientProvider>
           </SafeAreaProvider>
