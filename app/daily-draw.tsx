@@ -26,7 +26,17 @@ import type {
   TarotCard as TarotCardType,
   TarotCardRow,
 } from '@/types/tarot';
+<<<<<<< MM-32-social
+import {
+  TarotCard,
+  TarotDeck,
+  AIInsightSection,
+  CardDetail,
+  ShareReadingButton,
+} from '@components/tarot';
+=======
 import { TiltCard, TarotDeck, AIInsightSection } from '@components/tarot';
+>>>>>>> main
 import { ANIMATION } from '@components/tarot/card-constants';
 import { ReflectionSheet } from '@components/history';
 import { useGenerateInsight } from '@hooks/useGenerateInsight';
@@ -291,14 +301,6 @@ export default function DrawScreen() {
               </Animated.View>
             </>
           )}
-          {/* {canDraw && (
-            <Text
-              style={[styles.tapHint, { color: theme.colors.text.muted }]}
-              accessibilityElementsHidden
-            >
-              Tap to draw your card
-            </Text>
-          )} */}
         </View>
 
         <ScrollView
@@ -364,6 +366,14 @@ export default function DrawScreen() {
               )}
 
               {card && orientation && <CardDetail card={card} orientation={orientation} />}
+              {readingId && card && orientation && (
+                <ShareReadingButton
+                  readingId={readingId}
+                  card={card}
+                  orientation={orientation}
+                  insight={insight}
+                />
+              )}
               {readingId && card && (
                 <ReflectionSection
                   reflection={reflection}
@@ -389,155 +399,6 @@ export default function DrawScreen() {
     </View>
   );
 }
-
-// ── Card detail panel ─────────────────────────────────────────────────────────
-
-function CardDetail({
-  card,
-  orientation,
-}: {
-  card: TarotCardRow;
-  orientation: TarotCardOrientation;
-}) {
-  const theme = useAppTheme();
-  const isReversed = orientation === 'reversed';
-
-  const summary = isReversed ? (card.reversed_summary ?? '') : (card.upright_summary ?? '');
-  const meaning = isReversed
-    ? (card.reversed_meaning_long ?? '')
-    : (card.upright_meaning_long ?? '');
-  const keywords = isReversed ? (card.keywords_reversed ?? []) : (card.keywords_upright ?? []);
-  const { element, astrology_association: astrology, arcana, suit, number, name } = card;
-
-  return (
-    <View
-      style={[
-        styles.resultBox,
-        { backgroundColor: theme.colors.surface.card, borderColor: theme.colors.border.main },
-      ]}
-    >
-      <View style={detailStyles.metaRow}>
-        {arcana && (
-          <Text style={[detailStyles.arcanaText, { color: theme.colors.text.primary }]}>
-            {arcana === 'Major'
-              ? name
-              : `${number != null ? `${number} of ` : ''}${suit ?? 'Minor Arcana'}`}
-          </Text>
-        )}
-        <Text
-          style={[detailStyles.orientText, { color: isReversed ? theme.colors.brand.primary : '' }]}
-        >
-          {isReversed ? '↓ Reversed' : null}
-        </Text>
-      </View>
-      <View style={detailStyles.metaRow}></View>
-
-      {(element || astrology) && (
-        <View style={detailStyles.metaRow}>
-          {element && (
-            <View
-              style={[
-                detailStyles.pill,
-                {
-                  backgroundColor: theme.colors.surface.elevated,
-                  borderColor: theme.colors.border.main,
-                },
-              ]}
-            >
-              <Text style={[detailStyles.pillText, { color: theme.colors.text.secondary }]}>
-                {element}
-              </Text>
-            </View>
-          )}
-          {astrology && (
-            <View
-              style={[
-                detailStyles.pill,
-                {
-                  backgroundColor: theme.colors.surface.elevated,
-                  borderColor: theme.colors.border.main,
-                },
-              ]}
-            >
-              <Text style={[detailStyles.pillText, { color: theme.colors.text.secondary }]}>
-                {astrology}
-              </Text>
-            </View>
-          )}
-        </View>
-      )}
-
-      {summary.length > 0 && (
-        <Text style={[detailStyles.summary, { color: theme.colors.text.secondary }]}>
-          {summary}
-        </Text>
-      )}
-
-      {/* {keywords.length > 0 && (
-        <View style={detailStyles.keywordsRow}>
-          {keywords.map(kw => (
-            <View
-              key={kw}
-              style={[
-                detailStyles.keyword,
-                isReversed
-                  ? {
-                      backgroundColor: theme.colors.error.light,
-                      borderColor: theme.colors.error.main,
-                    }
-                  : {
-                      backgroundColor: theme.colors.brand.purple[100],
-                      borderColor: theme.colors.brand.purple[200],
-                    },
-              ]}
-            >
-              <Text
-                style={[
-                  detailStyles.keywordText,
-                  {
-                    color: isReversed ? theme.colors.error.main : theme.colors.brand.primaryDark,
-                  },
-                ]}
-              >
-                {kw}
-              </Text>
-            </View>
-          ))}
-        </View>
-      )} */}
-
-      {meaning.length > 0 && (
-        <Text style={[detailStyles.meaning, { color: theme.colors.text.secondary }]}>
-          {meaning}
-        </Text>
-      )}
-    </View>
-  );
-}
-
-const detailStyles = StyleSheet.create({
-  metaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  orientText: { fontSize: 11, fontWeight: '400' },
-  arcanaText: { fontSize: 14, fontWeight: '700' },
-  pill: {
-    borderRadius: 6,
-    paddingVertical: 3,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-  },
-  pillText: { fontSize: 12, fontWeight: '500' },
-  summary: { fontSize: 12, lineHeight: 22, fontStyle: 'italic', marginBottom: 12 },
-  keywordsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 16 },
-  keyword: { borderRadius: 6, paddingVertical: 4, paddingHorizontal: 10, borderWidth: 1 },
-  keywordText: { fontSize: 12, fontWeight: '600' },
-  meaning: { fontSize: 16, lineHeight: 23 },
-});
 
 // ── Reflection section ────────────────────────────────────────────────────────
 
@@ -762,13 +623,9 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     padding: 12,
-    paddingTop: 0,
-    marginTop: 20,
+    marginTop: 12,
     paddingBottom: 48,
     gap: 16,
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: -6 },
-    // shadowOpacity: 0.2,
     shadowRadius: 12,
     elevation: 10,
     minHeight: 200,

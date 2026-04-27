@@ -1,0 +1,33 @@
+name = "magic-mystics-links"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Production route. Configure the DNS record for links.magicmystics.com
+# as a proxied CNAME/AAAA in Cloudflare before deploying.
+routes = [
+  { pattern = "links.magicmystics.com/*", zone_name = "magicmystics.com" }
+]
+
+# Cache Satori-rendered PNGs so we don't re-render on every scrape.
+# Provision the KV namespace once with `wrangler kv namespace create IMAGE_CACHE`
+# and paste the returned id below.
+[[kv_namespaces]]
+binding = "IMAGE_CACHE"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+# Secrets (set with `wrangler secret put <name>`):
+#   SUPABASE_URL            — https://<project>.supabase.co
+#   SUPABASE_ANON_KEY       — public anon key (RPC is the sealed surface)
+#
+# Non-secret vars:
+[vars]
+APP_SCHEME = "magic-mystics"
+APP_STORE_ID = "REPLACE_WITH_APPSTORE_ID"
+IOS_BUNDLE_ID = "com.edwardwieczorek.magicmystics"
+ANDROID_PACKAGE = "com.edwardwieczorek.magicmystics"
+# Comma-separated release SHA256 fingerprints for Android Digital Asset Links.
+# Get from `keytool -list -v -keystore <release.keystore>` or EAS build output.
+ANDROID_SHA256 = "REPLACE_WITH_ANDROID_RELEASE_SHA256"
+# Marketing home — where `/` redirects and where the "Learn more" link points.
+MARKETING_URL = "https://magicmystics.com"

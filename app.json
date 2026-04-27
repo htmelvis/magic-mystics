@@ -14,7 +14,8 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.edwardwieczorek.magicmystics"
+      "bundleIdentifier": "com.edwardwieczorek.magicmystics",
+      "associatedDomains": ["applinks:links.magicmystics.com"]
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +23,21 @@
         "backgroundColor": "#000000"
       },
       "package": "com.edwardwieczorek.magicmystics",
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "links.magicmystics.com",
+              "pathPrefix": "/reading/"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"

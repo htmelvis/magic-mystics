@@ -113,6 +113,7 @@ export interface Database {
           spread_type: 'daily' | 'past-present-future' | 'relationship' | 'situation-obstacle-solution' | 'mind-body-spirit' | 'path-choice' | 'accept-embrace-let-go';
           drawn_cards: unknown;
           ai_insight: string | null;
+          shared_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -122,6 +123,7 @@ export interface Database {
           spread_type: 'daily' | 'past-present-future' | 'relationship' | 'situation-obstacle-solution' | 'mind-body-spirit' | 'path-choice' | 'accept-embrace-let-go';
           drawn_cards: unknown;
           ai_insight?: string | null;
+          shared_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -129,6 +131,7 @@ export interface Database {
           spread_type?: 'daily' | 'past-present-future' | 'relationship' | 'situation-obstacle-solution' | 'mind-body-spirit' | 'path-choice';
           drawn_cards?: unknown;
           ai_insight?: string | null;
+          shared_at?: string | null;
           updated_at?: string;
         };
         Relationships: [];
