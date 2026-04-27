@@ -29,7 +29,7 @@ import type {
   TarotCard as TarotCardType,
   TarotCardRow,
 } from '@/types/tarot';
-import { TarotCard, TarotDeck, AIInsightSection } from '@components/tarot';
+import { TiltCard, TarotDeck, AIInsightSection } from '@components/tarot';
 import { ANIMATION } from '@components/tarot/card-constants';
 import { ReflectionSheet } from '@components/history';
 import { useGenerateInsight } from '@hooks/useGenerateInsight';
@@ -646,9 +646,10 @@ function CardPage({
       </Text>
 
       <View style={styles.cardContainer}>
-        <TarotCard
+        <TiltCard
           card={toTarotCard(card)}
           isFlipped={isFlipped}
+          tiltEnabled={isFlipped && isActive}
           orientation={orientation}
           style={styles.card}
           accessibilityLabel={
