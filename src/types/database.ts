@@ -162,6 +162,8 @@ export interface Database {
           reading_id: string;
           user_id: string;
           content: string;
+          feeling: 'positive' | 'neutral' | 'negative' | null;
+          alignment: 'positive' | 'neutral' | 'negative' | null;
           created_at: string;
           updated_at: string;
         };
@@ -170,11 +172,15 @@ export interface Database {
           reading_id: string;
           user_id: string;
           content: string;
+          feeling?: 'positive' | 'neutral' | 'negative' | null;
+          alignment?: 'positive' | 'neutral' | 'negative' | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           content?: string;
+          feeling?: 'positive' | 'neutral' | 'negative' | null;
+          alignment?: 'positive' | 'neutral' | 'negative' | null;
           updated_at?: string;
         };
         Relationships: [];
