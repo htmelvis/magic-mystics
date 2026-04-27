@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, ActivityIndicator, Pressable, StyleSheet } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@hooks/useAuth';
 import { supabase } from '@lib/supabase/client';
@@ -15,13 +15,13 @@ import {
   onboardingParamsSchema,
   userOnboardingUpdateSchema,
 } from '@lib/validation/onboarding';
-import { getTimezone } from '@lib/geocoding/geocode';
+import { useOnboardingDraft } from '@lib/onboarding/OnboardingContext';
 import { ZodiacAvatar } from '@components/ui';
 import { useAppTheme } from '@/hooks/useAppTheme';
 
 export default function CalculatingScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams();
+  const { draft, resetDraft } = useOnboardingDraft();
   const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const [status, setStatus] = useState('Calculating your signs...');
@@ -38,50 +38,33 @@ export default function CalculatingScreen() {
     setStatus('Calculating your signs...');
 
     try {
-      // Validate raw params from router before any processing
+      // Validate the draft via the existing schema (still string-shaped so the
+      // contract is unchanged for callers/tests).
       const validatedParams = onboardingParamsSchema.parse({
-        displayName: params.displayName,
-        birthDate: params.birthDate,
-        birthTime: params.birthTime,
-        birthLocation: params.birthLocation,
-        birthLat: params.birthLat,
-        birthLng: params.birthLng,
-        timeKnown: params.timeKnown,
-        locationApproximate: params.locationApproximate,
+        displayName: draft.displayName,
+        birthDate: draft.birthDate,
+        birthTime: draft.birthTime,
+        birthLocation: draft.birthLocation,
+        birthLat: draft.birthLat !== null ? String(draft.birthLat) : undefined,
+        birthLng: draft.birthLng !== null ? String(draft.birthLng) : undefined,
+        timeKnown: draft.timeKnown ? 'true' : 'false',
+        locationApproximate: draft.locationApproximate ? 'true' : 'false',
       });
 
       // Parse birth date as local noon to avoid UTC boundary issues.
-      // "YYYY-MM-DD" strings passed via router params are always local calendar
-      // dates — constructing at noon ensures the calendar date stays correct
-      // regardless of the device timezone.
       const [year, month, day] = validatedParams.birthDate.split('-').map(Number);
       const birthDate = new Date(year, month - 1, day, 12, 0, 0);
 
-      // Calculate sun and moon signs — always available; rising is derived below from ASC.
       setStatus('Calculating your astrological signs...');
       const sunSignValue = calculateSunSign(birthDate);
       const moonSignValue = calculateMoonSign(birthDate);
       setSunSign(sunSignValue);
 
-      // Coordinates come from the autocomplete selection; no geocode round-trip needed.
-      const parsedLat =
-        validatedParams.birthLat && validatedParams.birthLat.length > 0
-          ? parseFloat(validatedParams.birthLat)
-          : NaN;
-      const parsedLng =
-        validatedParams.birthLng && validatedParams.birthLng.length > 0
-          ? parseFloat(validatedParams.birthLng)
-          : NaN;
-      const birthLat = Number.isFinite(parsedLat) ? parsedLat : null;
-      const birthLng = Number.isFinite(parsedLng) ? parsedLng : null;
-
-      let birthTimezone: string | null = null;
-      let tzLookupFailed = false;
-      if (birthLat !== null && birthLng !== null) {
-        setStatus('Locating your birthplace...');
-        birthTimezone = await getTimezone(birthLat, birthLng);
-        if (!birthTimezone) tzLookupFailed = true;
-      }
+      const birthLat = draft.birthLat;
+      const birthLng = draft.birthLng;
+      // Timezone was resolved on the location step; null when the user opted out
+      // or when the lookup failed (the time step already surfaced the warning).
+      const birthTimezone = draft.birthTimezone;
 
       // Compute natal chart. When the user skipped birth time, fall back to local
       // noon for planet positions — ASC won't be used (locked out via canDeriveAsc).
@@ -105,7 +88,6 @@ export default function CalculatingScreen() {
 
       const storedBirthTime = validatedParams.birthTime || null;
 
-      // Validate the full DB update payload
       const updatePayload = userOnboardingUpdateSchema.parse({
         display_name: validatedParams.displayName,
         birth_date: validatedParams.birthDate,
@@ -120,7 +102,6 @@ export default function CalculatingScreen() {
         onboarding_completed: true,
       });
 
-      // Save to database (upsert to handle case where trigger didn't create row)
       setStatus('Saving your profile...');
       const { error } = await supabase
         .from('users')
@@ -143,18 +124,11 @@ export default function CalculatingScreen() {
           onConflict: 'id'
         });
 
-      if (tzLookupFailed) {
-        // Non-fatal — sun/moon stored accurately; rising derivation used device-local
-        // offset fallback. Surface to the user so they understand any slight drift.
-        setStatus("We couldn't confirm your timezone; rising sign may be approximate.");
-      }
-
       if (error) {
         console.warn('Error saving onboarding data:', error);
         throw error;
       }
 
-      // Ensure user has a subscription (in case trigger didn't fire)
       const { data: existingSub } = await supabase
         .from('subscriptions')
         .select('id')
@@ -189,28 +163,23 @@ export default function CalculatingScreen() {
         moonSign: moonSignValue,
         risingSign: risingSignValue,
         natalChartData: natalChart,
-        tarotCard: null, // populated by tarot-reveal step
+        tarotCard: null,
         onboardingCompleted: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
 
-      // Update onboarding cache so the layout's effect fires and navigates to home.
-      // This avoids a race where router.replace runs while onboardingCompleted is
-      // still false in cache, causing the layout to redirect back to onboarding.
-      if (!tzLookupFailed) setStatus('Your cosmic profile is ready.');
+      setStatus('Your cosmic profile is ready.');
       setCompleted(true);
+      resetDraft();
     } catch (err) {
       console.warn('Error completing onboarding:', err);
       setStatus('Something went wrong.');
       setFailed(true);
     }
-  }, [user, params, queryClient]);
+  }, [user, draft, queryClient, resetDraft]);
 
   useEffect(() => {
-    // Wait for auth to resolve before attempting — user is null during the
-    // initial render and would cause a silent early return, setting hasRun
-    // before the real work could run.
     if (authLoading || !user) return;
     if (!hasRun.current) {
       hasRun.current = true;

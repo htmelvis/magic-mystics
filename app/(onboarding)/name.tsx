@@ -4,14 +4,17 @@ import { useRouter } from 'expo-router';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { Input } from '@components/ui';
-
+import { useOnboardingDraft } from '@lib/onboarding/OnboardingContext';
+import { getNextStep, getStepIndex } from '@lib/onboarding/steps';
 
 export default function NameScreen() {
   const router = useRouter();
   const { capture } = useAnalytics();
   const theme = useAppTheme();
-  const [displayName, setDisplayName] = useState('');
+  const { draft, updateDraft } = useOnboardingDraft();
+  const [displayName, setDisplayName] = useState(draft.displayName);
   const [error, setError] = useState<string | null>(null);
+  const { index, total } = getStepIndex('name');
 
   const validate = (value: string): string | null => {
     if (!value.trim()) return 'Please enter your name';
@@ -25,16 +28,16 @@ export default function NameScreen() {
       setError(validationError);
       return;
     }
-    router.push({
-      pathname: '/(onboarding)/birth-date',
-      params: { displayName: displayName.trim() },
-    });
+    updateDraft({ displayName: displayName.trim() });
+    router.push(`/(onboarding)/${getNextStep('name')}`);
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
       <View style={styles.content}>
-        <Text style={[styles.progress, { color: theme.colors.brand.primary }]}>Step 1 of 4</Text>
+        <Text style={[styles.progress, { color: theme.colors.brand.primary }]}>
+          Step {index} of {total}
+        </Text>
         <Text style={[styles.title, { color: theme.colors.text.primary }]}>
           What should we call you?
         </Text>
@@ -45,7 +48,7 @@ export default function NameScreen() {
         <Input
           placeholder="Your name"
           value={displayName}
-          onChangeText={(text) => {
+          onChangeText={text => {
             setDisplayName(text);
             if (error) setError(validate(text));
           }}

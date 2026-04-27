@@ -1,19 +1,33 @@
 import { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useAppTheme } from '@/hooks/useAppTheme';
+import { useOnboardingDraft } from '@lib/onboarding/OnboardingContext';
+import { getNextStep, getStepIndex } from '@lib/onboarding/steps';
+
+function parseDraftTime(stored: string): Date {
+  if (stored && /^\d{2}:\d{2}$/.test(stored)) {
+    const [h, m] = stored.split(':').map(Number);
+    const d = new Date();
+    d.setHours(h, m, 0, 0);
+    return d;
+  }
+  return new Date();
+}
 
 export default function BirthTimeScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams();
   const { capture } = useAnalytics();
   const theme = useAppTheme();
-  const [time, setTime] = useState(new Date());
+  const { draft, updateDraft } = useOnboardingDraft();
+  const [time, setTime] = useState(() => parseDraftTime(draft.birthTime));
   const [showPicker, setShowPicker] = useState(Platform.OS === 'ios');
   const [error, setError] = useState<string | null>(null);
-  const [timeUnknown, setTimeUnknown] = useState(false);
+  const [timeUnknown, setTimeUnknown] = useState(!draft.timeKnown);
+  const { index, total } = getStepIndex('birth-time');
+  const tz = draft.birthTimezone;
 
   capture('screen_viewed', { screen: 'onboarding birth time' });
 
@@ -24,15 +38,8 @@ export default function BirthTimeScreen() {
 
   const handleContinue = () => {
     if (timeUnknown) {
-      router.push({
-        pathname: '/(onboarding)/birth-location',
-        params: {
-          displayName: params.displayName as string,
-          birthDate: params.birthDate as string,
-          birthTime: '',
-          timeKnown: 'false',
-        },
-      });
+      updateDraft({ birthTime: '', timeKnown: false });
+      router.push(`/(onboarding)/${getNextStep('birth-time')}`);
       return;
     }
 
@@ -44,17 +51,8 @@ export default function BirthTimeScreen() {
 
     const hours = time.getHours().toString().padStart(2, '0');
     const minutes = time.getMinutes().toString().padStart(2, '0');
-    const birthTime = `${hours}:${minutes}`;
-
-    router.push({
-      pathname: '/(onboarding)/birth-location',
-      params: {
-        displayName: params.displayName as string,
-        birthDate: params.birthDate as string,
-        birthTime,
-        timeKnown: 'true',
-      },
-    });
+    updateDraft({ birthTime: `${hours}:${minutes}`, timeKnown: true });
+    router.push(`/(onboarding)/${getNextStep('birth-time')}`);
   };
 
   const onChange = (_event: DateTimePickerEvent, selectedTime?: Date) => {
@@ -68,13 +66,36 @@ export default function BirthTimeScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
       <View style={styles.content}>
-        <Text style={[styles.progress, { color: theme.colors.brand.primary }]}>Step 3 of 4</Text>
+        <Text style={[styles.progress, { color: theme.colors.brand.primary }]}>
+          Step {index} of {total}
+        </Text>
         <Text style={[styles.title, { color: theme.colors.text.primary }]} accessibilityRole="header">
           What time were you born?
         </Text>
         <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
           Your birth time helps us calculate your rising sign (ascendant)
         </Text>
+
+        {tz ? (
+          <Text style={[styles.tzNote, { color: theme.colors.text.secondary }]}>
+            Birth time in {tz.replace(/_/g, ' ')}
+          </Text>
+        ) : (
+          <View
+            style={[
+              styles.warningBanner,
+              {
+                backgroundColor: theme.colors.brand.primary + '18',
+                borderColor: theme.colors.brand.primary + '40',
+              },
+            ]}
+          >
+            <Text style={[styles.warningText, { color: theme.colors.text.secondary }]}>
+              Timezone unknown — your rising sign will be approximate. Add a birthplace on the
+              previous step for full accuracy.
+            </Text>
+          </View>
+        )}
 
         {!timeUnknown && (
           <View style={styles.pickerContainer}>
@@ -151,7 +172,6 @@ export default function BirthTimeScreen() {
         onPress={handleContinue}
         accessibilityRole="button"
         accessibilityLabel="Continue"
-        accessibilityHint="Proceeds to birth location selection"
       >
         <Text style={styles.buttonText}>Continue</Text>
       </Pressable>
@@ -164,7 +184,15 @@ const styles = StyleSheet.create({
   content: { flex: 1, paddingTop: 16 },
   progress: { fontSize: 14, fontWeight: '600', marginBottom: 16 },
   title: { fontSize: 28, fontWeight: 'bold', marginBottom: 12 },
-  subtitle: { fontSize: 16, lineHeight: 24, marginBottom: 40 },
+  subtitle: { fontSize: 16, lineHeight: 24, marginBottom: 16 },
+  tzNote: { fontSize: 14, fontStyle: 'italic', marginBottom: 16 },
+  warningBanner: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
+  },
+  warningText: { fontSize: 14, lineHeight: 20 },
   pickerContainer: { alignItems: 'center', justifyContent: 'center', minHeight: 200 },
   timeButton: {
     padding: 20,

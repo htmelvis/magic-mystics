@@ -1,23 +1,38 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { LocationInput } from '@components/ui';
-import type { LocationSuggestion } from '@lib/geocoding/geocode';
+import { getTimezone, type LocationSuggestion } from '@lib/geocoding/geocode';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useAppTheme } from '@/hooks/useAppTheme';
+import { useOnboardingDraft } from '@lib/onboarding/OnboardingContext';
+import { getNextStep, getStepIndex } from '@lib/onboarding/steps';
 
 export default function BirthLocationScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams();
   const { capture } = useAnalytics();
   const theme = useAppTheme();
+  const { draft, updateDraft } = useOnboardingDraft();
 
   capture('screen_viewed', { screen: 'onboarding birth location' });
 
-  const [location, setLocation] = useState('');
-  const [selected, setSelected] = useState<LocationSuggestion | null>(null);
-  const [skipped, setSkipped] = useState(false);
+  const [location, setLocation] = useState(
+    draft.locationApproximate ? '' : draft.birthLocation,
+  );
+  const [selected, setSelected] = useState<LocationSuggestion | null>(
+    !draft.locationApproximate && draft.birthLat !== null && draft.birthLng !== null
+      ? {
+          displayName: draft.birthLocation,
+          shortName: draft.birthLocation,
+          lat: draft.birthLat,
+          lng: draft.birthLng,
+        }
+      : null,
+  );
+  const [skipped, setSkipped] = useState(draft.locationApproximate);
   const [error, setError] = useState<string | null>(null);
+  const [resolving, setResolving] = useState(false);
+  const { index, total } = getStepIndex('birth-location');
 
   const handleChangeValue = (value: string) => {
     setLocation(value);
@@ -41,50 +56,50 @@ export default function BirthLocationScreen() {
     });
   };
 
-  const canContinue = skipped || selected !== null;
+  const canContinue = !resolving && (skipped || selected !== null);
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!canContinue) {
       setError('Please pick a location from the suggestions, or check the box below to skip.');
       return;
     }
 
     if (skipped) {
-      router.push({
-        pathname: '/(onboarding)/calculating',
-        params: {
-          displayName: params.displayName as string,
-          birthDate: params.birthDate as string,
-          birthTime: (params.birthTime as string) ?? '',
-          timeKnown: (params.timeKnown as string) ?? 'true',
-          birthLocation: 'Not specified',
-          birthLat: '',
-          birthLng: '',
-          locationApproximate: 'true',
-        },
+      updateDraft({
+        birthLocation: 'Not specified',
+        birthLat: null,
+        birthLng: null,
+        birthTimezone: null,
+        locationApproximate: true,
       });
+      router.push(`/(onboarding)/${getNextStep('birth-location')}`);
       return;
     }
 
-    router.push({
-      pathname: '/(onboarding)/calculating',
-      params: {
-        displayName: params.displayName as string,
-        birthDate: params.birthDate as string,
-        birthTime: (params.birthTime as string) ?? '',
-        timeKnown: (params.timeKnown as string) ?? 'true',
-        birthLocation: selected!.displayName,
-        birthLat: String(selected!.lat),
-        birthLng: String(selected!.lng),
-        locationApproximate: 'false',
-      },
+    // Resolve the IANA timezone before advancing so the time picker can show it
+    // and so birth_time + birth_timezone are paired at point of capture.
+    // Network failure is non-fatal — falls back to null and the time step shows
+    // the same "approximate rising sign" warning as the skipped path.
+    setResolving(true);
+    const tz = await getTimezone(selected!.lat, selected!.lng);
+    setResolving(false);
+
+    updateDraft({
+      birthLocation: selected!.displayName,
+      birthLat: selected!.lat,
+      birthLng: selected!.lng,
+      birthTimezone: tz,
+      locationApproximate: false,
     });
+    router.push(`/(onboarding)/${getNextStep('birth-location')}`);
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
       <View style={styles.content}>
-        <Text style={[styles.progress, { color: theme.colors.brand.primary }]}>Step 4 of 4</Text>
+        <Text style={[styles.progress, { color: theme.colors.brand.primary }]}>
+          Step {index} of {total}
+        </Text>
         <Text style={[styles.title, { color: theme.colors.text.primary }]}>
           Where were you born?
         </Text>
@@ -158,10 +173,14 @@ export default function BirthLocationScreen() {
         onPress={handleContinue}
         disabled={!canContinue}
         accessibilityRole="button"
-        accessibilityLabel="Calculate my signs"
-        accessibilityState={{ disabled: !canContinue }}
+        accessibilityLabel="Continue"
+        accessibilityState={{ disabled: !canContinue, busy: resolving }}
       >
-        <Text style={styles.buttonText}>Calculate My Signs</Text>
+        {resolving ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Continue</Text>
+        )}
       </Pressable>
     </View>
   );
