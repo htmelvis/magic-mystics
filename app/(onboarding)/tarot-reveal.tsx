@@ -54,7 +54,9 @@ export default function TarotRevealScreen() {
 
         const { data, error: assocError } = await supabase
           .from('zodiac_tarot_associations')
-          .select('description, association_type, tarot_card_id, tarot_cards!tarot_card_id(id, name)')
+          .select(
+            'description, association_type, tarot_card_id, tarot_cards!tarot_card_id(id, name)'
+          )
           .eq('zodiac_sign_id', zodiacData.id)
           .single();
 
@@ -102,7 +104,10 @@ export default function TarotRevealScreen() {
 
   return (
     <ScrollView
-      contentContainerStyle={[styles.container, { backgroundColor: theme.colors.surface.background }]}
+      contentContainerStyle={[
+        styles.container,
+        { backgroundColor: theme.colors.surface.background },
+      ]}
       style={{ backgroundColor: theme.colors.surface.background }}
       bounces={false}
     >

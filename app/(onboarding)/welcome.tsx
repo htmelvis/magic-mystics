@@ -21,9 +21,7 @@ export default function WelcomeScreen() {
         <View style={styles.content}>
           <Text style={styles.emoji}>🔮✨</Text>
           <Text style={styles.title}>Welcome to Magic Mystics</Text>
-          <Text style={styles.subtitle}>
-            Your personal tarot and astrology companion
-          </Text>
+          <Text style={styles.subtitle}>Your personal tarot and astrology companion</Text>
 
           <View style={styles.descriptionContainer}>
             <Text style={styles.description}>
@@ -35,12 +33,7 @@ export default function WelcomeScreen() {
           </View>
         </View>
 
-        <Button 
-          title="Get Started" 
-          onPress={handleGetStarted}
-          fullWidth
-          size="lg"
-        />
+        <Button title="Get Started" onPress={handleGetStarted} fullWidth size="lg" />
       </View>
     </Screen>
   );

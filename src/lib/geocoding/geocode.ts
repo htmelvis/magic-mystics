@@ -20,7 +20,7 @@ export interface LocationSuggestion {
  */
 export async function searchLocations(
   query: string,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<LocationSuggestion[]> {
   const trimmed = query.trim();
   if (trimmed.length < 2) return [];
@@ -113,7 +113,10 @@ export async function getTimezone(lat: number, lng: number): Promise<string | nu
     const url = `https://timeapi.io/api/TimeZone/coordinate?latitude=${lat}&longitude=${lng}`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
-    const response = await fetch(url, { signal: controller.signal, headers: { Accept: 'application/json' } });
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    });
     clearTimeout(timeout);
     if (!response.ok) return null;
     const data = await response.json();

@@ -18,28 +18,28 @@ appId: com.edwardwieczorek.magicmystics
     clearState: false
 
 # Sign in — should redirect to onboarding (onboarding_completed=false)
-- tapOn: "Email"
+- tapOn: 'Email'
 - inputText: ${TEST_EMAIL}
-- tapOn: "Password"
+- tapOn: 'Password'
 - inputText: ${TEST_PASSWORD}
-- tapOn: "Sign In"
+- tapOn: 'Sign In'
 
 # ── Step 0: Welcome ──────────────────────────────────────────────────────────
-- assertVisible: "Welcome to Magic Mystics"
-- tapOn: "Get Started"
+- assertVisible: 'Welcome to Magic Mystics'
+- tapOn: 'Get Started'
 
 # ── Step 1: Name ─────────────────────────────────────────────────────────────
-- assertVisible: "Step 1 of 4"
-- assertVisible: "What should we call you?"
+- assertVisible: 'Step 1 of 4'
+- assertVisible: 'What should we call you?'
 - tapOn:
-    text: "Your name"
-- inputText: "Luna"
-- tapOn: "Continue"
+    text: 'Your name'
+- inputText: 'Luna'
+- tapOn: 'Continue'
 
 # ── Step 2: Birth Date ───────────────────────────────────────────────────────
 # The native DateTimePicker renders a spinner on iOS.
 # Adjust the exact swipe deltas to match your target test date.
-- assertVisible: "Step 2 of 4"
+- assertVisible: 'Step 2 of 4'
 - waitForAnimationToEnd
 # Scroll the month column to June (month 6)
 # Each full swipe ≈ 1 row on the iOS spinner
@@ -48,22 +48,22 @@ appId: com.edwardwieczorek.magicmystics
     duration: 300
 # Scroll the day column if needed
 # Tap "Continue" (or equivalent CTA label on the birth-date screen) when done
-- tapOn: "Continue"
+- tapOn: 'Continue'
 
 # ── Step 3: Birth Time ───────────────────────────────────────────────────────
 # Similar native time picker — swipe to set hour/minute
-- assertVisible: "Step 3 of 4"
+- assertVisible: 'Step 3 of 4'
 - waitForAnimationToEnd
-- tapOn: "Continue"
+- tapOn: 'Continue'
 
 # ── Step 4: Birth Location ───────────────────────────────────────────────────
-- assertVisible: "Step 4 of 4"
+- assertVisible: 'Step 4 of 4'
 - tapOn:
-    text: "City or town"
-- inputText: "New York, NY"
-- tapOn: "Continue"
+    text: 'City or town'
+- inputText: 'New York, NY'
+- tapOn: 'Continue'
 
 # ── Calculating → Home ───────────────────────────────────────────────────────
 # The calculating screen auto-advances; wait for it
-- assertVisible: "Calculating"
-- assertVisible: "Draw Your Daily Card"
+- assertVisible: 'Calculating'
+- assertVisible: 'Draw Your Daily Card'

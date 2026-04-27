@@ -27,7 +27,9 @@ export function renderAASA(env: Env): Response {
 // intent filters on links.magicmystics.com.
 // Must be served at /.well-known/assetlinks.json with Content-Type: application/json.
 export function renderAssetLinks(env: Env): Response {
-  const fingerprints = env.ANDROID_SHA256.split(',').map((s) => s.trim()).filter(Boolean);
+  const fingerprints = env.ANDROID_SHA256.split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
   const body = [
     {
       relation: ['delegate_permission/common.handle_all_urls'],

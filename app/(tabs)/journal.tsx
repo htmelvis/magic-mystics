@@ -140,7 +140,10 @@ function JournalListItem({ entry, onPress }: { entry: JournalRow; onPress: () =>
         </Text>
       )}
       {preview.length > 0 && (
-        <Text style={[itemStyles.preview, { color: theme.colors.text.secondary }]} numberOfLines={3}>
+        <Text
+          style={[itemStyles.preview, { color: theme.colors.text.secondary }]}
+          numberOfLines={3}
+        >
           {preview}
         </Text>
       )}
@@ -186,9 +189,7 @@ export default function JournalScreen() {
 
   if (!isPremium) {
     return (
-      <View
-        style={[styles.container, { backgroundColor: theme.colors.surface.background }]}
-      >
+      <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
         <View style={[styles.header, { borderBottomColor: theme.colors.border.light }]}>
           <Text style={[styles.headerTitle, { color: theme.colors.text.primary }]}>Journal</Text>
         </View>
@@ -220,13 +221,11 @@ export default function JournalScreen() {
       ) : (
         <FlatList
           data={entries}
-          keyExtractor={(item) => item.id}
+          keyExtractor={item => item.id}
           renderItem={({ item }) => (
             <JournalListItem
               entry={item}
-              onPress={() =>
-                router.push({ pathname: '/journal-entry', params: { id: item.id } })
-              }
+              onPress={() => router.push({ pathname: '/journal-entry', params: { id: item.id } })}
             />
           )}
           contentContainerStyle={styles.listContent}

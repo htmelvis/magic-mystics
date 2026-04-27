@@ -117,7 +117,11 @@ Deno.serve(async (req: Request) => {
 
     // Fast-moving planet signs (Mercury, Venus, Mars) for richer daily context
     const innerPlanetSigns: Record<string, string> = {};
-    for (const body of [Astronomy.Body.Mercury, Astronomy.Body.Venus, Astronomy.Body.Mars] as const) {
+    for (const body of [
+      Astronomy.Body.Mercury,
+      Astronomy.Body.Venus,
+      Astronomy.Body.Mars,
+    ] as const) {
       const ecl = Astronomy.Ecliptic(Astronomy.GeoVector(body, date, false));
       innerPlanetSigns[Astronomy.Body[body]] = eclipticLonToSign(ecl.elon);
     }
@@ -169,8 +173,7 @@ Respond with valid JSON only. No markdown fences, no extra text.`;
     let energyTheme = `${moonPhaseName} in ${moonSignName}`;
     let advice = `Align with the ${moonPhaseName.toLowerCase()} as the Moon moves through ${moonSignName} — focus on ${element.toLowerCase()} energy today.`;
 
-    const rawText =
-      completion.content[0].type === 'text' ? completion.content[0].text.trim() : '';
+    const rawText = completion.content[0].type === 'text' ? completion.content[0].text.trim() : '';
     try {
       const jsonText = rawText.replace(/^```json?\n?/, '').replace(/\n?```$/, '');
       const parsed = JSON.parse(jsonText);
@@ -181,33 +184,31 @@ Respond with valid JSON only. No markdown fences, no extra text.`;
     }
 
     // ── Upsert ────────────────────────────────────────────────────────────────
-    const { error: upsertError } = await supabase
-      .from('daily_metaphysical_data')
-      .upsert(
-        {
-          date: dateStr,
-          moon_phase: moonPhaseName,
-          moon_sign_id: moonSignRow?.id ?? null,
-          retrograde_planets: retrogradePlanets,
-          lucky_numbers: luckyNumbers,
-          lucky_colors: luckyColors,
-          recommended_crystal_id: crystalAssoc?.crystal_id ?? null,
-          energy_theme: energyTheme,
-          advice,
-          metadata: {
-            moon_phase_angle: Math.round(moonPhaseAngle * 100) / 100,
-            moon_sign: moonSignName,
-            moon_degree_in_sign: Math.round(moonDegreeInSign * 100) / 100,
-            element,
-            moon_ecliptic_lon: Math.round(moonEcl.elon * 100) / 100,
-            sun_sign: sunSignName,
-            inner_planet_signs: innerPlanetSigns,
-            generated_by: 'daily-metaphysical-v2',
-            generated_at: new Date().toISOString(),
-          },
+    const { error: upsertError } = await supabase.from('daily_metaphysical_data').upsert(
+      {
+        date: dateStr,
+        moon_phase: moonPhaseName,
+        moon_sign_id: moonSignRow?.id ?? null,
+        retrograde_planets: retrogradePlanets,
+        lucky_numbers: luckyNumbers,
+        lucky_colors: luckyColors,
+        recommended_crystal_id: crystalAssoc?.crystal_id ?? null,
+        energy_theme: energyTheme,
+        advice,
+        metadata: {
+          moon_phase_angle: Math.round(moonPhaseAngle * 100) / 100,
+          moon_sign: moonSignName,
+          moon_degree_in_sign: Math.round(moonDegreeInSign * 100) / 100,
+          element,
+          moon_ecliptic_lon: Math.round(moonEcl.elon * 100) / 100,
+          sun_sign: sunSignName,
+          inner_planet_signs: innerPlanetSigns,
+          generated_by: 'daily-metaphysical-v2',
+          generated_at: new Date().toISOString(),
         },
-        { onConflict: 'date' }
-      );
+      },
+      { onConflict: 'date' }
+    );
 
     if (upsertError) throw upsertError;
 

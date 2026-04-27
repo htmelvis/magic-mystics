@@ -1,13 +1,13 @@
 /**
  * Magic Mystics Theme
- * 
+ *
  * Centralized theme system for consistent design tokens
  * Import from this file to access colors, spacing, typography, etc.
- * 
+ *
  * Usage:
  * ```typescript
  * import { theme } from '@/theme';
- * 
+ *
  * const styles = StyleSheet.create({
  *   container: {
  *     backgroundColor: theme.colors.surface.background,
@@ -30,13 +30,7 @@ export { durations, springs, animations } from './animations';
 // Export types
 export type { Colors, ColorKey } from './colors';
 export type { Spacing, BorderRadius, IconSizes, Layout } from './spacing';
-export type {
-  FontSizes,
-  FontWeights,
-  LineHeights,
-  LetterSpacings,
-  TextStyles,
-} from './typography';
+export type { FontSizes, FontWeights, LineHeights, LetterSpacings, TextStyles } from './typography';
 export type { Shadows, ShadowKey } from './shadows';
 export type { Durations, Springs, Animations } from './animations';
 

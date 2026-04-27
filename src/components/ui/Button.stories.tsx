@@ -11,7 +11,7 @@ const meta = {
   title: 'UI/Button',
   component: Button,
   decorators: [
-    (Story) => (
+    Story => (
       <View style={{ padding: 16, gap: 12 }}>
         <Story />
       </View>
@@ -69,7 +69,7 @@ export const WithIconLeft: Story = {
 export const AllVariants: Story = {
   render: () => (
     <View style={{ padding: 16, gap: 12 }}>
-      {VARIANTS.map((variant) => (
+      {VARIANTS.map(variant => (
         <Button key={variant} title={variant} variant={variant} onPress={fn()} />
       ))}
     </View>
@@ -79,7 +79,7 @@ export const AllVariants: Story = {
 export const AllSizes: Story = {
   render: () => (
     <View style={{ padding: 16, gap: 12, alignItems: 'flex-start' }}>
-      {SIZES.map((size) => (
+      {SIZES.map(size => (
         <Button key={size} title={`Size ${size.toUpperCase()}`} size={size} onPress={fn()} />
       ))}
     </View>

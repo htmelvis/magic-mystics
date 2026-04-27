@@ -1,9 +1,9 @@
 /**
  * MIGRATION EXAMPLE: Sign-In Screen
- * 
+ *
  * This file shows how to migrate from hardcoded values to the theme system.
  * Compare this with app/(auth)/sign-in.tsx to see the differences.
- * 
+ *
  * DO NOT USE THIS FILE - IT'S JUST AN EXAMPLE!
  * Use this as a reference when migrating other screens.
  */

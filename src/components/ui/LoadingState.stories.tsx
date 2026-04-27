@@ -6,7 +6,7 @@ const meta = {
   title: 'UI/LoadingState',
   component: LoadingState,
   decorators: [
-    (Story) => (
+    Story => (
       <View style={{ padding: 16, gap: 12 }}>
         <Story />
       </View>

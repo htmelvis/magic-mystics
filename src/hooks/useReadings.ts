@@ -4,7 +4,13 @@ import type { DrawnCardRecord } from '@/types/tarot';
 
 export interface ReadingRow {
   id: string;
-  spread_type: 'daily' | 'past-present-future' | 'relationship' | 'situation-obstacle-solution' | 'mind-body-spirit' | 'path-choice';
+  spread_type:
+    | 'daily'
+    | 'past-present-future'
+    | 'relationship'
+    | 'situation-obstacle-solution'
+    | 'mind-body-spirit'
+    | 'path-choice';
   drawn_cards: DrawnCardRecord[];
   ai_insight: string | null;
   created_at: string;
@@ -30,7 +36,7 @@ async function fetchPage(
     .range(offset, offset + cap - 1);
 
   if (error) throw error;
-  return (data ?? []).map((r) => ({
+  return (data ?? []).map(r => ({
     ...r,
     spread_type: r.spread_type as ReadingRow['spread_type'],
     drawn_cards: (r.drawn_cards as DrawnCardRecord[]) ?? [],

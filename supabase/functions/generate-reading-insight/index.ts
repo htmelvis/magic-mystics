@@ -16,11 +16,7 @@
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import Anthropic from 'npm:@anthropic-ai/sdk@0.35';
-import {
-  DEFAULT_INTENTIONS,
-  SPREAD_DISPLAY_NAMES,
-  parseAIInsight,
-} from '../_shared/ai-insight.ts';
+import { DEFAULT_INTENTIONS, SPREAD_DISPLAY_NAMES, parseAIInsight } from '../_shared/ai-insight.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -48,12 +44,9 @@ function buildSingleCardPrompt(p: {
   retrogradePlanets: string[];
   recentCards: string[];
 }): string {
-  const retrogradeStr =
-    p.retrogradePlanets.length > 0 ? p.retrogradePlanets.join(', ') : 'none';
+  const retrogradeStr = p.retrogradePlanets.length > 0 ? p.retrogradePlanets.join(', ') : 'none';
   const recentCardsBlock =
-    p.recentCards.length > 0
-      ? `  <recent_cards>${p.recentCards.join(', ')}</recent_cards>`
-      : '';
+    p.recentCards.length > 0 ? `  <recent_cards>${p.recentCards.join(', ')}</recent_cards>` : '';
 
   return `You are a master tarot reader — intuitive, grounded, and deeply literate in the Rider-Waite-Smith tradition. You read with the warmth of a close friend and the precision of a scholar. You never sound like a horoscope app.
 
@@ -99,18 +92,15 @@ function buildSpreadPrompt(p: {
   retrogradePlanets: string[];
   recentCards: string[];
 }): string {
-  const retrogradeStr =
-    p.retrogradePlanets.length > 0 ? p.retrogradePlanets.join(', ') : 'none';
+  const retrogradeStr = p.retrogradePlanets.length > 0 ? p.retrogradePlanets.join(', ') : 'none';
   const cardsXml = p.cards
     .map(
-      (c) =>
+      c =>
         `    <card position="${c.position}">\n      <name>${c.name}</name>\n      <orientation>${c.orientation}</orientation>\n    </card>`
     )
     .join('\n');
   const recentCardsBlock =
-    p.recentCards.length > 0
-      ? `  <recent_cards>${p.recentCards.join(', ')}</recent_cards>`
-      : '';
+    p.recentCards.length > 0 ? `  <recent_cards>${p.recentCards.join(', ')}</recent_cards>` : '';
 
   return `You are a master tarot reader — intuitive, grounded, and deeply literate in the Rider-Waite-Smith tradition. You read with the warmth of a close friend and the precision of a scholar. You never sound like a horoscope app.
 
@@ -211,11 +201,7 @@ Deno.serve(async (req: Request) => {
     const today = new Date().toISOString().split('T')[0];
 
     const [userRes, metaphysicalRes, subscriptionRes] = await Promise.all([
-      supabase
-        .from('users')
-        .select('sun_sign, moon_sign, rising_sign')
-        .eq('id', userId)
-        .single(),
+      supabase.from('users').select('sun_sign, moon_sign, rising_sign').eq('id', userId).single(),
       supabase
         .from('daily_metaphysical_data')
         .select('moon_phase, retrograde_planets')
@@ -249,8 +235,8 @@ Deno.serve(async (req: Request) => {
       .limit(5);
 
     const recentCards = (recentReadings ?? [])
-      .flatMap((r) => (r.drawn_cards as DrawnCard[]) ?? [])
-      .map((c) => c.cardName)
+      .flatMap(r => (r.drawn_cards as DrawnCard[]) ?? [])
+      .map(c => c.cardName)
       .filter(Boolean)
       .slice(0, 5);
 
@@ -270,7 +256,7 @@ Deno.serve(async (req: Request) => {
       ? buildSpreadPrompt({
           intention,
           spreadLabel: SPREAD_DISPLAY_NAMES[spreadType] ?? spreadType,
-          cards: drawnCards.map((c) => ({
+          cards: drawnCards.map(c => ({
             position: c.position ?? 'card',
             name: c.cardName,
             orientation: c.orientation,
@@ -303,8 +289,7 @@ Deno.serve(async (req: Request) => {
       messages: [{ role: 'user', content: prompt }],
     });
 
-    const rawText =
-      completion.content[0].type === 'text' ? completion.content[0].text.trim() : '';
+    const rawText = completion.content[0].type === 'text' ? completion.content[0].text.trim() : '';
 
     // Strip markdown fences if the model ignores that instruction
     const jsonText = rawText.replace(/^```json?\n?/, '').replace(/\n?```$/, '');

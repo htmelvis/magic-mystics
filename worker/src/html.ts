@@ -15,7 +15,7 @@ function titleFor(reading: ShareableReading): string {
 function descriptionFor(reading: ShareableReading): string {
   const summary = reading.primary_card_summary?.trim();
   if (summary && summary.length > 0) return summary;
-  const glyph = reading.primary_card_suit ? SUIT_GLYPH[reading.primary_card_suit] ?? '✦' : '✦';
+  const glyph = reading.primary_card_suit ? (SUIT_GLYPH[reading.primary_card_suit] ?? '✦') : '✦';
   return `${glyph} A tarot reading from Magic Mystics — draw your own card.`;
 }
 
@@ -28,7 +28,11 @@ function escape(s: string): string {
     .replaceAll("'", '&#39;');
 }
 
-export function renderLandingHtml(env: Env, reading: ShareableReading, canonicalUrl: string): string {
+export function renderLandingHtml(
+  env: Env,
+  reading: ShareableReading,
+  canonicalUrl: string
+): string {
   const title = titleFor(reading);
   const description = descriptionFor(reading);
   const imageUrl = `https://links.magicmystics.com/reading/${reading.reading_id}/image.png`;

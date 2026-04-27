@@ -57,13 +57,7 @@ function ReviewPrompt({ _category }: { _category: SupportCategory }) {
 // Success state
 // ---------------------------------------------------------------------------
 
-function SuccessView({
-  category,
-  onDone,
-}: {
-  category: SupportCategory;
-  onDone: () => void;
-}) {
+function SuccessView({ category, onDone }: { category: SupportCategory; onDone: () => void }) {
   const theme = useAppTheme();
   return (
     <View style={successStyles.container}>
@@ -211,13 +205,9 @@ export default function SupportScreen() {
               accessibilityLabel="Cancel"
               style={styles.cancelButton}
             >
-              <Text style={[styles.cancelText, { color: theme.colors.brand.primary }]}>
-                Cancel
-              </Text>
+              <Text style={[styles.cancelText, { color: theme.colors.brand.primary }]}>Cancel</Text>
             </Pressable>
-            <Text style={[styles.title, { color: theme.colors.text.primary }]}>
-              Get Help
-            </Text>
+            <Text style={[styles.title, { color: theme.colors.text.primary }]}>Get Help</Text>
             <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
               Send us a message and we'll get back to you.
             </Text>
@@ -229,7 +219,7 @@ export default function SupportScreen() {
               What's this about?
             </Text>
             <View style={styles.pillRow}>
-              {CATEGORIES.map((c) => {
+              {CATEGORIES.map(c => {
                 const active = category === c.value;
                 return (
                   <Pressable
@@ -240,9 +230,7 @@ export default function SupportScreen() {
                         backgroundColor: active
                           ? theme.colors.brand.primary
                           : theme.colors.surface.card,
-                        borderColor: active
-                          ? theme.colors.brand.primary
-                          : theme.colors.border.main,
+                        borderColor: active ? theme.colors.brand.primary : theme.colors.border.main,
                       },
                     ]}
                     onPress={() => setCategory(c.value)}
@@ -270,9 +258,7 @@ export default function SupportScreen() {
           {/* Message */}
           <View style={styles.field}>
             <View style={styles.labelRow}>
-              <Text style={[styles.label, { color: theme.colors.text.secondary }]}>
-                Message
-              </Text>
+              <Text style={[styles.label, { color: theme.colors.text.secondary }]}>Message</Text>
               <Text style={[styles.charCount, { color: theme.colors.text.muted }]}>
                 {message.length}/{MAX_MESSAGE_LENGTH}
               </Text>
@@ -289,7 +275,7 @@ export default function SupportScreen() {
               placeholder="Describe your issue or share your feedback..."
               placeholderTextColor={theme.colors.text.muted}
               value={message}
-              onChangeText={(text) => {
+              onChangeText={text => {
                 setMessage(text);
                 if (messageError) setMessageError(validateMessage(text));
               }}

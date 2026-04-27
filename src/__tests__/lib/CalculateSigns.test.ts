@@ -46,8 +46,18 @@ describe('calculateSunSign', () => {
 describe('calculateMoonSign', () => {
   it('returns a valid zodiac sign', () => {
     const validSigns = [
-      'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-      'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
     ];
     const result = calculateMoonSign(new Date(1990, 5, 15));
     expect(validSigns).toContain(result);
@@ -70,8 +80,18 @@ describe('calculateMoonSign', () => {
 describe('calculateRisingSign', () => {
   it('returns a valid zodiac sign', () => {
     const validSigns = [
-      'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-      'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
     ];
     const result = calculateRisingSign(new Date(1990, 5, 15), '08:30');
     expect(validSigns).toContain(result);
@@ -126,8 +146,18 @@ describe('calculateAstrologyData', () => {
 
   it('all returned signs are valid zodiac signs', () => {
     const validSigns = [
-      'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-      'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
     ];
     const result = calculateAstrologyData(new Date(1985, 10, 1), '08:00', 'London, UK');
     expect(validSigns).toContain(result.sunSign);

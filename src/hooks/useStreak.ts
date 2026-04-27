@@ -17,7 +17,7 @@ function computeStreakData(rawDates: string[]): StreakData {
     return { currentStreak: 0, longestStreak: 0, monthlyActivity };
   }
 
-  const uniqueDays = [...new Set(rawDates.map((d) => d.split('T')[0]))].sort();
+  const uniqueDays = [...new Set(rawDates.map(d => d.split('T')[0]))].sort();
 
   let longest = 1;
   let run = 1;
@@ -56,7 +56,7 @@ function computeStreakData(rawDates: string[]): StreakData {
   const monthlyActivity = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
     const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    const count = rawDates.filter((date) => date.startsWith(monthKey)).length;
+    const count = rawDates.filter(date => date.startsWith(monthKey)).length;
     return { month: d.toLocaleDateString(undefined, { month: 'short' }), count };
   });
 
@@ -70,7 +70,7 @@ async function fetchStreakData(userId: string): Promise<StreakData> {
     .eq('user_id', userId);
 
   if (error) throw error;
-  return computeStreakData((data ?? []).map((r) => r.created_at));
+  return computeStreakData((data ?? []).map(r => r.created_at));
 }
 
 export function useStreak(userId: string | null | undefined) {

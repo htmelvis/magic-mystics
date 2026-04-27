@@ -40,45 +40,48 @@ export function useShareReading(): Result {
   const [isSharing, setIsSharing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const share = useCallback(async ({ readingId, card, orientation, insight }: ShareReadingInput) => {
-    if (isSharing) return;
-    setIsSharing(true);
-    setError(null);
+  const share = useCallback(
+    async ({ readingId, card, orientation, insight }: ShareReadingInput) => {
+      if (isSharing) return;
+      setIsSharing(true);
+      setError(null);
 
-    const shareUrl = `${LINKS_HOST}/reading/${readingId}`;
-    const imageUrl = `${shareUrl}/image.png`;
-    const caption = buildCaption({ card, orientation, insight, shareUrl });
+      const shareUrl = `${LINKS_HOST}/reading/${readingId}`;
+      const imageUrl = `${shareUrl}/image.png`;
+      const caption = buildCaption({ card, orientation, insight, shareUrl });
 
-    try {
-      await stampSharedAt(readingId);
+      try {
+        await stampSharedAt(readingId);
 
-      // iOS: attach the PNG file AND the caption. iMessage will render the
-      // image inline and preserve the caption text (which contains the URL,
-      // so the recipient also gets the rich link preview).
-      //
-      // Android: RN's Share doesn't accept `url`. We share caption+URL as
-      // text only; the messaging app renders an OG preview of the link.
-      if (Platform.OS === 'ios') {
-        const target = new File(Paths.cache, `share-${readingId}.png`);
-        if (target.exists) target.delete();
-        try {
-          const file = await File.downloadFileAsync(imageUrl, target);
-          await Share.share({ url: file.uri, message: caption });
-        } catch (dlErr) {
-          console.warn('[useShareReading] image download failed, falling back to text', dlErr);
+        // iOS: attach the PNG file AND the caption. iMessage will render the
+        // image inline and preserve the caption text (which contains the URL,
+        // so the recipient also gets the rich link preview).
+        //
+        // Android: RN's Share doesn't accept `url`. We share caption+URL as
+        // text only; the messaging app renders an OG preview of the link.
+        if (Platform.OS === 'ios') {
+          const target = new File(Paths.cache, `share-${readingId}.png`);
+          if (target.exists) target.delete();
+          try {
+            const file = await File.downloadFileAsync(imageUrl, target);
+            await Share.share({ url: file.uri, message: caption });
+          } catch (dlErr) {
+            console.warn('[useShareReading] image download failed, falling back to text', dlErr);
+            await Share.share({ message: caption });
+          }
+        } else {
           await Share.share({ message: caption });
         }
-      } else {
-        await Share.share({ message: caption });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        // User-cancelled share is not an error.
+        if (!/dismiss|cancel/i.test(msg)) setError(msg);
+      } finally {
+        setIsSharing(false);
       }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      // User-cancelled share is not an error.
-      if (!/dismiss|cancel/i.test(msg)) setError(msg);
-    } finally {
-      setIsSharing(false);
-    }
-  }, [isSharing]);
+    },
+    [isSharing]
+  );
 
   return { share, isSharing, error };
 }

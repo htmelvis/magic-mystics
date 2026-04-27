@@ -10,30 +10,19 @@ export interface JourneyStats {
 async function fetchJourneyStats(userId: string): Promise<JourneyStats> {
   // Run all three queries in parallel — no sequential waterfall.
   const [readingsResult, reflectionsResult, datesResult] = await Promise.all([
-    supabase
-      .from('readings')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId),
-    supabase
-      .from('reflections')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId),
+    supabase.from('readings').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+    supabase.from('reflections').select('*', { count: 'exact', head: true }).eq('user_id', userId),
     // Fetch only created_at to compute distinct calendar days client-side.
     // Users won't accumulate thousands of readings, so this is cheaper than
     // a server-side COUNT(DISTINCT DATE(...)) which would require an RPC.
-    supabase
-      .from('readings')
-      .select('created_at')
-      .eq('user_id', userId),
+    supabase.from('readings').select('created_at').eq('user_id', userId),
   ]);
 
   if (readingsResult.error) throw readingsResult.error;
   if (reflectionsResult.error) throw reflectionsResult.error;
   if (datesResult.error) throw datesResult.error;
 
-  const daysActive = new Set(
-    (datesResult.data ?? []).map((r) => r.created_at.split('T')[0])
-  ).size;
+  const daysActive = new Set((datesResult.data ?? []).map(r => r.created_at.split('T')[0])).size;
 
   return {
     readings: readingsResult.count ?? 0,

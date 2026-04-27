@@ -59,20 +59,14 @@ describe('UpgradeSheet', () => {
 
   describe('isPurchasing state', () => {
     it('shows an ActivityIndicator instead of "Upgrade Now" text', () => {
-      const { queryByText, getByLabelText } = render(
-        <UpgradeSheet {...baseProps} isPurchasing />
-      );
+      const { queryByText, getByLabelText } = render(<UpgradeSheet {...baseProps} isPurchasing />);
       expect(queryByText('Upgrade Now')).toBeNull();
       // The button has accessibilityLabel with busy state
-      expect(
-        getByLabelText('Upgrade to Premium for $49 per year')
-      ).toBeTruthy();
+      expect(getByLabelText('Upgrade to Premium for $49 per year')).toBeTruthy();
     });
 
     it('does not call onUpgradePress when tapped while purchasing', () => {
-      const { getByLabelText } = render(
-        <UpgradeSheet {...baseProps} isPurchasing />
-      );
+      const { getByLabelText } = render(<UpgradeSheet {...baseProps} isPurchasing />);
       fireEvent.press(getByLabelText('Upgrade to Premium for $49 per year'));
       expect(baseProps.onUpgradePress).not.toHaveBeenCalled();
     });
@@ -80,9 +74,7 @@ describe('UpgradeSheet', () => {
 
   describe('when not visible', () => {
     it('renders without error', () => {
-      expect(() =>
-        render(<UpgradeSheet {...baseProps} isVisible={false} />)
-      ).not.toThrow();
+      expect(() => render(<UpgradeSheet {...baseProps} isVisible={false} />)).not.toThrow();
     });
   });
 });

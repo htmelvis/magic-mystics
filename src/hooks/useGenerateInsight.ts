@@ -4,7 +4,9 @@ import { parseAIInsight } from '@/types/ai-insight';
 import type { AIInsight } from '@/types/ai-insight';
 
 async function generateInsight(readingId: string): Promise<AIInsight> {
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   if (!session) throw new Error('Not authenticated');
 
   const { data, error } = await supabase.functions.invoke('generate-reading-insight', {

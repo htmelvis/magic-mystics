@@ -69,7 +69,10 @@ export default function BirthTimeScreen() {
         <Text style={[styles.progress, { color: theme.colors.brand.primary }]}>
           Step {index} of {total}
         </Text>
-        <Text style={[styles.title, { color: theme.colors.text.primary }]} accessibilityRole="header">
+        <Text
+          style={[styles.title, { color: theme.colors.text.primary }]}
+          accessibilityRole="header"
+        >
           What time were you born?
         </Text>
         <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
@@ -137,7 +140,7 @@ export default function BirthTimeScreen() {
         <Pressable
           style={styles.toggleRow}
           onPress={() => {
-            setTimeUnknown((v) => !v);
+            setTimeUnknown(v => !v);
             setError(null);
           }}
           accessibilityRole="checkbox"

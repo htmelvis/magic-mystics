@@ -93,7 +93,7 @@ export function useReadingExpiry(
       return;
     }
     const key = dismissKey(userId, oldest.created_at);
-    AsyncStorage.getItem(key).then((val) => setIsDismissed(val === 'true'));
+    AsyncStorage.getItem(key).then(val => setIsDismissed(val === 'true'));
   }, [userId, oldest?.created_at]);
 
   const dismiss = useCallback(() => {

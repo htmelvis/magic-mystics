@@ -8,22 +8,40 @@ import {
 } from '@lib/astrology/natal-chart';
 
 const VALID_SIGNS = [
-  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+  'Aries',
+  'Taurus',
+  'Gemini',
+  'Cancer',
+  'Leo',
+  'Virgo',
+  'Libra',
+  'Scorpio',
+  'Sagittarius',
+  'Capricorn',
+  'Aquarius',
+  'Pisces',
 ];
 
 const ALL_PLANETS: PlanetName[] = [...FREE_PLANETS, ...PREMIUM_PLANETS];
 
 const PLANET_GLYPHS: Record<PlanetName, string> = {
-  Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
-  Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
+  Sun: '☉',
+  Moon: '☽',
+  Mercury: '☿',
+  Venus: '♀',
+  Mars: '♂',
+  Jupiter: '♃',
+  Saturn: '♄',
+  Uranus: '♅',
+  Neptune: '♆',
+  Pluto: '♇',
 };
 
 // Reference birth data: 1990-06-15, noon, New York-ish coords
 const BIRTH_DATE = new Date(1990, 5, 15, 12, 0, 0); // local noon, June 15 1990
 const BIRTH_TIME = '12:00';
 const BIRTH_LAT = 40.7128;
-const BIRTH_LNG = -74.0060;
+const BIRTH_LNG = -74.006;
 
 // ── Planet constants ───────────────────────────────────────────────────────────
 
@@ -40,7 +58,7 @@ describe('PREMIUM_PLANETS', () => {
 
   it('has no overlap with FREE_PLANETS', () => {
     const freeSet = new Set<PlanetName>(FREE_PLANETS);
-    PREMIUM_PLANETS.forEach((p) => expect(freeSet.has(p)).toBe(false));
+    PREMIUM_PLANETS.forEach(p => expect(freeSet.has(p)).toBe(false));
   });
 });
 
@@ -60,21 +78,21 @@ describe('computeNatalChart', () => {
   });
 
   it('returns all 10 planets', () => {
-    const names = chart.planets.map((p) => p.name);
+    const names = chart.planets.map(p => p.name);
     expect(names).toHaveLength(10);
-    ALL_PLANETS.forEach((planet) => expect(names).toContain(planet));
+    ALL_PLANETS.forEach(planet => expect(names).toContain(planet));
   });
 
   it('lists planets in canonical order (free then premium)', () => {
-    const names = chart.planets.map((p) => p.name);
+    const names = chart.planets.map(p => p.name);
     expect(names).toEqual([...FREE_PLANETS, ...PREMIUM_PLANETS]);
   });
 
-  describe.each(ALL_PLANETS)('%s position', (planetName) => {
+  describe.each(ALL_PLANETS)('%s position', planetName => {
     let pos: PlanetPosition;
 
     beforeAll(() => {
-      pos = chart.planets.find((p) => p.name === planetName)!;
+      pos = chart.planets.find(p => p.name === planetName)!;
     });
 
     it('has the correct glyph', () => {
@@ -153,9 +171,14 @@ describe('computeNatalChart', () => {
     });
 
     it('returns different sun longitude for a different birth date', () => {
-      const other = computeNatalChart(new Date(1990, 11, 15, 12, 0, 0), BIRTH_TIME, BIRTH_LAT, BIRTH_LNG);
-      const sunA = chart.planets.find((p) => p.name === 'Sun')!.longitude;
-      const sunB = other.planets.find((p) => p.name === 'Sun')!.longitude;
+      const other = computeNatalChart(
+        new Date(1990, 11, 15, 12, 0, 0),
+        BIRTH_TIME,
+        BIRTH_LAT,
+        BIRTH_LNG
+      );
+      const sunA = chart.planets.find(p => p.name === 'Sun')!.longitude;
+      const sunB = other.planets.find(p => p.name === 'Sun')!.longitude;
       expect(sunA).not.toBeCloseTo(sunB, 0);
     });
 
@@ -174,7 +197,7 @@ describe('computeNatalChart', () => {
         BIRTH_TIME,
         BIRTH_LAT,
         BIRTH_LNG,
-        'America/New_York',
+        'America/New_York'
       );
       expect(withTz.ascendant).not.toBeCloseTo(noTz.ascendant!, 1);
     });
@@ -183,7 +206,7 @@ describe('computeNatalChart', () => {
   // ── Sun sign spot-check ───────────────────────────────────────────────────
 
   it('Sun is in Gemini for a June 15 birth (90–119° range)', () => {
-    const sun = chart.planets.find((p) => p.name === 'Sun')!;
+    const sun = chart.planets.find(p => p.name === 'Sun')!;
     // Gemini occupies 60°–90° ecliptic; expect sun around 84° for mid-June
     expect(sun.sign).toBe('Gemini');
   });

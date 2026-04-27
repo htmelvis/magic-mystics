@@ -11,11 +11,11 @@ import {
 
 describe('getMoonPhaseName', () => {
   const cases: [number, string][] = [
-    [0,     'New Moon'],
-    [22.4,  'New Moon'],
-    [22.5,  'Waxing Crescent'],
-    [67.4,  'Waxing Crescent'],
-    [67.5,  'First Quarter'],
+    [0, 'New Moon'],
+    [22.4, 'New Moon'],
+    [22.5, 'Waxing Crescent'],
+    [67.4, 'Waxing Crescent'],
+    [67.5, 'First Quarter'],
     [112.4, 'First Quarter'],
     [112.5, 'Waxing Gibbous'],
     [157.4, 'Waxing Gibbous'],
@@ -27,7 +27,7 @@ describe('getMoonPhaseName', () => {
     [292.4, 'Last Quarter'],
     [292.5, 'Waning Crescent'],
     [337.4, 'Waning Crescent'],
-    [337.5, 'New Moon'],     // wraps back to New
+    [337.5, 'New Moon'], // wraps back to New
     [359.9, 'New Moon'],
   ];
 
@@ -37,8 +37,14 @@ describe('getMoonPhaseName', () => {
 
   it('returns one of the 8 valid phase names for any angle in [0, 360)', () => {
     const valid = [
-      'New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous',
-      'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent',
+      'New Moon',
+      'Waxing Crescent',
+      'First Quarter',
+      'Waxing Gibbous',
+      'Full Moon',
+      'Waning Gibbous',
+      'Last Quarter',
+      'Waning Crescent',
     ];
     for (let a = 0; a < 360; a += 7.3) {
       expect(valid).toContain(getMoonPhaseName(a));
@@ -50,8 +56,18 @@ describe('getMoonPhaseName', () => {
 
 describe('eclipticLonToSign', () => {
   const SIGNS = [
-    'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-    'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
   ];
 
   it('maps 0° to Aries', () => {
@@ -138,7 +154,7 @@ describe('generateLuckyColors', () => {
   it('returns colors from the correct element pool', () => {
     const colors = generateLuckyColors('Water', date, 10);
     const pool = ELEMENT_COLOR_POOLS['Water'];
-    colors.forEach((c) => expect(pool).toContain(c));
+    colors.forEach(c => expect(pool).toContain(c));
   });
 
   it('returns two distinct colors', () => {
@@ -169,10 +185,10 @@ describe('generateLuckyColors', () => {
   });
 
   it('works for all four elements', () => {
-    (['Fire', 'Earth', 'Air', 'Water'] as const).forEach((element) => {
+    (['Fire', 'Earth', 'Air', 'Water'] as const).forEach(element => {
       const colors = generateLuckyColors(element, date, 10);
       expect(colors).toHaveLength(2);
-      colors.forEach((c) => expect(ELEMENT_COLOR_POOLS[element]).toContain(c));
+      colors.forEach(c => expect(ELEMENT_COLOR_POOLS[element]).toContain(c));
     });
   });
 });
@@ -188,7 +204,7 @@ describe('generateLuckyNumbers', () => {
 
   it('all numbers are in range [1, 44]', () => {
     const nums = generateLuckyNumbers(date, 90);
-    nums.forEach((n) => {
+    nums.forEach(n => {
       expect(n).toBeGreaterThanOrEqual(1);
       expect(n).toBeLessThanOrEqual(44);
     });

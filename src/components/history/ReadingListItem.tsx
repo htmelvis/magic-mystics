@@ -38,7 +38,7 @@ function buildAccessibilityLabel(reading: ReadingRow): string {
     }
     return `Daily Draw, ${dateStr}`;
   }
-  const names = reading.drawn_cards.map((c) => c.cardName).join(', ');
+  const names = reading.drawn_cards.map(c => c.cardName).join(', ');
   return `3-Card Spread, ${names}, ${dateStr}`;
 }
 
@@ -52,9 +52,7 @@ export function ReadingListItem({ reading, onPress }: ReadingListItemProps) {
       style={({ pressed }) => [
         styles.row,
         {
-          backgroundColor: pressed
-            ? theme.colors.surface.subtle
-            : theme.colors.surface.card,
+          backgroundColor: pressed ? theme.colors.surface.subtle : theme.colors.surface.card,
           borderColor: theme.colors.border.subtle,
         },
       ]}
@@ -67,7 +65,11 @@ export function ReadingListItem({ reading, onPress }: ReadingListItemProps) {
         <View
           style={[
             styles.badge,
-            { backgroundColor: isDaily ? theme.colors.brand.purple[50] : theme.colors.brand.cosmic.sky },
+            {
+              backgroundColor: isDaily
+                ? theme.colors.brand.purple[50]
+                : theme.colors.brand.cosmic.sky,
+            },
           ]}
         >
           <Text
@@ -98,9 +100,10 @@ export function ReadingListItem({ reading, onPress }: ReadingListItemProps) {
             style={[
               styles.orientationText,
               {
-                color: first.orientation === 'reversed'
-                  ? theme.colors.tarot.orientation.reversed
-                  : theme.colors.brand.primary,
+                color:
+                  first.orientation === 'reversed'
+                    ? theme.colors.tarot.orientation.reversed
+                    : theme.colors.brand.primary,
               },
             ]}
           >
@@ -126,7 +129,7 @@ export function ReadingListItem({ reading, onPress }: ReadingListItemProps) {
         <View style={styles.ppfPreview}>
           {(['past', 'present', 'future'] as const).map((pos, i) => {
             const card =
-              reading.drawn_cards.find((c) => c.position === pos) ?? reading.drawn_cards[i];
+              reading.drawn_cards.find(c => c.position === pos) ?? reading.drawn_cards[i];
             if (!card) return null;
             return (
               <View
@@ -142,16 +145,20 @@ export function ReadingListItem({ reading, onPress }: ReadingListItemProps) {
                 <Text style={[styles.ppfPos, { color: theme.colors.text.muted }]}>
                   {pos.toUpperCase()}
                 </Text>
-                <Text style={[styles.ppfName, { color: theme.colors.text.primary }]} numberOfLines={2}>
+                <Text
+                  style={[styles.ppfName, { color: theme.colors.text.primary }]}
+                  numberOfLines={2}
+                >
                   {card.cardName}
                 </Text>
                 <Text
                   style={[
                     styles.ppfOrientation,
                     {
-                      color: card.orientation === 'reversed'
-                        ? theme.colors.tarot.orientation.reversed
-                        : theme.colors.brand.primary,
+                      color:
+                        card.orientation === 'reversed'
+                          ? theme.colors.tarot.orientation.reversed
+                          : theme.colors.brand.primary,
                     },
                   ]}
                 >
@@ -169,7 +176,10 @@ export function ReadingListItem({ reading, onPress }: ReadingListItemProps) {
           accessible
           accessibilityLabel="AI Insight available"
         >
-          <Text style={[styles.insightText, { color: theme.colors.tarot.insight.text }]} accessible={false}>
+          <Text
+            style={[styles.insightText, { color: theme.colors.tarot.insight.text }]}
+            accessible={false}
+          >
             ✦ AI Insight
           </Text>
         </View>

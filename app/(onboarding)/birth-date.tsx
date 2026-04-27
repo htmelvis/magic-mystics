@@ -64,7 +64,10 @@ export default function BirthDateScreen() {
         <Text style={[styles.progress, { color: theme.colors.brand.primary }]}>
           Step {index} of {total}
         </Text>
-        <Text style={[styles.title, { color: theme.colors.text.primary }]} accessibilityRole="header">
+        <Text
+          style={[styles.title, { color: theme.colors.text.primary }]}
+          accessibilityRole="header"
+        >
           When were you born?
         </Text>
         <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>

@@ -26,9 +26,7 @@ export function Input({
 
   return (
     <View style={[styles.container, containerStyle]}>
-      {label && (
-        <Text style={[styles.label, { color: theme.colors.text.primary }]}>{label}</Text>
-      )}
+      {label && <Text style={[styles.label, { color: theme.colors.text.primary }]}>{label}</Text>}
 
       <View
         style={[
@@ -63,7 +61,9 @@ export function Input({
       </View>
 
       {error && <Text style={[styles.error, { color: theme.colors.error.main }]}>{error}</Text>}
-      {hint && !error && <Text style={[styles.hint, { color: theme.colors.text.muted }]}>{hint}</Text>}
+      {hint && !error && (
+        <Text style={[styles.hint, { color: theme.colors.text.muted }]}>{hint}</Text>
+      )}
     </View>
   );
 }

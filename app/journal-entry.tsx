@@ -12,7 +12,12 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@hooks/useAuth';
-import { useJournal, useCreateJournal, useUpdateJournal, useDeleteJournal } from '@hooks/useJournals';
+import {
+  useJournal,
+  useCreateJournal,
+  useUpdateJournal,
+  useDeleteJournal,
+} from '@hooks/useJournals';
 import { useReflection } from '@hooks/useReflection';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { theme as staticTheme } from '@theme';
@@ -110,7 +115,18 @@ export default function JournalEntryScreen() {
       });
     }
     router.back();
-  }, [user, isEditMode, existingEntry, title, body, params.readingId, params.aiPrompt, updateJournal, createJournal, router]);
+  }, [
+    user,
+    isEditMode,
+    existingEntry,
+    title,
+    body,
+    params.readingId,
+    params.aiPrompt,
+    updateJournal,
+    createJournal,
+    router,
+  ]);
 
   const handleDelete = useCallback(() => {
     if (!existingEntry || !user) return;
@@ -127,9 +143,10 @@ export default function JournalEntryScreen() {
     ]);
   }, [existingEntry, user, deleteJournal, router]);
 
-  const entryDate = isEditMode && existingEntry
-    ? formatEntryDate(existingEntry.created_at)
-    : formatEntryDate(new Date().toISOString());
+  const entryDate =
+    isEditMode && existingEntry
+      ? formatEntryDate(existingEntry.created_at)
+      : formatEntryDate(new Date().toISOString());
 
   if (isEditMode && entryLoading) {
     return (
@@ -200,7 +217,7 @@ export default function JournalEntryScreen() {
         <TextInput
           style={[styles.titleInput, { color: theme.colors.text.primary }]}
           value={title}
-          onChangeText={(t) => setTitle(t.slice(0, TITLE_MAX))}
+          onChangeText={t => setTitle(t.slice(0, TITLE_MAX))}
           placeholder="Title (optional)"
           placeholderTextColor={theme.colors.text.muted}
           returnKeyType="next"
@@ -232,7 +249,7 @@ export default function JournalEntryScreen() {
           ref={bodyRef}
           style={[styles.bodyInput, { color: theme.colors.text.primary }]}
           value={body}
-          onChangeText={(t) => setBody(t.slice(0, BODY_MAX))}
+          onChangeText={t => setBody(t.slice(0, BODY_MAX))}
           placeholder="Continue writing here…"
           placeholderTextColor={theme.colors.text.muted}
           multiline

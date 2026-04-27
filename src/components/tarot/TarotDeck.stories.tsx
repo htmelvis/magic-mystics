@@ -7,7 +7,7 @@ const meta = {
   title: 'Tarot/TarotDeck',
   component: TarotDeck,
   decorators: [
-    (Story) => (
+    Story => (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <Story />
       </View>

@@ -10,7 +10,7 @@ const meta = {
   title: 'UI/Badge',
   component: Badge,
   decorators: [
-    (Story) => (
+    Story => (
       <View style={{ padding: 16, alignItems: 'flex-start' }}>
         <Story />
       </View>
@@ -53,7 +53,7 @@ export const Outline: Story = {
 export const AllVariants: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 16 }}>
-      {VARIANTS.map((variant) => (
+      {VARIANTS.map(variant => (
         <Badge key={variant} label={variant} variant={variant} />
       ))}
     </View>
@@ -63,7 +63,7 @@ export const AllVariants: Story = {
 export const AllSizes: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, padding: 16 }}>
-      {SIZES.map((size) => (
+      {SIZES.map(size => (
         <Badge key={size} label={size.toUpperCase()} variant="primary" size={size} />
       ))}
     </View>

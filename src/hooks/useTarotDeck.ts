@@ -31,14 +31,18 @@ async function fetchTarotDeck(): Promise<TarotCardMeta[]> {
  * is only ever one network request regardless of how many draws occur.
  */
 export function useTarotDeck() {
-  const { data: deck = [], isLoading, error } = useQuery({
+  const {
+    data: deck = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['tarot-deck'],
     queryFn: fetchTarotDeck,
     staleTime: Infinity,
     gcTime: Infinity,
   });
 
-  const cardIds = deck.map((c) => c.id);
+  const cardIds = deck.map(c => c.id);
 
   return { deck, cardIds, isLoading, error };
 }

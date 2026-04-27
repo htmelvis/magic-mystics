@@ -14,25 +14,25 @@ appId: com.edwardwieczorek.magicmystics
 - launchApp:
     clearState: true
 
-- assertVisible: "Welcome Back"
+- assertVisible: 'Welcome Back'
 
 # Navigate to sign-up
 - tapOn:
-    label: "Sign up for a new account"
+    label: 'Sign up for a new account'
 
-- assertVisible: "Create Account"
+- assertVisible: 'Create Account'
 
-- tapOn: "Email"
+- tapOn: 'Email'
 - inputText: ${TEST_NEW_EMAIL}
 - hideKeyboard
-- tapOn: "Password"
+- tapOn: 'Password'
 - inputText: ${TEST_NEW_PASSWORD}
 - hideKeyboard
 
-- tapOn: "Sign Up"
+- tapOn: 'Sign Up'
 
 # Dismiss the "Check your email" success alert
-- tapOn: "OK"
+- tapOn: 'OK'
 
 # Should arrive at onboarding welcome
-- assertVisible: "Welcome to Magic Mystics"
+- assertVisible: 'Welcome to Magic Mystics'

@@ -16,9 +16,7 @@ export default function BirthLocationScreen() {
 
   capture('screen_viewed', { screen: 'onboarding birth location' });
 
-  const [location, setLocation] = useState(
-    draft.locationApproximate ? '' : draft.birthLocation,
-  );
+  const [location, setLocation] = useState(draft.locationApproximate ? '' : draft.birthLocation);
   const [selected, setSelected] = useState<LocationSuggestion | null>(
     !draft.locationApproximate && draft.birthLat !== null && draft.birthLng !== null
       ? {
@@ -27,7 +25,7 @@ export default function BirthLocationScreen() {
           lat: draft.birthLat,
           lng: draft.birthLng,
         }
-      : null,
+      : null
   );
   const [skipped, setSkipped] = useState(draft.locationApproximate);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +44,7 @@ export default function BirthLocationScreen() {
   };
 
   const toggleSkipped = () => {
-    setSkipped((v) => {
+    setSkipped(v => {
       const next = !v;
       if (next) {
         setSelected(null);
@@ -155,8 +153,8 @@ export default function BirthLocationScreen() {
             ]}
           >
             <Text style={[styles.disclosureText, { color: theme.colors.text.secondary }]}>
-              Your sun and moon signs will still be accurate. Without a birthplace, we can't
-              compute your rising sign or house placements.
+              Your sun and moon signs will still be accurate. Without a birthplace, we can't compute
+              your rising sign or house placements.
             </Text>
           </View>
         )}

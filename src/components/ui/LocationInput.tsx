@@ -136,7 +136,7 @@ export function LocationInput({
           ) : (
             <FlatList
               data={suggestions}
-              keyExtractor={(item) => item.displayName}
+              keyExtractor={item => item.displayName}
               keyboardShouldPersistTaps="handled"
               scrollEnabled={false}
               renderItem={({ item, index }) => (
@@ -152,7 +152,10 @@ export function LocationInput({
                   accessibilityRole="button"
                   accessibilityLabel={item.displayName}
                 >
-                  <Text style={[styles.rowText, { color: theme.colors.text.primary }]} numberOfLines={1}>
+                  <Text
+                    style={[styles.rowText, { color: theme.colors.text.primary }]}
+                    numberOfLines={1}
+                  >
                     {item.displayName}
                   </Text>
                 </Pressable>

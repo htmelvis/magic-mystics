@@ -11,15 +11,15 @@ appId: com.edwardwieczorek.magicmystics
     clearState: true
 
 # Should land on sign-in (unauthenticated state)
-- assertVisible: "Welcome Back"
+- assertVisible: 'Welcome Back'
 
-- tapOn: "Email"
+- tapOn: 'Email'
 - inputText: ${TEST_EMAIL}
 
-- tapOn: "Password"
+- tapOn: 'Password'
 - inputText: ${TEST_PASSWORD}
 
-- tapOn: "Sign In"
+- tapOn: 'Sign In'
 
 # Successful sign-in lands on the Home screen
-- assertVisible: "Draw Your Daily Card"
+- assertVisible: 'Draw Your Daily Card'

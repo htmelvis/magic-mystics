@@ -135,7 +135,7 @@ function EditBirthDetailsForm({ user, userProfile }: { user: User; userProfile: 
     if (!locationUnchanged && !selectedSuggestion) {
       Alert.alert(
         'Pick a location',
-        'Please select your birthplace from the suggestions so we can update your chart accurately.',
+        'Please select your birthplace from the suggestions so we can update your chart accurately.'
       );
       return;
     }
@@ -207,7 +207,17 @@ function EditBirthDetailsForm({ user, userProfile }: { user: User; userProfile: 
     } finally {
       setSaving(false);
     }
-  }, [user, userProfile, date, time, location, selectedSuggestion, originalLocation, queryClient, router]);
+  }, [
+    user,
+    userProfile,
+    date,
+    time,
+    location,
+    selectedSuggestion,
+    originalLocation,
+    queryClient,
+    router,
+  ]);
 
   return (
     <Screen>

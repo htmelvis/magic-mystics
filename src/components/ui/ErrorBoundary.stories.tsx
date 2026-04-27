@@ -12,7 +12,7 @@ const meta = {
   title: 'UI/ErrorBoundary',
   component: ErrorBoundary,
   decorators: [
-    (Story) => (
+    Story => (
       <View style={{ flex: 1, padding: 16 }}>
         <Story />
       </View>

@@ -51,7 +51,7 @@ export function useCreateJournal() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (payload: InsertJournalPayload) => insertJournal(payload),
-    onSuccess: (data) => {
+    onSuccess: data => {
       qc.invalidateQueries({ queryKey: ['journals', data.user_id] });
     },
   });
@@ -62,7 +62,7 @@ export function useUpdateJournal() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateJournalPayload }) =>
       updateJournal(id, payload),
-    onSuccess: (data) => {
+    onSuccess: data => {
       qc.invalidateQueries({ queryKey: ['journals', data.user_id] });
       qc.invalidateQueries({ queryKey: ['journal', data.id] });
     },

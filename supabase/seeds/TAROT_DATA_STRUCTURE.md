@@ -10,14 +10,14 @@ Our tarot card database structure is designed to support rich, AI-powered readin
 
 This migration adds the following columns to the `tarot_cards` table:
 
-| Column | Type | Purpose |
-| -------- | ------ | --------- |
-| `upright_summary` | TEXT | Short 1-2 sentence meaning for quick reference |
-| `reversed_summary` | TEXT | Short 1-2 sentence reversed meaning |
-| `upright_meaning_long` | TEXT | Detailed 2-3 paragraph interpretation |
-| `reversed_meaning_long` | TEXT | Detailed 2-3 paragraph reversed interpretation |
-| `imagery_description` | TEXT | Visual description of card from Pictorial Key |
-| `symbolism` | JSONB | Structured symbolic elements (see below) |
+| Column                  | Type  | Purpose                                        |
+| ----------------------- | ----- | ---------------------------------------------- |
+| `upright_summary`       | TEXT  | Short 1-2 sentence meaning for quick reference |
+| `reversed_summary`      | TEXT  | Short 1-2 sentence reversed meaning            |
+| `upright_meaning_long`  | TEXT  | Detailed 2-3 paragraph interpretation          |
+| `reversed_meaning_long` | TEXT  | Detailed 2-3 paragraph reversed interpretation |
+| `imagery_description`   | TEXT  | Visual description of card from Pictorial Key  |
+| `symbolism`             | JSONB | Structured symbolic elements (see below)       |
 
 ### Symbolism JSONB Structure
 
@@ -50,11 +50,11 @@ The `symbolism` column uses a structured JSON format:
 ### 1. Quick Card Display (Mobile App)
 
 ```sql
-SELECT 
-  name, 
-  upright_summary, 
-  reversed_summary, 
-  keywords_upright, 
+SELECT
+  name,
+  upright_summary,
+  reversed_summary,
+  keywords_upright,
   keywords_reversed
 FROM tarot_cards
 WHERE id = $1;
@@ -63,9 +63,9 @@ WHERE id = $1;
 ### 2. Detailed Reading View
 
 ```sql
-SELECT 
-  name, 
-  upright_meaning_long, 
+SELECT
+  name,
+  upright_meaning_long,
   reversed_meaning_long,
   imagery_description,
   symbolism
@@ -101,7 +101,7 @@ ${card.symbolism.symbols?.join(', ')}
 
 Style: Rider-Waite tarot deck, mystical, detailed
   `.trim();
-  
+
   return await generateImage(prompt);
 };
 ```
@@ -201,7 +201,7 @@ Minor Arcana will follow the same pattern with suit-specific symbolism:
 ## Example Query: Full Reading Context
 
 ```sql
-SELECT 
+SELECT
   tc.name,
   tc.arcana,
   tc.suit,

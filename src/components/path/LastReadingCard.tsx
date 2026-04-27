@@ -6,9 +6,9 @@ import { spacing, borderRadius } from '@theme';
 import type { ReadingRow } from '@hooks/useReadings';
 
 const SPREAD_LABELS: Record<string, string> = {
-  'daily': 'Daily Draw',
+  daily: 'Daily Draw',
   'past-present-future': 'Past · Present · Future',
-  'relationship': 'Relationship',
+  relationship: 'Relationship',
   'situation-obstacle-solution': 'Situation',
   'mind-body-spirit': 'Mind Body Spirit',
   'accept-embrace-let-go': 'Accept & Let Go',
@@ -59,8 +59,24 @@ export function LastReadingCard({ reading, isLoading, onPress }: LastReadingCard
         <Text style={[styles.sectionLabel, { color: theme.colors.text.muted }]}>LAST READING</Text>
 
         <View style={styles.row}>
-          <View style={[styles.badge, { backgroundColor: isDaily ? theme.colors.brand.purple[50] : theme.colors.brand.cosmic.sky }]}>
-            <Text style={[styles.badgeText, { color: isDaily ? theme.colors.brand.purple[600] : theme.colors.brand.cosmic.ocean }]}>
+          <View
+            style={[
+              styles.badge,
+              {
+                backgroundColor: isDaily
+                  ? theme.colors.brand.purple[50]
+                  : theme.colors.brand.cosmic.sky,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.badgeText,
+                {
+                  color: isDaily ? theme.colors.brand.purple[600] : theme.colors.brand.cosmic.ocean,
+                },
+              ]}
+            >
               {label}
             </Text>
           </View>
@@ -92,7 +108,8 @@ export function LastReadingCard({ reading, isLoading, onPress }: LastReadingCard
 
         {!isDaily && reading.drawn_cards.length > 1 && (
           <Text style={[styles.extraCards, { color: theme.colors.text.muted }]}>
-            +{reading.drawn_cards.length - 1} more {reading.drawn_cards.length - 1 === 1 ? 'card' : 'cards'}
+            +{reading.drawn_cards.length - 1} more{' '}
+            {reading.drawn_cards.length - 1 === 1 ? 'card' : 'cards'}
           </Text>
         )}
 

@@ -18,10 +18,10 @@ export const config = createConfig({
       primary700: colors.brand.primaryDark,
       primary800: colors.brand.primaryDark,
       primary900: colors.brand.primaryDark,
-      
+
       // Secondary colors
       secondary500: colors.brand.secondary,
-      
+
       // Text colors
       textLight0: colors.text.inverse,
       textLight50: colors.text.disabled,
@@ -34,20 +34,20 @@ export const config = createConfig({
       textLight700: colors.text.primary,
       textLight800: colors.text.primary,
       textLight900: colors.text.primary,
-      
+
       // Background colors
       backgroundLight0: colors.surface.card,
       backgroundLight50: colors.surface.background,
       backgroundLight100: colors.surface.subtle,
       backgroundLight200: colors.surface.elevated,
-      
-      // Border colors  
+
+      // Border colors
       borderLight0: colors.border.light,
       borderLight100: colors.border.light,
       borderLight200: colors.border.main,
       borderLight300: colors.border.main,
       borderLight400: colors.border.dark,
-      
+
       // Semantic colors
       success500: colors.success.main,
       success600: colors.success.dark,
@@ -57,7 +57,7 @@ export const config = createConfig({
       error600: colors.error.dark,
       info500: colors.info.main,
       info600: colors.info.dark,
-      
+
       // Gray scale
       gray50: colors.gray[50],
       gray100: colors.gray[100],

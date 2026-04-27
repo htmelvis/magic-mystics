@@ -47,7 +47,9 @@ export default function ResetPasswordScreen() {
     <Screen scroll={false} padding={false}>
       <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
         <View style={styles.header}>
-          <Text style={styles.emoji} accessible={false}>🔐</Text>
+          <Text style={styles.emoji} accessible={false}>
+            🔐
+          </Text>
           <Text style={[styles.title, { color: theme.colors.brand.primary }]}>New Password</Text>
           <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
             Choose a strong password for your account.

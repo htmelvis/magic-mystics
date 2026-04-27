@@ -89,13 +89,13 @@ function buildAvailableDeck<T>(allIds: T[], excludeIds: T[]): T[] {
   if (excludeIds.length === 0) return allIds;
   // Use string coercion for the Set so both number and string IDs compare correctly
   const excluded = new Set(excludeIds.map(String));
-  const available = allIds.filter((id) => !excluded.has(String(id)));
+  const available = allIds.filter(id => !excluded.has(String(id)));
   return available.length > 0 ? available : allIds;
 }
 
 function pickOrientation(
   allowReversals: boolean,
-  randomInt: (max: number) => number,
+  randomInt: (max: number) => number
 ): TarotCardOrientation {
   if (!allowReversals) return 'upright';
   return randomInt(2) === 1 ? 'reversed' : 'upright';
@@ -119,7 +119,7 @@ export function drawDailyCard<T>(
   allCardIds: T[],
   userId: string,
   date: Date = new Date(),
-  options: DrawOptions<T> = {},
+  options: DrawOptions<T> = {}
 ): DrawResult<T> {
   const { allowReversals = true, excludeIds = [] } = options;
 
@@ -168,7 +168,7 @@ export function drawCard<T>(allCardIds: T[], options: DrawOptions<T> = {}): Draw
 export function drawSpread<T>(
   allCardIds: T[],
   count: number,
-  options: DrawOptions<T> = {},
+  options: DrawOptions<T> = {}
 ): DrawResult<T>[] {
   const { allowReversals = true, excludeIds = [] } = options;
 
@@ -180,7 +180,7 @@ export function drawSpread<T>(
 
   const shuffled = fisherYates(deck, cryptoRandomInt);
 
-  return shuffled.slice(0, count).map((cardId) => ({
+  return shuffled.slice(0, count).map(cardId => ({
     cardId,
     orientation: pickOrientation(allowReversals, cryptoRandomInt),
   }));

@@ -13,24 +13,24 @@ appId: com.edwardwieczorek.magicmystics
 - runFlow: ../utils/sign-in.yaml
 
 # ── Home tab (already here after sign-in) ────────────────────────────────────
-- assertVisible: "Draw Your Daily Card"
+- assertVisible: 'Draw Your Daily Card'
 
 # ── History tab ──────────────────────────────────────────────────────────────
 - tapOn:
-    label: "History tab"
+    label: 'History tab'
 
-- assertVisible: "Reading History"
+- assertVisible: 'Reading History'
 
 # ── Profile tab ──────────────────────────────────────────────────────────────
 - tapOn:
-    label: "Profile tab"
+    label: 'Profile tab'
 
-- assertVisible: "Profile"
-- assertVisible: "Zodiac Signs"
-- assertVisible: "Subscription"
+- assertVisible: 'Profile'
+- assertVisible: 'Zodiac Signs'
+- assertVisible: 'Subscription'
 
 # ── Back to Home tab ─────────────────────────────────────────────────────────
 - tapOn:
-    label: "Home tab"
+    label: 'Home tab'
 
-- assertVisible: "Draw Your Daily Card"
+- assertVisible: 'Draw Your Daily Card'

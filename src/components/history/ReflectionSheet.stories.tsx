@@ -7,7 +7,7 @@ const meta = {
   title: 'History/ReflectionSheet',
   component: ReflectionSheet,
   decorators: [
-    (Story) => (
+    Story => (
       <View style={{ flex: 1 }}>
         <Story />
       </View>

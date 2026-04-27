@@ -41,7 +41,9 @@ export default function SignUpScreen() {
     <Screen scroll={false} padding={false}>
       <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
         <View style={styles.header}>
-          <Text style={styles.emoji} accessible={false}>✨🔮✨</Text>
+          <Text style={styles.emoji} accessible={false}>
+            ✨🔮✨
+          </Text>
           <Text style={[styles.title, { color: theme.colors.brand.primary }]}>Create Account</Text>
           <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
             Start your mystical journey today

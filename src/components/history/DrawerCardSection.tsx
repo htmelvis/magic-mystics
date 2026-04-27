@@ -62,7 +62,11 @@ export function DrawerCardSection({
         <Text
           style={[
             styles.orientText,
-            { color: isReversed ? theme.colors.tarot.orientation.reversed : theme.colors.brand.primary },
+            {
+              color: isReversed
+                ? theme.colors.tarot.orientation.reversed
+                : theme.colors.brand.primary,
+            },
           ]}
         >
           {isReversed ? '↓ Reversed' : '↑ Upright'}
@@ -149,14 +153,24 @@ export function DrawerCardSection({
                   style={[
                     styles.keyword,
                     isReversed
-                      ? { backgroundColor: theme.colors.error.light, borderColor: theme.colors.error.main }
-                      : { backgroundColor: theme.colors.brand.purple[50], borderColor: theme.colors.brand.purple[100] },
+                      ? {
+                          backgroundColor: theme.colors.error.light,
+                          borderColor: theme.colors.error.main,
+                        }
+                      : {
+                          backgroundColor: theme.colors.brand.purple[50],
+                          borderColor: theme.colors.brand.purple[100],
+                        },
                   ]}
                 >
                   <Text
                     style={[
                       styles.keywordText,
-                      { color: isReversed ? theme.colors.error.main : theme.colors.brand.purple[600] },
+                      {
+                        color: isReversed
+                          ? theme.colors.error.main
+                          : theme.colors.brand.purple[600],
+                      },
                     ]}
                   >
                     {kw}

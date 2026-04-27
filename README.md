@@ -70,7 +70,7 @@ magic-mystics/
 - **subscriptions**: User subscription status and tiers
 - **readings**: Reading history with drawn cards
 - **reflections**: User reflections on readings
-  
+
 See `src/types/database.ts` for full schema types.
 
 ## Development
@@ -87,13 +87,21 @@ The project uses TypeScript in strict mode with path aliases:
 
 ### Code Quality
 
-- **ESLint**: Linting with Expo and Prettier rules
+- **ESLint**: Linting with Expo and Prettier rules (flat config in `eslint.config.js`)
 - **Prettier**: Code formatting (single quotes, 100 char width)
 - **TypeScript**: Strict mode enabled
 
+Run locally:
+
+```bash
+npm run lint        # report issues
+npm run lint:fix    # auto-fix what eslint can
+npm run format      # prettier write
+```
+
 ## Contributing
 
-This is a personal project, but feel free to fork and customize!
+This is a personal project.
 
 ## License
 

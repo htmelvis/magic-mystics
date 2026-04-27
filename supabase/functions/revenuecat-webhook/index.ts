@@ -86,8 +86,8 @@ Deno.serve(async (req: Request) => {
       : isRevoke
         ? { tier: 'free', is_active: false, expiry_date: expiryDate }
         : isCancellation
-          // Keep is_active true — user retains access until expiry_date.
-          ? { tier: 'premium', is_active: true, expiry_date: expiryDate }
+          ? // Keep is_active true — user retains access until expiry_date.
+            { tier: 'premium', is_active: true, expiry_date: expiryDate }
           : null;
 
     if (!update) {

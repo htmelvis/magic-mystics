@@ -36,7 +36,9 @@ export default function ForgotPasswordScreen() {
       <Screen scroll={false} padding={false}>
         <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
           <View style={styles.header}>
-            <Text style={styles.emoji} accessible={false}>✉️</Text>
+            <Text style={styles.emoji} accessible={false}>
+              ✉️
+            </Text>
             <Text style={[styles.title, { color: theme.colors.brand.primary }]}>
               Check Your Email
             </Text>
@@ -44,7 +46,12 @@ export default function ForgotPasswordScreen() {
               We sent a password reset link to{'\n'}
               <Text style={{ color: theme.colors.brand.primary, fontWeight: '600' }}>{email}</Text>
             </Text>
-            <Text style={[styles.subtitle, { color: theme.colors.text.secondary, marginTop: spacing.md }]}>
+            <Text
+              style={[
+                styles.subtitle,
+                { color: theme.colors.text.secondary, marginTop: spacing.md },
+              ]}
+            >
               Click the link in the email to set a new password.
             </Text>
           </View>
@@ -64,7 +71,9 @@ export default function ForgotPasswordScreen() {
     <Screen scroll={false} padding={false}>
       <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
         <View style={styles.header}>
-          <Text style={styles.emoji} accessible={false}>🔑</Text>
+          <Text style={styles.emoji} accessible={false}>
+            🔑
+          </Text>
           <Text style={[styles.title, { color: theme.colors.brand.primary }]}>Reset Password</Text>
           <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
             Enter your email and we'll send you a link to reset your password.

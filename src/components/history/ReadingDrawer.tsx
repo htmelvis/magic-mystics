@@ -131,7 +131,7 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
   useEffect(() => {
     if (!reading) return;
     setCardDetails({});
-    const ids = reading.drawn_cards.map((c) => c.cardId);
+    const ids = reading.drawn_cards.map(c => c.cardId);
     supabase
       .from('tarot_cards')
       .select('*')
@@ -139,7 +139,9 @@ export function ReadingDrawer({ reading, onClose }: ReadingDrawerProps) {
       .then(({ data }) => {
         if (!data) return;
         const map: Record<number, Record<string, unknown>> = {};
-        data.forEach((row) => { map[row.id] = row; });
+        data.forEach(row => {
+          map[row.id] = row;
+        });
         setCardDetails(map);
       });
   }, [reading]);

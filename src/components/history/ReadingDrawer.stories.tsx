@@ -83,7 +83,7 @@ const meta = {
   title: 'History/ReadingDrawer',
   component: ReadingDrawer,
   decorators: [
-    (Story) => (
+    Story => (
       <View style={{ flex: 1, backgroundColor: '#f3f4f6' }}>
         <Story />
       </View>
@@ -152,9 +152,7 @@ function ReflectionDisplay({ feeling, alignment, content }: ReflectionDisplayPro
           </Text>
         </View>
       </View>
-      {content.length > 0 && (
-        <Text style={reflectionStyles.content}>{content}</Text>
-      )}
+      {content.length > 0 && <Text style={reflectionStyles.content}>{content}</Text>}
     </View>
   );
 }
@@ -213,9 +211,7 @@ const reflectionStyles = StyleSheet.create({
 });
 
 export const ReflectionPositiveBothNoText: StoryObj = {
-  render: () => (
-    <ReflectionDisplay feeling="positive" alignment="positive" content="" />
-  ),
+  render: () => <ReflectionDisplay feeling="positive" alignment="positive" content="" />,
 };
 
 export const ReflectionMixedWithText: StoryObj = {
@@ -239,7 +235,5 @@ export const ReflectionNegativeBothLongText: StoryObj = {
 };
 
 export const ReflectionSentimentsOnlyNullContent: StoryObj = {
-  render: () => (
-    <ReflectionDisplay feeling="neutral" alignment="positive" content="" />
-  ),
+  render: () => <ReflectionDisplay feeling="neutral" alignment="positive" content="" />,
 };

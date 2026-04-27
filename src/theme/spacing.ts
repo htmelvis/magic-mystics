@@ -1,6 +1,6 @@
 /**
  * Spacing scale and layout constants
- * 
+ *
  * Based on 4px baseline grid for consistency
  */
 
@@ -9,13 +9,13 @@ export const spacing = {
   unit: 4,
 
   // Spacing scale
-  xxs: 4,   // 4px
-  xs: 8,    // 8px
-  sm: 12,   // 12px
-  md: 16,   // 16px
-  lg: 20,   // 20px
-  xl: 24,   // 24px
-  xxl: 32,  // 32px
+  xxs: 4, // 4px
+  xs: 8, // 8px
+  sm: 12, // 12px
+  md: 16, // 16px
+  lg: 20, // 20px
+  xl: 24, // 24px
+  xxl: 32, // 32px
   xxxl: 40, // 40px
 
   // Specific spacing tokens

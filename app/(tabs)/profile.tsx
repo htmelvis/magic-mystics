@@ -1,5 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Pressable, Alert, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Pressable,
+  Alert,
+  TouchableOpacity,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
@@ -150,7 +158,9 @@ export default function ProfileScreen() {
           <ZodiacAvatar sign={userProfile.sunSign as ZodiacSign} size={56} />
         )}
         <View style={styles.profileHeaderText}>
-          <Text style={[styles.title, { color: theme.colors.text.primary }]}>{userProfile?.displayName || 'Profile'}</Text>
+          <Text style={[styles.title, { color: theme.colors.text.primary }]}>
+            {userProfile?.displayName || 'Profile'}
+          </Text>
           <Text style={[styles.email, { color: theme.colors.text.secondary }]}>{user?.email}</Text>
         </View>
         <TouchableOpacity
@@ -166,7 +176,9 @@ export default function ProfileScreen() {
       {/* Tarot card associated with sun sign */}
       {userProfile?.tarotCard && (
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>Your Tarot Card</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
+            Your Tarot Card
+          </Text>
           <Card variant="outlined">
             <Text style={[styles.tarotCardName, { color: theme.colors.brand.primaryDark }]}>
               {userProfile.tarotCard.name}
@@ -194,7 +206,9 @@ export default function ProfileScreen() {
         accessibilityHint="Opens full natal chart"
       >
         <View style={styles.sectionHeaderRow}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>Natal Chart</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
+            Natal Chart
+          </Text>
           <Text style={[styles.sectionChevron, { color: theme.colors.brand.primary }]}>
             View Full →
           </Text>

@@ -10,7 +10,8 @@ const SAMPLE_DATA: DailyMetaphysical = {
   lucky_numbers: [3, 7, 12, 28],
   lucky_colors: ['violet', 'gold', 'midnight blue'],
   energy_theme: 'Clarity & Inner Vision',
-  advice: 'Trust your intuition today. The full moon illuminates what has been hidden, bringing insight to long-standing questions.',
+  advice:
+    'Trust your intuition today. The full moon illuminates what has been hidden, bringing insight to long-standing questions.',
   moon_sign: { name: 'Scorpio', symbol: '♏', element: 'water' },
 };
 
@@ -29,7 +30,7 @@ const meta = {
   title: 'Home/CosmicWeatherCard',
   component: CosmicWeatherCard,
   decorators: [
-    (Story) => (
+    Story => (
       <View style={{ padding: 16 }}>
         <Story />
       </View>

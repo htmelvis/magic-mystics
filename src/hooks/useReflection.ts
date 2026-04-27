@@ -26,7 +26,10 @@ interface UseReflectionResult {
   save: (payload: SavePayload) => Promise<void>;
 }
 
-export function useReflection(readingId: string | null, userId: string | null): UseReflectionResult {
+export function useReflection(
+  readingId: string | null,
+  userId: string | null
+): UseReflectionResult {
   const [reflection, setReflection] = useState<Reflection | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -55,7 +58,9 @@ export function useReflection(readingId: string | null, userId: string | null): 
         setIsLoading(false);
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [readingId, userId]);
 
   const save = useCallback(
