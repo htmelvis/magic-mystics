@@ -16,9 +16,9 @@ import { useSubscription } from '@hooks/useSubscription';
 import { useUpgradeSheet } from '@/context/UpgradeSheetContext';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { NatalChartWheel } from '@components/ui';
-import { computeNatalChart, FREE_PLANETS, PREMIUM_PLANETS } from '@lib/astrology/natal-chart';
+import { computeNatalChart, FREE_PLANETS } from '@lib/astrology/natal-chart';
 import { supabase } from '@lib/supabase/client';
-import { spacing, borderRadius } from '@theme';
+import { borderRadius } from '@theme';
 import type { StoredNatalChart } from '@lib/astrology/natal-chart';
 
 const FREE_SET = new Set<string>(FREE_PLANETS);

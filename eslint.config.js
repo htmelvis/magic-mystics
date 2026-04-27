@@ -8,6 +8,7 @@ module.exports = [
     rules: {
       'prettier/prettier': 'warn',
       'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'react/no-unescaped-entities': 'off',
     },
   },
   {
@@ -27,6 +28,9 @@ module.exports = [
       'ios/',
       'babel.config.js',
       'metro.config.js',
+      'supabase/',
+      '.rnstorybook/',
+      'worker/',
     ],
   },
 ];

@@ -55,6 +55,7 @@ export function Toast({
     return () => {
       if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const panResponder = useRef(

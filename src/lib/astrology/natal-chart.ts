@@ -13,7 +13,9 @@
  *  - VSOP87B data files export `{ default: data }` — must use .default
  */
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+import type { ZodiacSign } from './calculate-signs';
+
+/* eslint-disable @typescript-eslint/no-require-imports */
 const {
   julian,
   solar,
@@ -24,8 +26,6 @@ const {
   sidereal,
   pluto: plutoModule,
 } = require('astronomia');
-
-/* eslint-disable @typescript-eslint/no-require-imports */
 const vsop87Bearth = require('astronomia/data/vsop87Bearth').default;
 const vsop87Bmercury = require('astronomia/data/vsop87Bmercury').default;
 const vsop87Bvenus = require('astronomia/data/vsop87Bvenus').default;
@@ -35,8 +35,6 @@ const vsop87Bsaturn = require('astronomia/data/vsop87Bsaturn').default;
 const vsop87Buranus = require('astronomia/data/vsop87Buranus').default;
 const vsop87Bneptune = require('astronomia/data/vsop87Bneptune').default;
 /* eslint-enable @typescript-eslint/no-require-imports */
-
-import type { ZodiacSign } from './calculate-signs';
 
 const RAD2DEG = 180 / Math.PI;
 

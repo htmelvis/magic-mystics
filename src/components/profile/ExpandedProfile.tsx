@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { spacing } from '@theme';
-import { Badge, ZodiacAvatar, ZodiacAvatarPlaceholder } from '@components/ui';
+import { ZodiacAvatar, ZodiacAvatarPlaceholder } from '@components/ui';
 import { ZodiacSign } from '@/lib/astrology/calculate-signs';
 import { UserProfile } from '@/types/user';
 import { useAppTheme } from '@/hooks/useAppTheme';

@@ -20,7 +20,6 @@ import {
 } from '@hooks/useJournals';
 import { useReflection } from '@hooks/useReflection';
 import { useAppTheme } from '@/hooks/useAppTheme';
-import { theme as staticTheme } from '@theme';
 
 const BODY_MAX = 10_000;
 const TITLE_MAX = 120;

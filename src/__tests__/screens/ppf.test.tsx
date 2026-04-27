@@ -7,8 +7,9 @@
  */
 
 import React from 'react';
-import { render, act, waitFor } from '@testing-library/react-native';
+import { render, act, waitFor, fireEvent } from '@testing-library/react-native';
 import { Animated } from 'react-native';
+import PPFScreen from '../../../app/ppf';
 
 // ── TarotDeck mock — captures onShuffleComplete so tests can fire it ──────────
 
@@ -20,6 +21,8 @@ jest.mock('@components/tarot', () => ({
     return null;
   },
   TarotCard: () => null,
+  TiltCard: () => null,
+  AIInsightSection: () => null,
 }));
 
 // ── Supabase mock ─────────────────────────────────────────────────────────────
@@ -108,9 +111,25 @@ jest.mock('@hooks/useReflection', () => ({
   }),
 }));
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
+jest.mock('@hooks/useSubscription', () => ({
+  useSubscription: () => ({ isPremium: false, isLoading: false }),
+}));
 
-import PPFScreen from '../../../app/ppf';
+jest.mock('@hooks/useGenerateInsight', () => ({
+  useGenerateInsight: () => ({ mutate: jest.fn(), isPending: false }),
+}));
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+// PPFScreen starts in the 'select' phase; TarotDeck only renders after the user
+// presses "Begin Reading". Call this after render() to advance to the shuffle phase.
+async function beginReading(utils: ReturnType<typeof render>) {
+  await act(async () => {
+    fireEvent.press(utils.getByLabelText('Begin reading'));
+  });
+}
+
+// ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('PPFScreen', () => {
   beforeEach(() => {
@@ -144,7 +163,8 @@ describe('PPFScreen', () => {
   });
 
   it('inserts exactly one reading when the shuffle animation completes', async () => {
-    render(<PPFScreen />);
+    const utils = render(<PPFScreen />);
+    await beginReading(utils);
 
     await act(async () => {
       capturedOnShuffleComplete?.();
@@ -154,7 +174,8 @@ describe('PPFScreen', () => {
   });
 
   it('inserts with the correct user_id and spread_type', async () => {
-    render(<PPFScreen />);
+    const utils = render(<PPFScreen />);
+    await beginReading(utils);
 
     await act(async () => {
       capturedOnShuffleComplete?.();
@@ -169,7 +190,8 @@ describe('PPFScreen', () => {
   });
 
   it('inserts drawn_cards with past / present / future positions', async () => {
-    render(<PPFScreen />);
+    const utils = render(<PPFScreen />);
+    await beginReading(utils);
 
     await act(async () => {
       capturedOnShuffleComplete?.();
@@ -181,7 +203,8 @@ describe('PPFScreen', () => {
   });
 
   it('fetches all 3 card rows in parallel before inserting', async () => {
-    render(<PPFScreen />);
+    const utils = render(<PPFScreen />);
+    await beginReading(utils);
 
     await act(async () => {
       capturedOnShuffleComplete?.();
@@ -193,7 +216,8 @@ describe('PPFScreen', () => {
   // ── Duplicate prevention ─────────────────────────────────────────────────────
 
   it('does not insert a second reading if onShuffleComplete fires again', async () => {
-    render(<PPFScreen />);
+    const utils = render(<PPFScreen />);
+    await beginReading(utils);
 
     await act(async () => {
       capturedOnShuffleComplete?.();
@@ -209,7 +233,8 @@ describe('PPFScreen', () => {
 
   it('calls drawSpread with the full deck and count 3', async () => {
     const { drawSpread } = jest.requireMock('@lib/tarot/draw');
-    render(<PPFScreen />);
+    const utils = render(<PPFScreen />);
+    await beginReading(utils);
 
     await act(async () => {
       capturedOnShuffleComplete?.();
@@ -223,28 +248,30 @@ describe('PPFScreen', () => {
   it('shows an error when the reading insert fails', async () => {
     mockInsertSingle.mockResolvedValue({ data: null, error: { message: 'DB connection failed' } });
 
-    const { getByText } = render(<PPFScreen />);
+    const utils = render(<PPFScreen />);
+    await beginReading(utils);
 
     await act(async () => {
       capturedOnShuffleComplete?.();
     });
 
     await waitFor(() => {
-      expect(getByText(/DB connection failed/)).toBeTruthy();
+      expect(utils.getByText(/DB connection failed/)).toBeTruthy();
     });
   });
 
   it('shows an error when a card fetch fails', async () => {
     mockCardSingle.mockResolvedValue({ data: null, error: { message: 'Card not found' } });
 
-    const { getByText } = render(<PPFScreen />);
+    const utils = render(<PPFScreen />);
+    await beginReading(utils);
 
     await act(async () => {
       capturedOnShuffleComplete?.();
     });
 
     await waitFor(() => {
-      expect(getByText(/Card not found/)).toBeTruthy();
+      expect(utils.getByText(/Card not found/)).toBeTruthy();
     });
   });
 

@@ -1,3 +1,5 @@
+import { drawDailyCard, drawCard, drawSpread } from '@lib/tarot/draw';
+
 // expo-crypto is mocked below because jest runs in Node, not on device.
 // The mock makes getRandomValues fill a Uint32Array with incrementing values
 // so tests are deterministic without needing actual crypto entropy.
@@ -7,8 +9,6 @@ jest.mock('expo-crypto', () => ({
     return buf;
   },
 }));
-
-import { drawDailyCard, drawCard, drawSpread } from '@lib/tarot/draw';
 
 const DECK = Array.from({ length: 78 }, (_, i) => i + 1); // IDs 1–78
 const USER_ID = 'user-abc-123';
