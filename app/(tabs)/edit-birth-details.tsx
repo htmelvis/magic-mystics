@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
+import type { User } from '@supabase/supabase-js';
 import { useAuth } from '@hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAppTheme } from '@/hooks/useAppTheme';
@@ -25,6 +26,7 @@ import {
 import { computeNatalChart } from '@lib/astrology/natal-chart';
 import { getTimezone } from '@lib/geocoding/geocode';
 import type { LocationSuggestion } from '@lib/geocoding/geocode';
+import type { UserProfile } from '@/types/user';
 
 const MIN_DATE = new Date(1900, 0, 1);
 
@@ -49,15 +51,39 @@ function formatTimeLabel(date: Date): string {
 
 export default function EditBirthDetailsScreen() {
   const router = useRouter();
-  const { user } = useAuth();
-  const { userProfile } = useUserProfile(user?.id);
+  const theme = useAppTheme();
+  const { user, loading: authLoading } = useAuth();
+  const { userProfile, loading: profileLoading } = useUserProfile(user?.id);
+
+  const settled = !authLoading && !profileLoading;
+  const missing = settled && (!user || !userProfile);
+
+  useEffect(() => {
+    if (missing) router.back();
+  }, [missing, router]);
+
+  if (!settled || !user || !userProfile) {
+    return (
+      <Screen>
+        <View style={styles.loadingCenter}>
+          <ActivityIndicator color={theme.colors.brand.primary} size="large" />
+        </View>
+      </Screen>
+    );
+  }
+
+  return <EditBirthDetailsForm user={user} userProfile={userProfile} />;
+}
+
+function EditBirthDetailsForm({ user, userProfile }: { user: User; userProfile: UserProfile }) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const theme = useAppTheme();
 
-  const originalLocation = userProfile?.birthLocation ?? '';
-  const [date, setDate] = useState(() => parseBirthDate(userProfile?.birthDate ?? null));
+  const originalLocation = userProfile.birthLocation ?? '';
+  const [date, setDate] = useState(() => parseBirthDate(userProfile.birthDate));
   const [showDatePicker, setShowDatePicker] = useState(Platform.OS === 'ios');
-  const [time, setTime] = useState(() => parseBirthTime(userProfile?.birthTime ?? null));
+  const [time, setTime] = useState(() => parseBirthTime(userProfile.birthTime));
   const [showTimePicker, setShowTimePicker] = useState(Platform.OS === 'ios');
   const [location, setLocation] = useState(originalLocation);
   const [selectedSuggestion, setSelectedSuggestion] = useState<LocationSuggestion | null>(null);
@@ -94,8 +120,6 @@ export default function EditBirthDetailsScreen() {
   };
 
   const handleSave = useCallback(async () => {
-    if (!user) return;
-
     const locError = validateLocation(location);
     if (locError) {
       setLocationError(locError);
@@ -135,8 +159,8 @@ export default function EditBirthDetailsScreen() {
 
       // Pick coords: either the freshly selected suggestion or the stored values
       // (when the user didn't touch the location field).
-      const birthLat = selectedSuggestion?.lat ?? userProfile?.birthLat ?? null;
-      const birthLng = selectedSuggestion?.lng ?? userProfile?.birthLng ?? null;
+      const birthLat = selectedSuggestion?.lat ?? userProfile.birthLat ?? null;
+      const birthLng = selectedSuggestion?.lng ?? userProfile.birthLng ?? null;
       const birthLocation = selectedSuggestion?.displayName ?? location.trim();
 
       const timezone =
@@ -183,7 +207,7 @@ export default function EditBirthDetailsScreen() {
     } finally {
       setSaving(false);
     }
-  }, [user, date, time, location, selectedSuggestion, originalLocation, userProfile, queryClient, router]);
+  }, [user, userProfile, date, time, location, selectedSuggestion, originalLocation, queryClient, router]);
 
   return (
     <Screen>
@@ -318,6 +342,11 @@ export default function EditBirthDetailsScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingCenter: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   scrollContent: {
     paddingBottom: 40,
     gap: 24,
