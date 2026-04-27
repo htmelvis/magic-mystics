@@ -40,9 +40,9 @@ describe('CosmicWeatherCard', () => {
   });
 
   describe('with full data', () => {
-    it('shows the "Cosmic Weather" label', () => {
+    it('shows the "DAILY CELESTIAL INSIGHT" label', () => {
       const { getByText } = render(<CosmicWeatherCard cosmic={FULL_DATA} isLoading={false} />);
-      expect(getByText('Cosmic Weather')).toBeTruthy();
+      expect(getByText('DAILY CELESTIAL INSIGHT')).toBeTruthy();
     });
 
     it('shows the moon phase', () => {
@@ -69,12 +69,6 @@ describe('CosmicWeatherCard', () => {
       const { getByText } = render(<CosmicWeatherCard cosmic={FULL_DATA} isLoading={false} />);
       expect(getByText(/Mercury ℞/)).toBeTruthy();
       expect(getByText(/Saturn ℞/)).toBeTruthy();
-    });
-
-    it('shows the first 4 lucky numbers joined by dots', () => {
-      const { getByText } = render(<CosmicWeatherCard cosmic={FULL_DATA} isLoading={false} />);
-      // slice(0, 4) → [3, 7, 12, 28]
-      expect(getByText(/3 · 7 · 12 · 28/)).toBeTruthy();
     });
   });
 

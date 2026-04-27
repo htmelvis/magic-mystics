@@ -1,6 +1,7 @@
 /** @type {import('jest').Config} */
 module.exports = {
   preset: 'jest-expo',
+  setupFilesAfterEnv: ['./jest.setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@components/(.*)$': '<rootDir>/src/components/$1',
@@ -10,6 +11,8 @@ module.exports = {
     '^@theme$': '<rootDir>/src/theme',
     '^react-native-purchases$': '<rootDir>/src/__mocks__/react-native-purchases.ts',
     '^posthog-react-native$': '<rootDir>/src/__mocks__/posthog-react-native.ts',
+    '^@react-native-async-storage/async-storage$':
+      '<rootDir>/node_modules/@react-native-async-storage/async-storage/jest/async-storage-mock.js',
   },
   testMatch: ['**/__tests__/**/*.test.[jt]s?(x)'],
   transformIgnorePatterns: [
