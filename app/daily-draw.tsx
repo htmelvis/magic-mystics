@@ -26,7 +26,13 @@ import type {
   TarotCard as TarotCardType,
   TarotCardRow,
 } from '@/types/tarot';
-import { TarotCard, TarotDeck, AIInsightSection, CardDetail, ShareReadingButton } from '@components/tarot';
+import {
+  TarotCard,
+  TarotDeck,
+  AIInsightSection,
+  CardDetail,
+  ShareReadingButton,
+} from '@components/tarot';
 import { ANIMATION } from '@components/tarot/card-constants';
 import { ReflectionSheet } from '@components/history';
 import { useGenerateInsight } from '@hooks/useGenerateInsight';
@@ -290,14 +296,6 @@ export default function DrawScreen() {
               </Animated.View>
             </>
           )}
-          {/* {canDraw && (
-            <Text
-              style={[styles.tapHint, { color: theme.colors.text.muted }]}
-              accessibilityElementsHidden
-            >
-              Tap to draw your card
-            </Text>
-          )} */}
         </View>
 
         <ScrollView
@@ -620,13 +618,9 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     padding: 12,
-    paddingTop: 0,
-    marginTop: 20,
+    marginTop: 12,
     paddingBottom: 48,
     gap: 16,
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: -6 },
-    // shadowOpacity: 0.2,
     shadowRadius: 12,
     elevation: 10,
     minHeight: 200,

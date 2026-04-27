@@ -12,6 +12,7 @@ export function CardDetail({ card, orientation }: Props) {
   const isReversed = orientation === 'reversed';
 
   const summary = isReversed ? (card.reversed_summary ?? '') : (card.upright_summary ?? '');
+
   const meaning = isReversed
     ? (card.reversed_meaning_long ?? '')
     : (card.upright_meaning_long ?? '');
