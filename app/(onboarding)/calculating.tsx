@@ -11,10 +11,7 @@ import {
   ZodiacSign,
 } from '@lib/astrology/calculate-signs';
 import { computeNatalChart } from '@lib/astrology/natal-chart';
-import {
-  onboardingParamsSchema,
-  userOnboardingUpdateSchema,
-} from '@lib/validation/onboarding';
+import { onboardingParamsSchema, userOnboardingUpdateSchema } from '@lib/validation/onboarding';
 import { useOnboardingDraft } from '@lib/onboarding/OnboardingContext';
 import { ZodiacAvatar } from '@components/ui';
 import { useAppTheme } from '@/hooks/useAppTheme';
@@ -75,7 +72,7 @@ export default function CalculatingScreen() {
         timeForChart,
         birthLat,
         birthLng,
-        birthTimezone,
+        birthTimezone
       );
 
       const canDeriveAsc =
@@ -103,9 +100,8 @@ export default function CalculatingScreen() {
       });
 
       setStatus('Saving your profile...');
-      const { error } = await supabase
-        .from('users')
-        .upsert({
+      const { error } = await supabase.from('users').upsert(
+        {
           id: user.id,
           email: user.email ?? '',
           display_name: updatePayload.display_name,
@@ -120,9 +116,11 @@ export default function CalculatingScreen() {
           rising_sign: updatePayload.rising_sign,
           natal_chart_data: natalChart,
           onboarding_completed: updatePayload.onboarding_completed,
-        }, {
-          onConflict: 'id'
-        });
+        },
+        {
+          onConflict: 'id',
+        }
+      );
 
       if (error) {
         console.warn('Error saving onboarding data:', error);
@@ -136,13 +134,11 @@ export default function CalculatingScreen() {
         .single();
 
       if (!existingSub) {
-        await supabase
-          .from('subscriptions')
-          .insert({
-            user_id: user.id,
-            tier: 'free',
-            is_active: true,
-          });
+        await supabase.from('subscriptions').insert({
+          user_id: user.id,
+          tier: 'free',
+          is_active: true,
+        });
       }
 
       // Pre-populate the userProfile cache so the home screen renders the avatar
@@ -206,7 +202,9 @@ export default function CalculatingScreen() {
       ) : (
         <Text style={styles.emoji}>✨🔮✨</Text>
       )}
-      {!failed && !completed && <ActivityIndicator size="large" color={theme.colors.brand.primary} />}
+      {!failed && !completed && (
+        <ActivityIndicator size="large" color={theme.colors.brand.primary} />
+      )}
       <Text
         style={[styles.status, { color: theme.colors.text.secondary }]}
         accessibilityRole="text"

@@ -25,7 +25,7 @@ export function buildCaption({ card, orientation, insight, shareUrl }: Input): s
   const summary =
     insight && 'opening' in insight && insight.opening
       ? insight.opening
-      : (orientation === 'reversed' ? card.reversed_summary : card.upright_summary) ?? '';
+      : ((orientation === 'reversed' ? card.reversed_summary : card.upright_summary) ?? '');
 
   const body = truncate(summary, MAX_BODY_LENGTH);
   const prefix = `I drew ${card.name}${reversedSuffix}.`;

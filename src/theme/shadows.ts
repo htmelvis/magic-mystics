@@ -1,6 +1,6 @@
 /**
  * Shadow definitions for elevation and depth
- * 
+ *
  * Provides consistent shadow styles across iOS and Android
  */
 

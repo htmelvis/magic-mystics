@@ -21,46 +21,46 @@ appId: com.edwardwieczorek.magicmystics
 
 # ── Entry point 1: Home promo card ───────────────────────────────────────────
 - tapOn:
-    label: "Home tab"
+    label: 'Home tab'
 
-- assertVisible: "Upgrade Now"
-- tapOn: "Upgrade Now"
+- assertVisible: 'Upgrade Now'
+- tapOn: 'Upgrade Now'
 
-- assertVisible: "Keep Your Full History"
-- assertVisible: "$49"
-- assertVisible: "Upgrade Now"
-- assertVisible: "Maybe Later"
+- assertVisible: 'Keep Your Full History'
+- assertVisible: '$49'
+- assertVisible: 'Upgrade Now'
+- assertVisible: 'Maybe Later'
 
 # Dismiss via "Maybe Later"
-- tapOn: "Maybe Later"
-- assertNotVisible: "Keep Your Full History"
+- tapOn: 'Maybe Later'
+- assertNotVisible: 'Keep Your Full History'
 
 # ── Entry point 2: PPF spread button (gated for free users) ──────────────────
 - tapOn:
-    label: "Past, Present, Future spread, Premium feature"
+    label: 'Past, Present, Future spread, Premium feature'
 
-- assertVisible: "Keep Your Full History"
+- assertVisible: 'Keep Your Full History'
 
 # Dismiss via backdrop tap
 - tapOn:
-    label: "Close upgrade sheet"
-- assertNotVisible: "Keep Your Full History"
+    label: 'Close upgrade sheet'
+- assertNotVisible: 'Keep Your Full History'
 
 # ── Entry point 3: Profile screen ────────────────────────────────────────────
 - tapOn:
-    label: "Profile tab"
+    label: 'Profile tab'
 
-- tapOn: "Upgrade to Premium"
+- tapOn: 'Upgrade to Premium'
 
-- assertVisible: "Keep Your Full History"
-- assertVisible: "Unlimited reading history"
-- assertVisible: "Past / Present / Future spreads"
-- assertVisible: "AI insights with your personal context"
-- assertVisible: "Priority support"
+- assertVisible: 'Keep Your Full History'
+- assertVisible: 'Unlimited reading history'
+- assertVisible: 'Past / Present / Future spreads'
+- assertVisible: 'AI insights with your personal context'
+- assertVisible: 'Priority support'
 
 # Dismiss via drag handle (swipe down gesture)
 - swipe:
     direction: DOWN
     duration: 400
 
-- assertNotVisible: "Keep Your Full History"
+- assertNotVisible: 'Keep Your Full History'

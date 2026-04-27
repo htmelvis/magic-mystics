@@ -30,12 +30,14 @@ export function MonthlyActivityChart({ data, isLoading }: MonthlyActivityChartPr
     );
   }
 
-  const maxCount = Math.max(...data.map((d) => d.count), 1);
+  const maxCount = Math.max(...data.map(d => d.count), 1);
   const currentMonth = new Date().toLocaleDateString(undefined, { month: 'short' });
 
   return (
     <Card style={styles.card}>
-      <Text style={[styles.sectionLabel, { color: theme.colors.text.muted }]}>MONTHLY ACTIVITY</Text>
+      <Text style={[styles.sectionLabel, { color: theme.colors.text.muted }]}>
+        MONTHLY ACTIVITY
+      </Text>
       <View style={styles.chart}>
         {data.map(({ month, count }) => {
           const height = Math.max((count / maxCount) * BAR_MAX_HEIGHT, count > 0 ? 6 : 3);
@@ -60,9 +62,7 @@ export function MonthlyActivityChart({ data, isLoading }: MonthlyActivityChartPr
                 style={[
                   styles.monthLabel,
                   {
-                    color: isCurrentMonth
-                      ? theme.colors.brand.primary
-                      : theme.colors.text.muted,
+                    color: isCurrentMonth ? theme.colors.brand.primary : theme.colors.text.muted,
                     fontWeight: isCurrentMonth ? '700' : '400',
                   },
                 ]}

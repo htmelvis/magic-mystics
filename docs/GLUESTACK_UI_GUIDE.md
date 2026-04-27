@@ -14,8 +14,8 @@ GluestackUI has been integrated into Magic Mystics for consistent, accessible UI
 ### ⚙️ Configuration
 
 - **gluestack-ui.config.ts** - Custom config integrating our theme colors
-- **app/_layout.tsx** - Wrapped with `<GluestackUIProvider>`
-- **app/(tabs)/_layout.tsx** - Tab bar with icons using our theme
+- **app/\_layout.tsx** - Wrapped with `<GluestackUIProvider>`
+- **app/(tabs)/\_layout.tsx** - Tab bar with icons using our theme
 
 ## Tab Bar Icons ✅
 

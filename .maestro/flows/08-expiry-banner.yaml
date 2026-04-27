@@ -24,36 +24,36 @@ appId: com.edwardwieczorek.magicmystics
 
 # ── Navigate to History ──────────────────────────────────────────────────────
 - tapOn:
-    label: "History tab"
+    label: 'History tab'
 
 # Banner should be visible with expiry warning text
 - assertVisible:
-    text: "regexp:.+ reading(s)? will be removed .+"
+    text: 'regexp:.+ reading(s)? will be removed .+'
 
-- assertVisible: "Upgrade to keep forever"
+- assertVisible: 'Upgrade to keep forever'
 
 # ── Upgrade CTA opens the sheet ──────────────────────────────────────────────
-- tapOn: "Upgrade to keep forever"
-- assertVisible: "Keep Your Full History"
-- tapOn: "Maybe Later"
-- assertNotVisible: "Keep Your Full History"
+- tapOn: 'Upgrade to keep forever'
+- assertVisible: 'Keep Your Full History'
+- tapOn: 'Maybe Later'
+- assertNotVisible: 'Keep Your Full History'
 
 # Banner still visible after closing sheet
 - assertVisible:
-    text: "regexp:.+ reading(s)? will be removed .+"
+    text: 'regexp:.+ reading(s)? will be removed .+'
 
 # ── Dismiss banner ───────────────────────────────────────────────────────────
 - tapOn:
-    label: "Dismiss expiry warning"
+    label: 'Dismiss expiry warning'
 
 - assertNotVisible:
-    text: "regexp:.+ reading(s)? will be removed .+"
+    text: 'regexp:.+ reading(s)? will be removed .+'
 
 # ── Dismissed state persists after navigating away and back ──────────────────
 - tapOn:
-    label: "Home tab"
+    label: 'Home tab'
 - tapOn:
-    label: "History tab"
+    label: 'History tab'
 
 - assertNotVisible:
-    text: "regexp:.+ reading(s)? will be removed .+"
+    text: 'regexp:.+ reading(s)? will be removed .+'

@@ -62,7 +62,7 @@ export function useAnnouncements(userId: string | undefined, isPremium: boolean)
   });
 
   const readSet = new Set(readIds);
-  const unreadAnnouncements = announcements.filter((a) => !readSet.has(a.id));
+  const unreadAnnouncements = announcements.filter(a => !readSet.has(a.id));
 
   return { unreadAnnouncements, markRead };
 }

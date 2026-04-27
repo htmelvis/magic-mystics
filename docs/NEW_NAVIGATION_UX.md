@@ -1,30 +1,35 @@
 Navigation
+
 - Home
 - Draw
 - Profile
 - Settings
 
-Home / Dashboard 
+Home / Dashboard
+
 - Profile summary:
-	- Avatar
-	- Signs
-	- Greeting
+  - Avatar
+  - Signs
+  - Greeting
 - Specialty Cards
-	- Cosmic weather
-	- Upcoming Events 
-	- Journey
+  - Cosmic weather
+  - Upcoming Events
+  - Journey
 
 Draw
+
 - Spread type selection Cards
 - History link
 
 Profile
+
 - User Tarot / Astrology
 - Natal Chart Link
 - Birth and user details
 - Journey
 
 Settings
+
 - Birth / Location Edits
 - Appearance
 - Notifications / Email

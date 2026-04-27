@@ -7,18 +7,36 @@
  */
 
 const ZODIAC_SIGNS = [
-  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+  'Aries',
+  'Taurus',
+  'Gemini',
+  'Cancer',
+  'Leo',
+  'Virgo',
+  'Libra',
+  'Scorpio',
+  'Sagittarius',
+  'Capricorn',
+  'Aquarius',
+  'Pisces',
 ] as const;
 
 export type DailyZodiacSign = (typeof ZODIAC_SIGNS)[number];
 export type ZodiacElement = 'Fire' | 'Earth' | 'Air' | 'Water';
 
 export const SIGN_ELEMENTS: Record<DailyZodiacSign, ZodiacElement> = {
-  Aries: 'Fire', Leo: 'Fire', Sagittarius: 'Fire',
-  Taurus: 'Earth', Virgo: 'Earth', Capricorn: 'Earth',
-  Gemini: 'Air', Libra: 'Air', Aquarius: 'Air',
-  Cancer: 'Water', Scorpio: 'Water', Pisces: 'Water',
+  Aries: 'Fire',
+  Leo: 'Fire',
+  Sagittarius: 'Fire',
+  Taurus: 'Earth',
+  Virgo: 'Earth',
+  Capricorn: 'Earth',
+  Gemini: 'Air',
+  Libra: 'Air',
+  Aquarius: 'Air',
+  Cancer: 'Water',
+  Scorpio: 'Water',
+  Pisces: 'Water',
 };
 
 export const ELEMENT_COLOR_POOLS: Record<ZodiacElement, string[]> = {
@@ -44,7 +62,11 @@ export function eclipticLonToSign(lon: number): DailyZodiacSign {
   return ZODIAC_SIGNS[Math.floor(normalized / 30)];
 }
 
-export function generateLuckyColors(element: ZodiacElement, date: Date, moonDegreeInSign: number): string[] {
+export function generateLuckyColors(
+  element: ZodiacElement,
+  date: Date,
+  moonDegreeInSign: number
+): string[] {
   const pool = ELEMENT_COLOR_POOLS[element];
   const base =
     date.getUTCFullYear() * 10000 +

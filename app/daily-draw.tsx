@@ -26,17 +26,15 @@ import type {
   TarotCard as TarotCardType,
   TarotCardRow,
 } from '@/types/tarot';
-<<<<<<< MM-32-social
+
 import {
-  TarotCard,
+  TiltCard,
   TarotDeck,
   AIInsightSection,
   CardDetail,
   ShareReadingButton,
 } from '@components/tarot';
-=======
-import { TiltCard, TarotDeck, AIInsightSection } from '@components/tarot';
->>>>>>> main
+
 import { ANIMATION } from '@components/tarot/card-constants';
 import { ReflectionSheet } from '@components/history';
 import { useGenerateInsight } from '@hooks/useGenerateInsight';

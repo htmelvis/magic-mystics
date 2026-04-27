@@ -36,7 +36,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [draft, setDraft] = useState<OnboardingDraft>(EMPTY_DRAFT);
 
   const updateDraft = useCallback((patch: Partial<OnboardingDraft>) => {
-    setDraft((prev) => ({ ...prev, ...patch }));
+    setDraft(prev => ({ ...prev, ...patch }));
   }, []);
 
   const resetDraft = useCallback(() => {
@@ -45,7 +45,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({ draft, updateDraft, resetDraft }),
-    [draft, updateDraft, resetDraft],
+    [draft, updateDraft, resetDraft]
   );
 
   return <OnboardingContext.Provider value={value}>{children}</OnboardingContext.Provider>;

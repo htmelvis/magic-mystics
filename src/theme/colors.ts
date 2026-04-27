@@ -1,6 +1,6 @@
 /**
  * Color palette for Magic Mystics
- * 
+ *
  * Colors are organized by:
  * - Brand colors (primary, secondary)
  * - Semantic colors (success, warning, error, info)
@@ -16,11 +16,11 @@ export const colors = {
     primaryLight: '#a78bfa',
     primaryDark: '#7c3aed',
     primaryMuted: '#f3e8ff',
-    
+
     secondary: '#c4b5fd', // Lighter violet
     secondaryLight: '#ddd6fe',
     secondaryDark: '#a78bfa',
-    
+
     accent: '#c9a84c', // Gold accent
     accentLight: '#d4b563',
     accentDark: '#b8973d',
@@ -60,19 +60,19 @@ export const colors = {
     light: '#d1fae5',
     dark: '#047857',
   },
-  
+
   warning: {
     main: '#f59e0b',
     light: '#fef3c7',
     dark: '#d97706',
   },
-  
+
   error: {
     main: '#ef4444',
     light: '#fee2e2',
     dark: '#dc2626',
   },
-  
+
   info: {
     main: '#3b82f6',
     light: '#dbeafe',
@@ -123,7 +123,6 @@ export const colors = {
     subtle: '#e5e7eb',
   },
 
-
   // Tarot-specific colors
   tarot: {
     // Suit Colors
@@ -162,7 +161,6 @@ export const colors = {
     },
   },
 
-
   // Transparent variations
   transparent: {
     black10: 'rgba(0, 0, 0, 0.1)',
@@ -183,11 +181,11 @@ export const darkColors = {
     primaryLight: '#c4b5fd',
     primaryDark: '#8b5cf6',
     primaryMuted: '#2e1065',
-    
+
     secondary: '#ddd6fe',
     secondaryLight: '#ede9fe',
     secondaryDark: '#c4b5fd',
-    
+
     accent: '#fbbf24', // Brighter gold for visibility
     accentLight: '#fcd34d',
     accentDark: '#f59e0b',
@@ -227,19 +225,19 @@ export const darkColors = {
     light: '#064e3b',
     dark: '#10b981',
   },
-  
+
   warning: {
     main: '#fbbf24',
     light: '#451a03',
     dark: '#f59e0b',
   },
-  
+
   error: {
     main: '#f87171',
     light: '#450a0a',
     dark: '#ef4444',
   },
-  
+
   info: {
     main: '#60a5fa',
     light: '#082f49',

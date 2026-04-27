@@ -17,14 +17,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react-native';
 import { fn } from 'storybook/test';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Card, Badge, Button, ZodiacAvatar, SkeletonProfile } from '@components/ui';
 import { theme } from '@theme';
 
@@ -43,7 +36,15 @@ const SIGNS = { sun: 'Aries', moon: 'Scorpio', rising: 'Capricorn' } as const;
 
 // ── Sub-sections — mirror the card structure in profile.tsx ──────────────────
 
-function ProfileHeader({ name, email, sunSign }: { name: string; email: string; sunSign?: string }) {
+function ProfileHeader({
+  name,
+  email,
+  sunSign,
+}: {
+  name: string;
+  email: string;
+  sunSign?: string;
+}) {
   return (
     <View style={s.profileHeader}>
       {sunSign && <ZodiacAvatar sign={sunSign as never} size={56} />}
@@ -91,17 +92,13 @@ function BirthDetailsCard({
     <View style={s.section}>
       <View style={s.sectionHeader}>
         <Text style={s.sectionTitle}>Birth Details</Text>
-        {canEdit && !locked && (
-          <Text style={[s.editLink]}>Edit</Text>
-        )}
+        {canEdit && !locked && <Text style={[s.editLink]}>Edit</Text>}
       </View>
       <Card variant="outlined">
         <Text style={s.detailText}>Date: {date ?? '—'}</Text>
         <Text style={s.detailText}>
           Time: {time ?? '—'}
-          {timezone ? (
-            <Text style={s.detailMuted}>  ({timezone})</Text>
-          ) : null}
+          {timezone ? <Text style={s.detailMuted}> ({timezone})</Text> : null}
         </Text>
         <Text style={s.detailText}>Location: {location ?? '—'}</Text>
 
@@ -168,9 +165,7 @@ function SubscriptionCard({
           style={{ marginBottom: theme.spacing.sm }}
         />
         {isPremium && expiry && (
-          <Text style={{ fontSize: 13, color: theme.colors.text.muted }}>
-            Expires: {expiry}
-          </Text>
+          <Text style={{ fontSize: 13, color: theme.colors.text.muted }}>Expires: {expiry}</Text>
         )}
         {!isPremium && (
           <Button
@@ -242,11 +237,7 @@ function ProfileFixture({
         locked={detailsLocked}
       />
 
-      <SubscriptionCard
-        isPremium={!!isPremium}
-        expiry={expiry}
-        onUpgrade={onUpgrade}
-      />
+      <SubscriptionCard isPremium={!!isPremium} expiry={expiry} onUpgrade={onUpgrade} />
 
       <Button
         title="Sign Out"

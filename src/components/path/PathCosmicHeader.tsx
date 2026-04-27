@@ -55,7 +55,7 @@ export function PathCosmicHeader({ cosmic, userProfile, isLoading }: PathCosmicH
 
   const retrogradeText =
     cosmic.retrograde_planets && cosmic.retrograde_planets.length > 0
-      ? cosmic.retrograde_planets.map((p) => `${p} ℞`).join('  ')
+      ? cosmic.retrograde_planets.map(p => `${p} ℞`).join('  ')
       : null;
 
   const gradientColors = buildGradientColors(cosmic.lucky_colors);
@@ -69,7 +69,9 @@ export function PathCosmicHeader({ cosmic, userProfile, isLoading }: PathCosmicH
         style={StyleSheet.absoluteFill}
       />
 
-      <Text style={[styles.label, { color: theme.colors.brand.cosmic.sunGold }]}>YOUR SKY TODAY</Text>
+      <Text style={[styles.label, { color: theme.colors.brand.cosmic.sunGold }]}>
+        YOUR SKY TODAY
+      </Text>
 
       {cosmic.energy_theme && (
         <Text style={[styles.energyTheme, { color: theme.colors.brand.cosmic.starWhite }]}>

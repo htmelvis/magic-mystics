@@ -25,9 +25,7 @@ function norm(s: string | null | undefined): string {
  * Returns a `[start, end)` window for the given filter, or `null` for 'all'.
  * All boundaries are computed at midnight local time.
  */
-function getDateRange(
-  filter: DateRangeFilter
-): { start: Date; end: Date } | null {
+function getDateRange(filter: DateRangeFilter): { start: Date; end: Date } | null {
   if (filter === 'all') return null;
 
   const now = new Date();
@@ -136,7 +134,7 @@ export function useFilteredReadings(readings: ReadingRow[]) {
     // Fast path: no filters active
     if (!hasQuery && !hasSpread && !dateRange) return readings;
 
-    return readings.filter((r) => {
+    return readings.filter(r => {
       if (hasSpread && r.spread_type !== spreadFilter) return false;
       if (dateRange) {
         const ts = new Date(r.created_at).getTime();

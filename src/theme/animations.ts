@@ -1,6 +1,6 @@
 /**
  * Animation timing and easing constants
- * 
+ *
  * Provides consistent animation durations and easings
  */
 

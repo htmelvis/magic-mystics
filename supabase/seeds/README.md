@@ -101,29 +101,30 @@ Once seeded, you can query this data:
 
 ```typescript
 // Fetch all zodiac signs
-const { data: signs } = await supabase
-  .from('zodiac_signs')
-  .select('*')
-  .order('id');
+const { data: signs } = await supabase.from('zodiac_signs').select('*').order('id');
 
 // Get crystals for a specific zodiac sign
 const { data: crystals } = await supabase
   .from('zodiac_crystal_associations')
-  .select(`
+  .select(
+    `
     *,
     crystal:crystals(*)
-  `)
+  `
+  )
   .eq('zodiac_sign_id', signId)
   .order('strength', { ascending: false });
 
 // Get today's metaphysical data
 const { data: daily } = await supabase
   .from('daily_metaphysical_data')
-  .select(`
+  .select(
+    `
     *,
     recommendedCrystal:crystals(*),
     moonSign:zodiac_signs(*)
-  `)
+  `
+  )
   .eq('date', new Date().toISOString().split('T')[0])
   .single();
 ```

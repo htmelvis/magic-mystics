@@ -7,9 +7,9 @@ import type { SpreadStat } from '@hooks/useSpreadStats';
 import type { ReadingRow } from '@hooks/useReadings';
 
 const SPREAD_LABELS: Record<string, string> = {
-  'daily': 'Daily Draw',
+  daily: 'Daily Draw',
   'past-present-future': 'Past · Present · Future',
-  'relationship': 'Relationship',
+  relationship: 'Relationship',
   'situation-obstacle-solution': 'Situation',
   'mind-body-spirit': 'Mind Body Spirit',
   'accept-embrace-let-go': 'Accept & Let Go',
@@ -32,7 +32,7 @@ export function SpreadBreakdown({ stats, isLoading }: SpreadBreakdownProps) {
     return (
       <Card style={styles.card}>
         <Skeleton width="45%" height={11} borderRadius={4} style={{ marginBottom: spacing.md }} />
-        {[1, 2, 3].map((i) => (
+        {[1, 2, 3].map(i => (
           <View key={i} style={{ gap: spacing.xs, marginBottom: spacing.sm }}>
             <View style={styles.rowHeader}>
               <Skeleton width="50%" height={13} borderRadius={4} />
@@ -61,7 +61,15 @@ export function SpreadBreakdown({ stats, isLoading }: SpreadBreakdownProps) {
               </Text>
               <Text style={[styles.countText, { color: theme.colors.text.muted }]}>{count}</Text>
             </View>
-            <View style={[styles.track, { backgroundColor: theme.colors.surface.subtle, borderColor: theme.colors.border.subtle }]}>
+            <View
+              style={[
+                styles.track,
+                {
+                  backgroundColor: theme.colors.surface.subtle,
+                  borderColor: theme.colors.border.subtle,
+                },
+              ]}
+            >
               <View
                 style={[
                   styles.fill,

@@ -114,7 +114,11 @@ interface ReflectionSheetProps {
   initialAlignment?: ReflectionSentiment | null;
   initialContent?: string;
   isSaving: boolean;
-  onSave: (feeling: ReflectionSentiment, alignment: ReflectionSentiment, content: string) => Promise<void>;
+  onSave: (
+    feeling: ReflectionSentiment,
+    alignment: ReflectionSentiment,
+    content: string
+  ) => Promise<void>;
   onClose: () => void;
   onAddToJournal?: (content: string) => void;
 }
@@ -235,9 +239,7 @@ export function ReflectionSheet({
           ]}
         >
           {/* Header */}
-          <View
-            style={[styles.header, { borderBottomColor: theme.colors.border.subtle }]}
-          >
+          <View style={[styles.header, { borderBottomColor: theme.colors.border.subtle }]}>
             <View style={[styles.handle, { backgroundColor: theme.colors.border.default }]} />
             <View style={styles.titleRow}>
               <Text style={[styles.title, { color: theme.colors.text.primary }]}>

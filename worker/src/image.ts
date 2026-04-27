@@ -41,13 +41,13 @@ function buildHtml(reading: ShareableReading): string {
   const arcana = reading.primary_card_arcana;
   const name = escape(reading.primary_card_name);
   const suit = reading.primary_card_suit;
-  const glyph = suit ? SUIT_GLYPH[suit] ?? '✦' : '✦';
+  const glyph = suit ? (SUIT_GLYPH[suit] ?? '✦') : '✦';
   const summary = escape(truncate((reading.primary_card_summary ?? '').trim(), 140));
-  const subtitle = arcana === 'Major'
-    ? 'Major Arcana'
-    : `${reading.primary_card_number != null ? `${reading.primary_card_number} of ` : ''}${suit ?? ''}`;
-  const cardCountLabel =
-    reading.card_count > 1 ? `${reading.card_count}-card spread · ` : '';
+  const subtitle =
+    arcana === 'Major'
+      ? 'Major Arcana'
+      : `${reading.primary_card_number != null ? `${reading.primary_card_number} of ` : ''}${suit ?? ''}`;
+  const cardCountLabel = reading.card_count > 1 ? `${reading.card_count}-card spread · ` : '';
 
   // Satori renders CSS subset — keep layouts flex-based, no backdrop-filter,
   // no animations, no z-index stacking games.
@@ -76,10 +76,7 @@ function buildHtml(reading: ShareableReading): string {
   </div>`;
 }
 
-export async function renderShareImage(
-  _env: Env,
-  reading: ShareableReading
-): Promise<Response> {
+export async function renderShareImage(_env: Env, reading: ShareableReading): Promise<Response> {
   const [inter, playfair] = await Promise.all([
     loadFont(FONT_INTER_600),
     loadFont(FONT_PLAYFAIR_700),

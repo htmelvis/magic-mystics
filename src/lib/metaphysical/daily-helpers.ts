@@ -72,7 +72,7 @@ export function eclipticLonToSign(lon: number): DailyZodiacSign {
 export function generateLuckyColors(
   element: ZodiacElement,
   date: Date,
-  moonDegreeInSign: number,
+  moonDegreeInSign: number
 ): string[] {
   const pool = ELEMENT_COLOR_POOLS[element];
   const base =
@@ -103,11 +103,11 @@ export const PLANET_RULING_SIGNS: Record<string, string[]> = {
 
 // Orbs for each major aspect in degrees
 const ASPECTS: Array<{ angle: number; orb: number }> = [
-  { angle: 0, orb: 8 },    // conjunction
-  { angle: 60, orb: 6 },   // sextile
-  { angle: 90, orb: 8 },   // square
-  { angle: 120, orb: 8 },  // trine
-  { angle: 180, orb: 8 },  // opposition
+  { angle: 0, orb: 8 }, // conjunction
+  { angle: 60, orb: 6 }, // sextile
+  { angle: 90, orb: 8 }, // square
+  { angle: 120, orb: 8 }, // trine
+  { angle: 180, orb: 8 }, // opposition
 ];
 
 /** Returns the shortest angular distance between two ecliptic longitudes [0, 180]. */

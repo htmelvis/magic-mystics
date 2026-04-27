@@ -29,9 +29,7 @@ export function StreakCard({ currentStreak, longestStreak, isLoading }: StreakCa
       <Text style={[styles.sectionLabel, { color: theme.colors.text.muted }]}>READING STREAK</Text>
       <View style={styles.row}>
         <View style={styles.stat}>
-          <Text style={[styles.value, { color: theme.colors.brand.primary }]}>
-            {currentStreak}
-          </Text>
+          <Text style={[styles.value, { color: theme.colors.brand.primary }]}>{currentStreak}</Text>
           <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>
             {currentStreak === 1 ? 'day active' : 'days active'}
           </Text>

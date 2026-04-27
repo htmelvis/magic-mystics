@@ -16,7 +16,7 @@ const meta = {
   title: 'UI/ExpiryWarningBanner',
   component: ExpiryWarningBanner,
   decorators: [
-    (Story) => (
+    Story => (
       <View style={{ padding: 16 }}>
         <Story />
       </View>

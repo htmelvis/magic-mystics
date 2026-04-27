@@ -3,6 +3,7 @@
 ## Executive Summary
 
 This document outlines a scalable, normalized database architecture for storing and querying metaphysical data (astrology signs, tarot cards, crystals, planetary alignments, etc.) that supports:
+
 - Accurate astrological calculations using ephemeris data
 - Flexible associations between metaphysical concepts
 - Easy addition of new metaphysical fields
@@ -12,6 +13,7 @@ This document outlines a scalable, normalized database architecture for storing 
 ## Current Issues with Existing Implementation
 
 ### Problems
+
 1. **Hardcoded Astrology Logic**: Sun/Moon/Rising sign calculations are simplified approximations in application code
 2. **No Ephemeris Data**: Real astrology requires planetary positions, not date ranges
 3. **Limited Extensibility**: Adding new fields (crystals, lucky numbers, etc.) requires schema changes
@@ -19,6 +21,7 @@ This document outlines a scalable, normalized database architecture for storing 
 5. **Redundant Storage**: Each user stores sign names as strings (data duplication)
 
 ### Impact
+
 - Inaccurate birth chart calculations
 - Difficult to add new metaphysical attributes
 - Poor query performance as data grows
@@ -140,6 +143,7 @@ CREATE TABLE planets (
 ### 5. Association Tables (Many-to-Many)
 
 #### Zodiac ↔ Tarot Association
+
 ```sql
 CREATE TABLE zodiac_tarot_associations (
   id SERIAL PRIMARY KEY,
@@ -157,6 +161,7 @@ CREATE INDEX idx_zodiac_tarot_card ON zodiac_tarot_associations(tarot_card_id);
 ```
 
 #### Zodiac ↔ Crystal Association
+
 ```sql
 CREATE TABLE zodiac_crystal_associations (
   id SERIAL PRIMARY KEY,
@@ -174,6 +179,7 @@ CREATE INDEX idx_zodiac_crystal_crystal ON zodiac_crystal_associations(crystal_i
 ```
 
 #### Date-Based Metaphysical Attributes
+
 ```sql
 CREATE TABLE daily_metaphysical_data (
   id SERIAL PRIMARY KEY,
@@ -198,8 +204,9 @@ CREATE INDEX idx_daily_meta_moon_sign ON daily_metaphysical_data(moon_sign_id);
 ### 6. Updated User Tables
 
 #### Users Table (Modified)
+
 ```sql
-ALTER TABLE users 
+ALTER TABLE users
   DROP COLUMN sun_sign,
   DROP COLUMN moon_sign,
   DROP COLUMN rising_sign,
@@ -217,6 +224,7 @@ CREATE INDEX idx_users_rising_sign ON users(rising_sign_id);
 ```
 
 #### User Birth Chart (New Table)
+
 ```sql
 -- Store complete birth chart for each user
 CREATE TABLE user_birth_charts (
@@ -244,6 +252,7 @@ CREATE INDEX idx_birth_charts_user ON user_birth_charts(user_id);
 ```
 
 #### User Preferences (New Table)
+
 ```sql
 CREATE TABLE user_metaphysical_preferences (
   id SERIAL PRIMARY KEY,
@@ -263,7 +272,9 @@ CREATE TABLE user_metaphysical_preferences (
 ## Accurate Astrology Calculations
 
 ### Problem: Current Implementation Uses Date Ranges
+
 **Issue**: Sun sign date ranges (e.g., "Aries: March 21 - April 19") are approximations and ignore:
+
 - Year-to-year variation (leap years, solstices shift)
 - Time of birth (sign can change during a day)
 - Location (timezone, latitude/longitude)
@@ -298,22 +309,12 @@ interface BirthChart {
   houses: number[];
 }
 
-export async function calculateAccurateBirthChart(
-  birthData: BirthData
-): Promise<BirthChart> {
+export async function calculateAccurateBirthChart(birthData: BirthData): Promise<BirthChart> {
   // Convert local time to UTC
-  const birthDateTime = combineDateAndTime(
-    birthData.date,
-    birthData.time,
-    birthData.timezone
-  );
+  const birthDateTime = combineDateAndTime(birthData.date, birthData.time, birthData.timezone);
 
   // Calculate planetary positions
-  const positions = Ephemeris.getAllPlanets(
-    birthDateTime,
-    birthData.latitude,
-    birthData.longitude
-  );
+  const positions = Ephemeris.getAllPlanets(birthDateTime, birthData.latitude, birthData.longitude);
 
   // Calculate houses (using Placidus system)
   const houses = Ephemeris.getHouseCusps(
@@ -339,9 +340,18 @@ export async function calculateAccurateBirthChart(
 
 function getSignFromPosition(longitude: number): string {
   const signs = [
-    'Aries', 'Taurus', 'Gemini', 'Cancer',
-    'Leo', 'Virgo', 'Libra', 'Scorpio',
-    'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
   ];
   const signIndex = Math.floor(longitude / 30);
   return signs[signIndex];
@@ -349,6 +359,7 @@ function getSignFromPosition(longitude: number): string {
 ```
 
 #### Alternative: Third-Party API
+
 If you don't want to manage ephemeris calculations:
 
 **Option 1: Astro-Seek API** (free tier available)
@@ -356,14 +367,12 @@ If you don't want to manage ephemeris calculations:
 
 ```typescript
 // src/lib/astrology/api-client.ts
-export async function fetchBirthChartFromAPI(
-  birthData: BirthData
-): Promise<BirthChart> {
+export async function fetchBirthChartFromAPI(birthData: BirthData): Promise<BirthChart> {
   const response = await fetch('https://api.astrology-api.com/v1/natal-chart', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.ASTROLOGY_API_KEY}`,
+      Authorization: `Bearer ${process.env.ASTROLOGY_API_KEY}`,
     },
     body: JSON.stringify({
       date: birthData.date.toISOString().split('T')[0],
@@ -385,8 +394,9 @@ export async function fetchBirthChartFromAPI(
 ### Common Queries
 
 #### 1. Get User's Complete Profile with Metaphysical Data
+
 ```sql
-SELECT 
+SELECT
   u.*,
   ss.name as sun_sign_name,
   ss.element as sun_sign_element,
@@ -409,8 +419,9 @@ GROUP BY u.id, ss.id, ms.id, rs.id, ubc.id;
 ```
 
 #### 2. Get Daily Recommendations for User
+
 ```sql
-SELECT 
+SELECT
   dmd.*,
   zs.name as moon_sign_name,
   c.name as recommended_crystal,
@@ -423,6 +434,7 @@ WHERE dmd.date = CURRENT_DATE;
 ```
 
 #### 3. Find Compatible Crystals for User's Signs
+
 ```sql
 SELECT DISTINCT c.*, zca.association_type, zca.strength
 FROM crystals c
@@ -440,9 +452,10 @@ ORDER BY zca.strength DESC, c.name;
 ### Performance Optimizations
 
 1. **Materialized Views** for complex aggregations
+
 ```sql
 CREATE MATERIALIZED VIEW user_metaphysical_summary AS
-SELECT 
+SELECT
   u.id,
   u.email,
   ss.name as sun_sign,
@@ -467,11 +480,13 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY user_metaphysical_summary;
 ```
 
 2. **Caching Strategy**
+
 - Cache zodiac signs, tarot cards, crystals reference data (rarely changes)
 - Cache daily metaphysical data for current date
 - Invalidate user birth chart cache only when birth data changes
 
 3. **Partitioning** (for scale)
+
 ```sql
 -- Partition readings table by date
 CREATE TABLE readings (
@@ -490,15 +505,19 @@ CREATE TABLE readings_2025 PARTITION OF readings
 ## Data Seeding Strategy
 
 ### 1. Zodiac Signs
+
 Create a seed file with all 12 signs + detailed attributes
 
 ### 2. Tarot Cards
+
 78 cards from Rider-Waite deck with meanings
 
 ### 3. Crystals
+
 Start with ~50 most common crystals
 
 ### 4. Associations
+
 Map relationships based on traditional metaphysical knowledge
 
 ```typescript
@@ -506,13 +525,13 @@ Map relationships based on traditional metaphysical knowledge
 export async function seedMetaphysicalData() {
   // Seed zodiac signs
   await seedZodiacSigns();
-  
+
   // Seed tarot cards
   await seedTarotCards();
-  
+
   // Seed crystals
   await seedCrystals();
-  
+
   // Seed associations
   await seedZodiacTarotAssociations();
   await seedZodiacCrystalAssociations();
@@ -524,17 +543,20 @@ export async function seedMetaphysicalData() {
 ## Migration Path
 
 ### Phase 1: Add Reference Tables (No Breaking Changes)
+
 1. Create new reference tables
 2. Seed with data
 3. Add new foreign key columns to users table (nullable)
 4. Keep old string columns temporarily
 
 ### Phase 2: Backfill & Validate
+
 1. Backfill foreign keys based on existing string values
 2. Validate data integrity
 3. Run both systems in parallel
 
 ### Phase 3: Cut Over
+
 1. Update application code to use new schema
 2. Drop old string columns
 3. Make foreign keys NOT NULL
@@ -544,9 +566,10 @@ export async function seedMetaphysicalData() {
 ## Extensibility Examples
 
 ### Adding New Field: "Lucky Numbers by Zodiac"
+
 ```sql
 -- No schema change needed! Use JSONB metadata field
-UPDATE zodiac_signs 
+UPDATE zodiac_signs
 SET metadata = jsonb_set(
   COALESCE(metadata, '{}'::jsonb),
   '{lucky_numbers}',
@@ -556,6 +579,7 @@ WHERE name = 'Aries';
 ```
 
 ### Adding New Association: "Zodiac ↔ Essential Oils"
+
 ```sql
 CREATE TABLE essential_oils (
   id SERIAL PRIMARY KEY,
@@ -605,7 +629,7 @@ CREATE TABLE zodiac_oil_associations (
 ✅ **Flexible**: Easy to add new metaphysical concepts  
 ✅ **Performant**: Optimized queries, caching, materialized views  
 ✅ **Maintainable**: Single source of truth for reference data  
-✅ **Production-Ready**: Proper foreign keys, constraints, RLS policies  
+✅ **Production-Ready**: Proper foreign keys, constraints, RLS policies
 
 ---
 

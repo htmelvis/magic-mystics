@@ -5,7 +5,7 @@ function mockNominatim(results: unknown) {
     Promise.resolve({
       ok: true,
       json: () => Promise.resolve(results),
-    }),
+    })
   ) as unknown as typeof fetch;
 }
 

@@ -34,9 +34,12 @@ export function TiltCard({ tiltEnabled, isFlipped, style, ...rest }: TiltCardPro
   // Fade shimmer in after the flip animation completes, fade out immediately on disable
   useAnimatedReaction(
     () => tiltEnabledSV.value,
-    (enabled) => {
+    enabled => {
       if (enabled) {
-        shimmerOpacity.value = withDelay(ANIMATION.flip, withTiming(1, { duration: SHIMMER_FADE_IN_DURATION }));
+        shimmerOpacity.value = withDelay(
+          ANIMATION.flip,
+          withTiming(1, { duration: SHIMMER_FADE_IN_DURATION })
+        );
       } else {
         shimmerOpacity.value = withTiming(0, { duration: SHIMMER_FADE_OUT_DURATION });
       }

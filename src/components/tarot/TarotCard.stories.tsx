@@ -40,7 +40,7 @@ const meta = {
   title: 'Tarot/TarotCard',
   component: TarotCard,
   decorators: [
-    (Story) => (
+    Story => (
       <View style={{ padding: 24, alignItems: 'center', justifyContent: 'center', flex: 1 }}>
         <Story />
       </View>

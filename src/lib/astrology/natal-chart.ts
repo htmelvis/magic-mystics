@@ -48,29 +48,47 @@ export type PlanetName = (typeof FREE_PLANETS)[number] | (typeof PREMIUM_PLANETS
 export interface PlanetPosition {
   name: PlanetName;
   glyph: string;
-  longitude: number;   // 0–360 ecliptic degrees
+  longitude: number; // 0–360 ecliptic degrees
   sign: ZodiacSign;
-  degree: number;      // 0–29 within sign
-  minute: number;      // 0–59
+  degree: number; // 0–29 within sign
+  minute: number; // 0–59
 }
 
 export interface StoredNatalChart {
   computedAt: string;
   planets: PlanetPosition[];
-  ascendant: number | null;   // ecliptic longitude, null if no birth coords
+  ascendant: number | null; // ecliptic longitude, null if no birth coords
   midheaven: number | null;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const ZODIAC_SIGNS: ZodiacSign[] = [
-  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+  'Aries',
+  'Taurus',
+  'Gemini',
+  'Cancer',
+  'Leo',
+  'Virgo',
+  'Libra',
+  'Scorpio',
+  'Sagittarius',
+  'Capricorn',
+  'Aquarius',
+  'Pisces',
 ];
 
 const PLANET_GLYPHS: Record<PlanetName, string> = {
-  Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
-  Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
+  Sun: '☉',
+  Moon: '☽',
+  Mercury: '☿',
+  Venus: '♀',
+  Mars: '♂',
+  Jupiter: '♃',
+  Saturn: '♄',
+  Uranus: '♅',
+  Neptune: '♆',
+  Pluto: '♇',
 };
 
 function normalizeDeg(deg: number): number {
@@ -116,7 +134,7 @@ function helioToGeoLon(
 function computeAngles(
   jd: number,
   birthLat: number,
-  birthLng: number,
+  birthLng: number
 ): { ascendant: number; midheaven: number } {
   // Apparent Greenwich Sidereal Time in seconds → convert to degrees
   const gstSec: number = sidereal.apparent(jd);
@@ -139,7 +157,7 @@ function computeAngles(
   // Ascendant (atan2 form for correct quadrant)
   const ascRad = Math.atan2(
     Math.cos(ramcRad),
-    -(Math.sin(epsRad) * Math.tan(latRad) + Math.cos(epsRad) * Math.sin(ramcRad)),
+    -(Math.sin(epsRad) * Math.tan(latRad) + Math.cos(epsRad) * Math.sin(ramcRad))
   );
   let asc = normalizeDeg(ascRad * RAD2DEG);
   // Ascendant must be in the eastern hemisphere relative to MC
@@ -162,7 +180,7 @@ function shiftToUTC(wall: Date, tz: string): Date {
     timeZone: tz,
     timeZoneName: 'shortOffset',
   }).formatToParts(wall);
-  const tzPart = parts.find((p) => p.type === 'timeZoneName')?.value ?? 'GMT';
+  const tzPart = parts.find(p => p.type === 'timeZoneName')?.value ?? 'GMT';
   const match = /GMT(?:([+-])(\d{1,2})(?::?(\d{2}))?)?/.exec(tzPart);
   if (!match) return wall;
   const sign = match[1] === '-' ? -1 : 1;
@@ -179,7 +197,7 @@ export function computeNatalChart(
   birthTime: string,
   birthLat: number | null,
   birthLng: number | null,
-  birthTimezone: string | null = null,
+  birthTimezone: string | null = null
 ): StoredNatalChart {
   const [h, m] = birthTime.split(':').map(Number);
 
@@ -194,7 +212,7 @@ export function computeNatalChart(
       birthDate.getDate(),
       h,
       m,
-      0,
+      0
     );
     const utc = shiftToUTC(wall, birthTimezone);
     jdYear = utc.getUTCFullYear();
@@ -222,35 +240,47 @@ export function computeNatalChart(
   const moonEq = moonposition.position(jd);
   const epsDeg: number = nutation.meanObliquityLaskar(jd);
   const epsRad = epsDeg * (Math.PI / RAD2DEG);
-  const moonEcl: { lon: number; lat: number } = new coord.Equatorial(moonEq.ra, moonEq.dec).toEcliptic(epsRad);
+  const moonEcl: { lon: number; lat: number } = new coord.Equatorial(
+    moonEq.ra,
+    moonEq.dec
+  ).toEcliptic(epsRad);
   const moonLon = normalizeDeg(moonEcl.lon * RAD2DEG);
 
   // Inner planets via VSOP87B
-  const mercuryLon = helioToGeoLon(new planetposition.Planet(vsop87Bmercury).position(jd), earthPos);
-  const venusLon   = helioToGeoLon(new planetposition.Planet(vsop87Bvenus).position(jd),   earthPos);
-  const marsLon    = helioToGeoLon(new planetposition.Planet(vsop87Bmars).position(jd),    earthPos);
+  const mercuryLon = helioToGeoLon(
+    new planetposition.Planet(vsop87Bmercury).position(jd),
+    earthPos
+  );
+  const venusLon = helioToGeoLon(new planetposition.Planet(vsop87Bvenus).position(jd), earthPos);
+  const marsLon = helioToGeoLon(new planetposition.Planet(vsop87Bmars).position(jd), earthPos);
 
   // Outer planets via VSOP87B
-  const jupiterLon = helioToGeoLon(new planetposition.Planet(vsop87Bjupiter).position(jd), earthPos);
-  const saturnLon  = helioToGeoLon(new planetposition.Planet(vsop87Bsaturn).position(jd),  earthPos);
-  const uranusLon  = helioToGeoLon(new planetposition.Planet(vsop87Buranus).position(jd),  earthPos);
-  const neptuneLon = helioToGeoLon(new planetposition.Planet(vsop87Bneptune).position(jd), earthPos);
+  const jupiterLon = helioToGeoLon(
+    new planetposition.Planet(vsop87Bjupiter).position(jd),
+    earthPos
+  );
+  const saturnLon = helioToGeoLon(new planetposition.Planet(vsop87Bsaturn).position(jd), earthPos);
+  const uranusLon = helioToGeoLon(new planetposition.Planet(vsop87Buranus).position(jd), earthPos);
+  const neptuneLon = helioToGeoLon(
+    new planetposition.Planet(vsop87Bneptune).position(jd),
+    earthPos
+  );
 
   // Pluto uses its own module (not VSOP87)
   const plutoH: { lon: number; lat: number; range: number } = plutoModule.heliocentric(jd);
   const plutoLon = helioToGeoLon(plutoH, earthPos);
 
   const planets: PlanetPosition[] = [
-    lonToPosition('Sun',     sunLon),
-    lonToPosition('Moon',    moonLon),
+    lonToPosition('Sun', sunLon),
+    lonToPosition('Moon', moonLon),
     lonToPosition('Mercury', mercuryLon),
-    lonToPosition('Venus',   venusLon),
-    lonToPosition('Mars',    marsLon),
+    lonToPosition('Venus', venusLon),
+    lonToPosition('Mars', marsLon),
     lonToPosition('Jupiter', jupiterLon),
-    lonToPosition('Saturn',  saturnLon),
-    lonToPosition('Uranus',  uranusLon),
+    lonToPosition('Saturn', saturnLon),
+    lonToPosition('Uranus', uranusLon),
     lonToPosition('Neptune', neptuneLon),
-    lonToPosition('Pluto',   plutoLon),
+    lonToPosition('Pluto', plutoLon),
   ];
 
   let ascendant: number | null = null;

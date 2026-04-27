@@ -4,15 +4,25 @@ import { ZodiacAvatar } from './ZodiacAvatar';
 import type { ZodiacSign } from '@lib/astrology/calculate-signs';
 
 const ALL_SIGNS: ZodiacSign[] = [
-  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+  'Aries',
+  'Taurus',
+  'Gemini',
+  'Cancer',
+  'Leo',
+  'Virgo',
+  'Libra',
+  'Scorpio',
+  'Sagittarius',
+  'Capricorn',
+  'Aquarius',
+  'Pisces',
 ];
 
 const meta = {
   title: 'UI/ZodiacAvatar',
   component: ZodiacAvatar,
   decorators: [
-    (Story) => (
+    Story => (
       <View style={{ padding: 16, alignItems: 'flex-start' }}>
         <Story />
       </View>
@@ -40,7 +50,7 @@ export const Large: Story = {
 export const AllSigns: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, padding: 16 }}>
-      {ALL_SIGNS.map((sign) => (
+      {ALL_SIGNS.map(sign => (
         <ZodiacAvatar key={sign} sign={sign} size={48} />
       ))}
     </View>

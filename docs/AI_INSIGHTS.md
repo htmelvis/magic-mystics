@@ -20,14 +20,14 @@
 All reading types flow through one `readings` row. The `spread_type` field and
 `drawn_cards` array determine which prompt variant and response shape to use.
 
-| `spread_type` | Cards | Position identifiers | Prompt variant |
-|---|---|---|---|
-| `daily` | 1 | _(none — `position: null`)_ | Single-card |
-| `past-present-future` | 3 | `past`, `present`, `future` | Multi-card |
-| `relationship` _(future)_ | 3 | `self`, `other`, `dynamic` | Multi-card |
-| `situation-obstacle-solution` _(future)_ | 3 | `situation`, `obstacle`, `solution` | Multi-card |
-| `mind-body-spirit` _(future)_ | 3 | `mind`, `body`, `spirit` | Multi-card |
-| `path-choice` _(future)_ | 3 | `path_1`, `path_2`, `path_3` | Multi-card |
+| `spread_type`                            | Cards | Position identifiers                | Prompt variant |
+| ---------------------------------------- | ----- | ----------------------------------- | -------------- |
+| `daily`                                  | 1     | _(none — `position: null`)_         | Single-card    |
+| `past-present-future`                    | 3     | `past`, `present`, `future`         | Multi-card     |
+| `relationship` _(future)_                | 3     | `self`, `other`, `dynamic`          | Multi-card     |
+| `situation-obstacle-solution` _(future)_ | 3     | `situation`, `obstacle`, `solution` | Multi-card     |
+| `mind-body-spirit` _(future)_            | 3     | `mind`, `body`, `spirit`            | Multi-card     |
+| `path-choice` _(future)_                 | 3     | `path_1`, `path_2`, `path_3`        | Multi-card     |
 
 **Decision rule in the edge function is purely structural:**
 
@@ -45,11 +45,11 @@ The edge function maps `spread_type` → display name injected into the prompt:
 
 ```typescript
 const SPREAD_DISPLAY_NAMES: Record<string, string> = {
-  'past-present-future':        'past · present · future',
-  'relationship':               'self · other · dynamic between you',
+  'past-present-future': 'past · present · future',
+  relationship: 'self · other · dynamic between you',
   'situation-obstacle-solution': 'situation · obstacle · solution',
-  'mind-body-spirit':           'mind · body · spirit',
-  'path-choice':                'path 1 · path 2 · path 3',
+  'mind-body-spirit': 'mind · body · spirit',
+  'path-choice': 'path 1 · path 2 · path 3',
 };
 const spreadLabel = SPREAD_DISPLAY_NAMES[reading.spread_type] ?? reading.spread_type;
 ```
@@ -71,16 +71,16 @@ response) lets the client render the right layout.
 interface SingleCardInsight {
   kind: 'single';
   opening: string;
-  card_essence: string;       // core meaning in this orientation
-  celestial_overlay: string;  // big-three signs + moon phase + retrogrades
-  guidance: string;           // concrete 24-72h practice
-  resonance: string;          // ≤15-word screenshot line
+  card_essence: string; // core meaning in this orientation
+  celestial_overlay: string; // big-three signs + moon phase + retrogrades
+  guidance: string; // concrete 24-72h practice
+  resonance: string; // ≤15-word screenshot line
 }
 
 interface SpreadInsight {
   kind: 'spread';
   opening: string;
-  spread_reading: string;     // holistic narrative — how the positions relate
+  spread_reading: string; // holistic narrative — how the positions relate
   guidance: string;
   resonance: string;
 }
@@ -257,7 +257,7 @@ interface RequestBody {
 }
 
 interface ResponseBody {
-  insight: AIInsight;  // also written to readings.ai_insight
+  insight: AIInsight; // also written to readings.ai_insight
 }
 ```
 
@@ -291,12 +291,12 @@ per-spread-type default; free-text intention is a future UI addition.
 
 ```typescript
 const DEFAULT_INTENTIONS: Record<string, string> = {
-  'daily':                       'daily guidance',
-  'past-present-future':         'reflection on where I have been and where I am going',
-  'relationship':                'understanding this relationship',
+  daily: 'daily guidance',
+  'past-present-future': 'reflection on where I have been and where I am going',
+  relationship: 'understanding this relationship',
   'situation-obstacle-solution': 'finding a way through this situation',
-  'mind-body-spirit':            'alignment across all parts of myself',
-  'path-choice':                 'clarity on which path to take',
+  'mind-body-spirit': 'alignment across all parts of myself',
+  'path-choice': 'clarity on which path to take',
 };
 ```
 
@@ -312,6 +312,7 @@ detail inline but never fetch `ai_insight`. Both screens have `readingId` set
 immediately after the insert, which is the hook point.
 
 Proposed flow on both draw screens:
+
 1. Reading inserted → `readingId` set
 2. Fire `useGenerateInsight(readingId)` mutation (non-blocking)
 3. Show a subtle loading shimmer below the card detail while insight generates
@@ -371,11 +372,11 @@ border, screenshot-friendly. It is the shareable hook.
 
 ## Cost & Performance
 
-| Variant | Output tokens | Approx. cost/reading |
-|---|---|---|
-| Single-card | ~380 | $0.00095 |
-| Multi-card spread | ~520 | $0.0013 |
-| Follow-up (Phase 2) | ~300 | $0.00075 |
+| Variant             | Output tokens | Approx. cost/reading |
+| ------------------- | ------------- | -------------------- |
+| Single-card         | ~380          | $0.00095             |
+| Multi-card spread   | ~520          | $0.0013              |
+| Follow-up (Phase 2) | ~300          | $0.00075             |
 
 - Edge function warm call: ~50ms + Claude latency ~1–2s total
 - Insight generation never blocks the card reveal animation
@@ -391,6 +392,7 @@ Prompt is in `docs/PROMPT_DRAFTS.md`. This is a separate interaction: after
 receiving a reading, the user asks a specific question and draws one more card.
 
 Requires:
+
 - A UI entry point in `ReadingDrawer.tsx` (question input + draw trigger)
 - A `clarifying_card_draws` array or separate column on the `readings` row, OR
   a new `follow_up_readings` table linked to the parent reading
@@ -403,11 +405,11 @@ Not in scope for Phase 1. Document the prompt now, implement when the UI ships.
 ## Open Questions
 
 - [ ] Free-tier locked state: static upsell card, or a one-line teaser with
-  content blurred?
+      content blurred?
 - [ ] "Generate Insight" backfill button in the drawer for pre-feature readings?
-  Strong upsell surface — show it only on premium-gated readings that predate
-  the feature.
+      Strong upsell surface — show it only on premium-gated readings that predate
+      the feature.
 - [ ] Free-text intention input on the draw screen? Start with defaults; add
-  a text field once the core flow ships and we validate engagement.
+      a text field once the core flow ships and we validate engagement.
 - [ ] Follow-up clarifying card (Phase 2): new column on `readings`, or a
-  separate table? Separate table is cleaner if users can ask multiple follow-ups.
+      separate table? Separate table is cleaner if users can ask multiple follow-ups.

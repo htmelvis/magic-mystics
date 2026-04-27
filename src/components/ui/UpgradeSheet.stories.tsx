@@ -7,7 +7,7 @@ const meta = {
   title: 'UI/UpgradeSheet',
   component: UpgradeSheet,
   decorators: [
-    (Story) => (
+    Story => (
       <View style={{ flex: 1 }}>
         <Story />
       </View>

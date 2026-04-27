@@ -114,7 +114,7 @@ export default function UpdateEmailScreen() {
             <Input
               label="New email"
               value={newEmail}
-              onChangeText={(value) => {
+              onChangeText={value => {
                 setNewEmail(value);
                 if (emailError) setEmailError(validateEmail(value));
               }}

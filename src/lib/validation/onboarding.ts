@@ -32,11 +32,11 @@ export const onboardingParamsSchema = z.object({
   birthDate: z
     .string()
     .min(1, 'Birth date is required')
-    .refine((val) => !isNaN(new Date(val).getTime()), {
+    .refine(val => !isNaN(new Date(val).getTime()), {
       message: 'Birth date is not a valid date string',
     })
     .refine(
-      (val) => {
+      val => {
         const date = new Date(val);
         return date >= minDate && date <= today();
       },

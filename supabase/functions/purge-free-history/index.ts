@@ -51,7 +51,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const freeUserIds = freeSubs.map((s) => s.user_id);
+    const freeUserIds = freeSubs.map(s => s.user_id);
 
     // ── Count / delete readings ────────────────────────────────────────────────
     // Reflections cascade automatically — no explicit delete needed.

@@ -1,12 +1,19 @@
 import type { Meta, StoryObj } from '@storybook/react-native';
 import { View } from 'react-native';
-import { Skeleton, SkeletonText, SkeletonCircle, SkeletonCard, SkeletonProfile, SkeletonRow } from './Skeleton';
+import {
+  Skeleton,
+  SkeletonText,
+  SkeletonCircle,
+  SkeletonCard,
+  SkeletonProfile,
+  SkeletonRow,
+} from './Skeleton';
 
 const meta = {
   title: 'UI/Skeleton',
   component: Skeleton,
   decorators: [
-    (Story) => (
+    Story => (
       <View style={{ padding: 16, gap: 12 }}>
         <Story />
       </View>

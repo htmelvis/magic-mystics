@@ -7,7 +7,7 @@ const meta = {
   title: 'Example/Button',
   component: Button,
   decorators: [
-    (Story) => (
+    Story => (
       <View style={{ padding: 16, gap: 12 }}>
         <Story />
       </View>

@@ -14,7 +14,7 @@ const meta = {
   title: 'UI/Card',
   component: Card,
   decorators: [
-    (Story) => (
+    Story => (
       <View style={{ padding: 16 }}>
         <Story />
       </View>
@@ -47,7 +47,7 @@ export const Pressable: Story = {
 export const AllVariants: Story = {
   render: () => (
     <View style={{ padding: 16, gap: 12 }}>
-      {(['elevated', 'outlined', 'filled'] as const).map((variant) => (
+      {(['elevated', 'outlined', 'filled'] as const).map(variant => (
         <Card key={variant} variant={variant}>
           <Text style={{ fontSize: 13, color: '#374151', fontWeight: '500' }}>
             {variant.charAt(0).toUpperCase() + variant.slice(1)}

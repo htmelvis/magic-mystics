@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
 import { Toast } from '@components/ui/Toast';
 import type { ToastConfig } from '@/types/announcement';
 
@@ -21,8 +14,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const gapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = useCallback((config: ToastConfig) => {
-    setQueue((prev) => {
-      if (prev.some((t) => t.id === config.id)) return prev;
+    setQueue(prev => {
+      if (prev.some(t => t.id === config.id)) return prev;
       return [...prev, config];
     });
   }, []);
@@ -30,7 +23,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const dismissToast = useCallback((id: string) => {
     if (gapTimerRef.current) clearTimeout(gapTimerRef.current);
     gapTimerRef.current = setTimeout(() => {
-      setQueue((prev) => prev.filter((t) => t.id !== id));
+      setQueue(prev => prev.filter(t => t.id !== id));
     }, 300);
   }, []);
 
@@ -40,11 +33,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={{ showToast, dismissToast }}>
       {children}
       {current && (
-        <Toast
-          key={current.id}
-          {...current}
-          onDismiss={() => dismissToast(current.id)}
-        />
+        <Toast key={current.id} {...current} onDismiss={() => dismissToast(current.id)} />
       )}
     </ToastContext.Provider>
   );

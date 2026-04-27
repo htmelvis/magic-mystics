@@ -1,6 +1,6 @@
 /**
  * Reusable UI Components
- * 
+ *
  * Import from this file to access all UI components:
  * import { Button, Card, Badge, Input } from '@components/ui';
  */

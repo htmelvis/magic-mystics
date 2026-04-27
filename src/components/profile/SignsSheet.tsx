@@ -23,8 +23,7 @@ const PLACEMENT_INTRO = {
     emoji: '☀️',
     title: 'Sun Sign',
     role: 'Your core self — the steady flame at the center of who you are.',
-    description:
-      `The Sun is the steady flame at the center of your chart — the core of who you are when everything else falls away. It speaks to your life force, ego, purpose, and creative will: the part of you that says "I am" and insists on becoming itself. When you act from your Sun, you feel awake, decisive, and alive, as if the world is briefly orbiting around your essence. It is both your fuel and your trajectory, the story you came here to live on purpose.`,
+    description: `The Sun is the steady flame at the center of your chart — the core of who you are when everything else falls away. It speaks to your life force, ego, purpose, and creative will: the part of you that says "I am" and insists on becoming itself. When you act from your Sun, you feel awake, decisive, and alive, as if the world is briefly orbiting around your essence. It is both your fuel and your trajectory, the story you came here to live on purpose.`,
   },
   moon: {
     emoji: '🌙',
@@ -49,7 +48,8 @@ const SIGN_COPY: Record<ZodiacSign, Record<Placement, string>> = {
   Aries: {
     sun: `Bold, direct, and first across every finish line — Aries Suns carry an instinctive flame that refuses to wait. You are a pioneer at heart: quick to act, slow to overthink, and energized by the thrill of a fresh beginning. The challenge is learning that pausing doesn't mean losing.`,
     moon: `When emotions rise in you, they rise fast. Aries Moon feels things immediately and intensely, craving action as a release. You're soothed by autonomy — being able to move, decide, and not be told to wait. Anger is a clean emotion for you; it passes quickly, and you rarely hold grudges.`,
-    rising: 'You enter a room and people notice. Aries Rising gives you an energy that reads as confident, sometimes edgy, always alive. Others experience you as direct — someone who says what they mean and means what they say. First impressions of you lean energetic, assertive, and a little magnetic.',
+    rising:
+      'You enter a room and people notice. Aries Rising gives you an energy that reads as confident, sometimes edgy, always alive. Others experience you as direct — someone who says what they mean and means what they say. First impressions of you lean energetic, assertive, and a little magnetic.',
   },
   Taurus: {
     sun: `Taurus Suns are the steady heartbeat the world relies on. You are patient, sensual, and deeply loyal — someone who builds things meant to last. You trust what you can touch, smell, and savor. Comfort and beauty aren't luxuries for you; they're necessities. The challenge: learning to move before the moment is "perfect."`,
@@ -59,17 +59,20 @@ const SIGN_COPY: Record<ZodiacSign, Record<Placement, string>> = {
   Gemini: {
     sun: `Gemini Suns live in the space between ideas, always collecting, connecting, and communicating. You are the eternal student: curious about everything, bored by repetition, and energized by conversation. You carry multitudes — and yes, that's a feature, not a flaw. The challenge is deciding which thread to follow when they're all interesting.`,
     moon: 'Your emotional life runs through your mind. Gemini Moon processes feelings by talking, writing, or turning them over in thought until they make sense. You need variety in your emotional diet — sameness breeds restlessness. A great conversation can lift your mood faster than almost anything else.',
-    rising: 'You come across as lively, witty, and easy to talk to. Gemini Rising gives your presence an electric quality: you seem to be paying attention to everything at once, asking the right questions, and shifting the energy of a room toward lightness. People see you as clever and fun — someone who makes things interesting.',
+    rising:
+      'You come across as lively, witty, and easy to talk to. Gemini Rising gives your presence an electric quality: you seem to be paying attention to everything at once, asking the right questions, and shifting the energy of a room toward lightness. People see you as clever and fun — someone who makes things interesting.',
   },
   Cancer: {
     sun: 'Cancer Suns feel the world more deeply than most will ever know. You are nurturing, perceptive, and fiercely protective of the people you love. Home — whether a place, a person, or a feeling — is your sacred space. The world may see your soft exterior first, but underneath lives one of the most resilient souls in the zodiac.',
     moon: 'The Moon rules Cancer, which means a Cancer Moon is the Moon at home in itself — emotional, intuitive, and richly feeling. You absorb the moods of the people around you like weather. Memory is vivid for you; the past stays present. What you need most is to feel truly seen, and to belong.',
-    rising: 'You give off a warmth that draws people in — something about you says "safe." Cancer Rising makes others want to open up to you, often before they even know why. You may seem a little guarded at first, but that reserve is just discernment. Once trust is established, your care is legendary.',
+    rising:
+      'You give off a warmth that draws people in — something about you says "safe." Cancer Rising makes others want to open up to you, often before they even know why. You may seem a little guarded at first, but that reserve is just discernment. Once trust is established, your care is legendary.',
   },
   Leo: {
     sun: `Leo Suns were born to shine — not out of vanity, but out of a genuine and generous desire to bring warmth into the world. You lead with your heart, love with drama and devotion, and possess a creative vitality that few can match. The challenge: learning that asking for recognition doesn't make you less radiant; it makes you honest.`,
     moon: `Leo Moon needs to feel special — truly, sincerely cherished — and that's not a flaw; it's a beautiful demand. You give love in grand, expressive ways, and you need the same in return. Your inner child is alive and playful. When you feel unseen, you dim. When seen? You light up every room you enter.`,
-    rising: 'Your entrance is an event. Leo Rising gives you an unmistakable presence: poised, warm, and carrying the quiet confidence of someone who knows who they are. People see you as charismatic and generous. You may attract attention without trying, which can feel like a gift or a pressure — often both.',
+    rising:
+      'Your entrance is an event. Leo Rising gives you an unmistakable presence: poised, warm, and carrying the quiet confidence of someone who knows who they are. People see you as charismatic and generous. You may attract attention without trying, which can feel like a gift or a pressure — often both.',
   },
   Virgo: {
     sun: `Virgo Suns carry the quiet power of someone who actually does the work. Detail-oriented, thoughtful, and devoted to craft, you see what others miss and care about getting things right. Service isn't a burden for you — it's how you express love. The challenge: learning to extend the same grace to yourself that you give so freely to others.`,
@@ -235,7 +238,12 @@ export function SignsSheet({ isVisible, onClose, sunSign, moonSign, risingSign }
             bounces={false}
           >
             {/* Header */}
-            <Text style={[styles.headerGlyph, { color: theme.colors.brand.accent }]} accessible={false}>✦</Text>
+            <Text
+              style={[styles.headerGlyph, { color: theme.colors.brand.accent }]}
+              accessible={false}
+            >
+              ✦
+            </Text>
             <Text style={[styles.title, { color: theme.colors.text.primary }]}>The Big Three</Text>
             <Text style={[styles.intro, { color: theme.colors.text.secondary }]}>
               Your birth chart is a snapshot of the sky at the exact moment you arrived — a map of
@@ -316,7 +324,9 @@ function PlacementCard({
     >
       {/* Placement header */}
       <View style={cardStyles.placementRow}>
-        <Text style={cardStyles.placementEmoji} accessible={false}>{emoji}</Text>
+        <Text style={cardStyles.placementEmoji} accessible={false}>
+          {emoji}
+        </Text>
         <Text style={[cardStyles.placementTitle, { color: theme.colors.brand.primary }]}>
           {placementTitle}
         </Text>
@@ -329,12 +339,17 @@ function PlacementCard({
       {/* Sign block */}
       <View style={[cardStyles.divider, { backgroundColor: theme.colors.border.main }]} />
       <View style={cardStyles.signRow}>
-        <Text style={[cardStyles.glyph, { color: theme.colors.brand.primaryLight }]} accessible={false}>
+        <Text
+          style={[cardStyles.glyph, { color: theme.colors.brand.primaryLight }]}
+          accessible={false}
+        >
           {glyph}
         </Text>
         <View style={cardStyles.signMeta}>
           <Text style={[cardStyles.signName, { color: theme.colors.text.primary }]}>{sign}</Text>
-          <Text style={[cardStyles.element, { color: theme.colors.text.muted }]}>{element} sign</Text>
+          <Text style={[cardStyles.element, { color: theme.colors.text.muted }]}>
+            {element} sign
+          </Text>
         </View>
       </View>
       <Text style={[cardStyles.signCopy, { color: theme.colors.text.secondary }]}>{signCopy}</Text>

@@ -40,7 +40,7 @@ export function useInAppNotifications(userId: string | undefined, isPremium: boo
   useEffect(() => {
     if (!userId || dailyStatus === undefined || dailyStatus.hasDrawnToday) return;
 
-    isCooldownExpired(DAILY_CARD_COOLDOWN_KEY, DAILY_CARD_COOLDOWN_MS).then((expired) => {
+    isCooldownExpired(DAILY_CARD_COOLDOWN_KEY, DAILY_CARD_COOLDOWN_MS).then(expired => {
       if (!expired) return;
 
       timerRef.current = setTimeout(() => {
@@ -70,7 +70,7 @@ export function useInAppNotifications(userId: string | undefined, isPremium: boo
   useEffect(() => {
     if (!userId) return;
 
-    unreadAnnouncements.forEach((a) => {
+    unreadAnnouncements.forEach(a => {
       if (shownAnnouncementsRef.current.has(a.id)) return;
       shownAnnouncementsRef.current.add(a.id);
 

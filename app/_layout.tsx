@@ -51,7 +51,7 @@ function RootLayoutNav() {
 
   // Identify or reset the PostHog user whenever auth state changes.
   useEffect(() => {
-    if(!user) return
+    if (!user) return;
     if (user?.id) {
       identify(user.id, { email: user.email ?? null });
     } else {
@@ -80,7 +80,7 @@ function RootLayoutNav() {
     };
 
     const subscription = Linking.addEventListener('url', handleUrl);
-    Linking.getInitialURL().then((url) => {
+    Linking.getInitialURL().then(url => {
       if (url) handleUrl({ url });
     });
 
@@ -137,7 +137,15 @@ function RootLayoutNav() {
   }, [user, authLoading, onboardingCompleted, onboardingLoading, isPasswordRecovery, segments]);
 
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { paddingTop: insets.top, backgroundColor: appTheme.colors.surface.background } }}>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: {
+          paddingTop: insets.top,
+          backgroundColor: appTheme.colors.surface.background,
+        },
+      }}
+    >
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(onboarding)" />

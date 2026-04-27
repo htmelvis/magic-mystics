@@ -10,7 +10,7 @@ import type { SharedValue } from 'react-native-reanimated';
 
 const MAX_DEG = 15;
 const SENSITIVITY = 0.5;
-const ALPHA = 0.2;       // fast low-pass for output smoothing
+const ALPHA = 0.2; // fast low-pass for output smoothing
 const NEUTRAL_ALPHA = 0.01; // slow neutral drift — ~1.7s time constant at 60fps
 const RAD_TO_DEG = 180 / Math.PI;
 const SPRING_BACK = { damping: 20, stiffness: 300, mass: 1 };
@@ -46,7 +46,7 @@ export function useTilt(enabled: boolean): UseTiltResult {
 
   useAnimatedReaction(
     () => enabledSV.value,
-    (isEnabled) => {
+    isEnabled => {
       if (!isEnabled) {
         hasNeutral.value = false;
         tiltX.value = withSpring(0, SPRING_BACK);
@@ -59,7 +59,7 @@ export function useTilt(enabled: boolean): UseTiltResult {
 
   useAnimatedReaction(
     () => sensor.sensor.value,
-    (data) => {
+    data => {
       if (!enabledSV.value) return;
 
       const { pitch, roll } = data;

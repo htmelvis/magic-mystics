@@ -4,11 +4,11 @@ import { getTheme } from '@theme';
 
 /**
  * Hook to get the current theme based on the active color scheme
- * 
+ *
  * Usage:
  * ```tsx
  * const theme = useAppTheme();
- * 
+ *
  * const styles = StyleSheet.create({
  *   container: {
  *     backgroundColor: theme.colors.surface.background,
@@ -19,6 +19,6 @@ import { getTheme } from '@theme';
  */
 export function useAppTheme() {
   const { activeColorScheme } = useTheme();
-  
+
   return useMemo(() => getTheme(activeColorScheme), [activeColorScheme]);
 }

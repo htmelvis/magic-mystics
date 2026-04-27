@@ -115,7 +115,7 @@ describe('drawSpread', () => {
 
   it('returns no duplicate cardIds in a spread', () => {
     const results = drawSpread(DECK, 10);
-    const ids = results.map((r) => r.cardId);
+    const ids = results.map(r => r.cardId);
     expect(new Set(ids).size).toBe(10);
   });
 

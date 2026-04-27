@@ -34,9 +34,7 @@ export function ExpiryWarningBanner({ expiry, onUpgradePress }: ExpiryWarningBan
       style={[
         styles.container,
         {
-          backgroundColor: urgency
-            ? theme.colors.warning.light
-            : theme.colors.brand.purple[50],
+          backgroundColor: urgency ? theme.colors.warning.light : theme.colors.brand.purple[50],
           borderColor: urgency ? theme.colors.warning.main : theme.colors.brand.purple[200],
         },
       ]}
@@ -49,9 +47,7 @@ export function ExpiryWarningBanner({ expiry, onUpgradePress }: ExpiryWarningBan
             style={[
               styles.title,
               {
-                color: urgency
-                  ? theme.colors.warning.dark
-                  : theme.colors.brand.purple[700],
+                color: urgency ? theme.colors.warning.dark : theme.colors.brand.purple[700],
               },
             ]}
           >

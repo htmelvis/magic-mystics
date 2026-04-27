@@ -29,26 +29,38 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import Anthropic from 'npm:@anthropic-ai/sdk@0.35';
 import * as Astronomy from 'npm:astronomy-engine@2';
-import { eclipticLonToSign, PLANET_RULING_SIGNS, hasMajorAspect } from '../_shared/daily-helpers.ts';
+import {
+  eclipticLonToSign,
+  PLANET_RULING_SIGNS,
+  hasMajorAspect,
+} from '../_shared/daily-helpers.ts';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const PLANET_GLYPHS: Record<string, string> = {
-  Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
-  Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
+  Sun: '☉',
+  Moon: '☽',
+  Mercury: '☿',
+  Venus: '♀',
+  Mars: '♂',
+  Jupiter: '♃',
+  Saturn: '♄',
+  Uranus: '♅',
+  Neptune: '♆',
+  Pluto: '♇',
 };
 
 const PLANETS = [
-  { body: Astronomy.Body.Sun,     name: 'Sun',     canRetrograde: false },
-  { body: Astronomy.Body.Moon,    name: 'Moon',    canRetrograde: false },
-  { body: Astronomy.Body.Mercury, name: 'Mercury', canRetrograde: true  },
-  { body: Astronomy.Body.Venus,   name: 'Venus',   canRetrograde: true  },
-  { body: Astronomy.Body.Mars,    name: 'Mars',    canRetrograde: true  },
-  { body: Astronomy.Body.Jupiter, name: 'Jupiter', canRetrograde: true  },
-  { body: Astronomy.Body.Saturn,  name: 'Saturn',  canRetrograde: true  },
-  { body: Astronomy.Body.Uranus,  name: 'Uranus',  canRetrograde: true  },
-  { body: Astronomy.Body.Neptune, name: 'Neptune', canRetrograde: true  },
-  { body: Astronomy.Body.Pluto,   name: 'Pluto',   canRetrograde: true  },
+  { body: Astronomy.Body.Sun, name: 'Sun', canRetrograde: false },
+  { body: Astronomy.Body.Moon, name: 'Moon', canRetrograde: false },
+  { body: Astronomy.Body.Mercury, name: 'Mercury', canRetrograde: true },
+  { body: Astronomy.Body.Venus, name: 'Venus', canRetrograde: true },
+  { body: Astronomy.Body.Mars, name: 'Mars', canRetrograde: true },
+  { body: Astronomy.Body.Jupiter, name: 'Jupiter', canRetrograde: true },
+  { body: Astronomy.Body.Saturn, name: 'Saturn', canRetrograde: true },
+  { body: Astronomy.Body.Uranus, name: 'Uranus', canRetrograde: true },
+  { body: Astronomy.Body.Neptune, name: 'Neptune', canRetrograde: true },
+  { body: Astronomy.Body.Pluto, name: 'Pluto', canRetrograde: true },
 ] as const;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -100,11 +112,13 @@ Deno.serve(async (req: Request) => {
     const dateParam = url.searchParams.get('date');
 
     // Use noon UTC so positions are representative of the full day
-    const date = dateParam ? new Date(`${dateParam}T12:00:00Z`) : (() => {
-      const d = new Date();
-      d.setUTCHours(12, 0, 0, 0);
-      return d;
-    })();
+    const date = dateParam
+      ? new Date(`${dateParam}T12:00:00Z`)
+      : (() => {
+          const d = new Date();
+          d.setUTCHours(12, 0, 0, 0);
+          return d;
+        })();
     const dateStr = date.toISOString().split('T')[0];
 
     const supabase = createClient(
@@ -145,7 +159,7 @@ Deno.serve(async (req: Request) => {
     const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY')! });
 
     const positionSummary = positions
-      .map((p) => `${p.planet} in ${p.sign}${p.isRetrograde ? ' (retrograde)' : ''}`)
+      .map(p => `${p.planet} in ${p.sign}${p.isRetrograde ? ' (retrograde)' : ''}`)
       .join(', ');
 
     const prompt = `Planetary snapshot for ${dateStr}:
@@ -173,40 +187,38 @@ Respond with valid JSON only. No markdown fences, no extra text.`;
     let supportedEndeavors = ['focus and intention', 'mindful action', 'reflection'];
     let advice = `With ${dominant.planet} forming ${dominant.aspectCount} major aspects today, its energy permeates the sky — align your actions with its nature for greatest resonance.`;
 
-    const rawText =
-      completion.content[0].type === 'text' ? completion.content[0].text.trim() : '';
+    const rawText = completion.content[0].type === 'text' ? completion.content[0].text.trim() : '';
     try {
       const jsonText = rawText.replace(/^```json?\n?/, '').replace(/\n?```$/, '');
       const parsed = JSON.parse(jsonText);
       if (typeof parsed.alignment_theme === 'string') alignmentTheme = parsed.alignment_theme;
-      if (Array.isArray(parsed.supported_endeavors)) supportedEndeavors = parsed.supported_endeavors;
+      if (Array.isArray(parsed.supported_endeavors))
+        supportedEndeavors = parsed.supported_endeavors;
       if (typeof parsed.advice === 'string') advice = parsed.advice;
     } catch {
       console.warn('[daily-planetary] Could not parse Claude response, using fallback.');
     }
 
     // ── Upsert ────────────────────────────────────────────────────────────────
-    const { error: upsertError } = await supabase
-      .from('daily_planetary_alignment')
-      .upsert(
-        {
-          date: dateStr,
-          dominant_planet: dominant.planet,
-          dominant_planet_sign: dominant.sign,
-          dominant_planet_symbol: dominant.symbol,
-          alignment_theme: alignmentTheme,
-          supported_endeavors: supportedEndeavors,
-          all_planet_positions: positions.map(({ longitude: _lon, ...rest }) => rest),
-          advice,
-          metadata: {
-            dominant_aspect_count: dominant.aspectCount,
-            dominant_longitude: Math.round(dominant.longitude * 100) / 100,
-            generated_by: 'daily-planetary-v1',
-            generated_at: new Date().toISOString(),
-          },
+    const { error: upsertError } = await supabase.from('daily_planetary_alignment').upsert(
+      {
+        date: dateStr,
+        dominant_planet: dominant.planet,
+        dominant_planet_sign: dominant.sign,
+        dominant_planet_symbol: dominant.symbol,
+        alignment_theme: alignmentTheme,
+        supported_endeavors: supportedEndeavors,
+        all_planet_positions: positions.map(({ longitude: _lon, ...rest }) => rest),
+        advice,
+        metadata: {
+          dominant_aspect_count: dominant.aspectCount,
+          dominant_longitude: Math.round(dominant.longitude * 100) / 100,
+          generated_by: 'daily-planetary-v1',
+          generated_at: new Date().toISOString(),
         },
-        { onConflict: 'date' }
-      );
+      },
+      { onConflict: 'date' }
+    );
 
     if (upsertError) throw upsertError;
 

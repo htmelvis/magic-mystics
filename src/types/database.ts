@@ -110,7 +110,14 @@ export interface Database {
         Row: {
           id: string;
           user_id: string;
-          spread_type: 'daily' | 'past-present-future' | 'relationship' | 'situation-obstacle-solution' | 'mind-body-spirit' | 'path-choice' | 'accept-embrace-let-go';
+          spread_type:
+            | 'daily'
+            | 'past-present-future'
+            | 'relationship'
+            | 'situation-obstacle-solution'
+            | 'mind-body-spirit'
+            | 'path-choice'
+            | 'accept-embrace-let-go';
           drawn_cards: unknown;
           ai_insight: string | null;
           shared_at: string | null;
@@ -120,7 +127,14 @@ export interface Database {
         Insert: {
           id?: string;
           user_id: string;
-          spread_type: 'daily' | 'past-present-future' | 'relationship' | 'situation-obstacle-solution' | 'mind-body-spirit' | 'path-choice' | 'accept-embrace-let-go';
+          spread_type:
+            | 'daily'
+            | 'past-present-future'
+            | 'relationship'
+            | 'situation-obstacle-solution'
+            | 'mind-body-spirit'
+            | 'path-choice'
+            | 'accept-embrace-let-go';
           drawn_cards: unknown;
           ai_insight?: string | null;
           shared_at?: string | null;
@@ -128,7 +142,13 @@ export interface Database {
           updated_at?: string;
         };
         Update: {
-          spread_type?: 'daily' | 'past-present-future' | 'relationship' | 'situation-obstacle-solution' | 'mind-body-spirit' | 'path-choice';
+          spread_type?:
+            | 'daily'
+            | 'past-present-future'
+            | 'relationship'
+            | 'situation-obstacle-solution'
+            | 'mind-body-spirit'
+            | 'path-choice';
           drawn_cards?: unknown;
           ai_insight?: string | null;
           shared_at?: string | null;

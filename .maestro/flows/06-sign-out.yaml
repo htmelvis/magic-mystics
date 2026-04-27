@@ -14,16 +14,16 @@ appId: com.edwardwieczorek.magicmystics
 
 # Navigate to Profile
 - tapOn:
-    label: "Profile tab"
+    label: 'Profile tab'
 
-- assertVisible: "Profile"
+- assertVisible: 'Profile'
 
 # Initiate sign out
-- tapOn: "Sign Out"
+- tapOn: 'Sign Out'
 
 # Confirm in the native Alert
-- assertVisible: "Are you sure you want to sign out?"
-- tapOn: "Sign Out"
+- assertVisible: 'Are you sure you want to sign out?'
+- tapOn: 'Sign Out'
 
 # Should redirect to sign-in
-- assertVisible: "Welcome Back"
+- assertVisible: 'Welcome Back'

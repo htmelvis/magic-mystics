@@ -32,7 +32,7 @@ export function useOnboarding(userId: string | undefined) {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'users', filter: `id=eq.${userId}` },
-        (payload) => {
+        payload => {
           const row = payload.new as Record<string, unknown>;
           if (typeof row['onboarding_completed'] === 'boolean') {
             queryClient.setQueryData(['onboarding', userId], row['onboarding_completed']);

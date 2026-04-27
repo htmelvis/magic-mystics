@@ -20,14 +20,24 @@ interface StatTileProps {
 function StatTile({ value, label, color }: StatTileProps) {
   const theme = useAppTheme();
   return (
-    <View style={[styles.tile, { backgroundColor: theme.colors.surface.subtle, borderColor: theme.colors.border.subtle }]}>
+    <View
+      style={[
+        styles.tile,
+        { backgroundColor: theme.colors.surface.subtle, borderColor: theme.colors.border.subtle },
+      ]}
+    >
       <Text style={[styles.tileValue, { color }]}>{value}</Text>
       <Text style={[styles.tileLabel, { color: theme.colors.text.secondary }]}>{label}</Text>
     </View>
   );
 }
 
-export function JourneyStatsGrid({ readings, reflections, daysActive, isLoading }: JourneyStatsGridProps) {
+export function JourneyStatsGrid({
+  readings,
+  reflections,
+  daysActive,
+  isLoading,
+}: JourneyStatsGridProps) {
   const theme = useAppTheme();
 
   if (isLoading) {
@@ -49,7 +59,11 @@ export function JourneyStatsGrid({ readings, reflections, daysActive, isLoading 
       <View style={styles.grid}>
         <StatTile value={readings} label="readings" color={theme.colors.brand.primary} />
         <StatTile value={reflections} label="reflections" color={theme.colors.brand.cosmic.ocean} />
-        <StatTile value={daysActive} label="days active" color={theme.colors.brand.cosmic.sunGold} />
+        <StatTile
+          value={daysActive}
+          label="days active"
+          color={theme.colors.brand.cosmic.sunGold}
+        />
       </View>
     </Card>
   );

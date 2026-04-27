@@ -27,9 +27,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Determine the active color scheme based on user preference and system setting
   const activeColorScheme: ActiveColorScheme =
-    colorScheme === 'auto'
-      ? (systemColorScheme ?? 'light')
-      : colorScheme;
+    colorScheme === 'auto' ? (systemColorScheme ?? 'light') : colorScheme;
 
   const loadThemePreference = async () => {
     try {

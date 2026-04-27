@@ -122,11 +122,7 @@ export default function ReadingDetailScreen() {
             {reading.card.name}
           </Text>
           {reading.belongsToMe && (
-            <AIInsightSection
-              insight={reading.insight}
-              isLoading={false}
-              isPremium={isPremium}
-            />
+            <AIInsightSection insight={reading.insight} isLoading={false} isPremium={isPremium} />
           )}
           <CardDetail card={reading.card} orientation={reading.orientation} />
         </ScrollView>
@@ -184,7 +180,13 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 14, textAlign: 'center' },
   strangerIcon: { fontSize: 40, color: '#c084fc' },
   strangerTitle: { fontSize: 20, fontWeight: '700', textAlign: 'center' },
-  strangerBody: { fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: 12, maxWidth: 320 },
+  strangerBody: {
+    fontSize: 15,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 12,
+    maxWidth: 320,
+  },
   cta: { paddingVertical: 14, paddingHorizontal: 32, borderRadius: 999 },
   ctaText: { fontSize: 15, fontWeight: '700' },
   secondaryLink: { marginTop: 8 },

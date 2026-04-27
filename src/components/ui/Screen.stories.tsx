@@ -9,8 +9,8 @@ const LoremContent = () => (
       <View key={i} style={{ gap: 4 }}>
         <Text style={{ fontSize: 14, fontWeight: '600', color: '#1f2937' }}>Section {i + 1}</Text>
         <Text style={{ fontSize: 13, color: '#6b7280', lineHeight: 20 }}>
-          The stars align to reveal a path through the cosmic tapestry. Trust the signals
-          the universe is sending your way.
+          The stars align to reveal a path through the cosmic tapestry. Trust the signals the
+          universe is sending your way.
         </Text>
       </View>
     ))}
@@ -21,7 +21,7 @@ const meta = {
   title: 'UI/Screen',
   component: Screen,
   decorators: [
-    (Story) => (
+    Story => (
       <SafeAreaProvider>
         <View style={{ flex: 1, height: 600 }}>
           <Story />

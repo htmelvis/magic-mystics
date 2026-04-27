@@ -13,11 +13,12 @@ npx expo start --ios
 npx expo start --android
 npx expo start --web
 
-# Lint (no npm script configured)
-npx eslint . --ext .ts,.tsx
+# Lint (ESLint 9 flat config — eslint.config.js)
+npm run lint
+npm run lint:fix
 
 # Format
-npx prettier --write .
+npm run format
 
 # Test
 npm test                  # run all tests
@@ -94,4 +95,4 @@ ANTHROPIC_API_KEY=
 
 Prettier config: single quotes, trailing commas (ES5), 2-space indent, 100 char line width, no semicolon-less (semis on), arrow parens avoided.
 
-ESLint extends `expo` + `prettier`; `console.log` is warned against; unused vars are errors.
+ESLint uses flat config (`eslint.config.js`) extending `eslint-config-expo/flat` + `eslint-plugin-prettier/recommended`; `console.log` is warned against; unused vars are errors (TS files only).

@@ -38,7 +38,7 @@ export function Skeleton({
     opacity.value = withRepeat(
       withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) }),
       -1,
-      true,
+      true
     );
   }, [opacity]);
 
@@ -47,7 +47,9 @@ export function Skeleton({
   }));
 
   const resolvedRadius = circle
-    ? (typeof width === 'number' ? width / 2 : 9999)
+    ? typeof width === 'number'
+      ? width / 2
+      : 9999
     : (br ?? borderRadius.md);
 
   return (
