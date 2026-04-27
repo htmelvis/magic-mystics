@@ -3,7 +3,6 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@hooks/useAuth';
 import { useSubscription } from '@hooks/useSubscription';
 import { useUserProfile } from '@hooks/useUserProfile';
-import { useDailyMetaphysical } from '@hooks/useDailyMetaphysical';
 import { useDailyPlanetaryAlignment } from '@hooks/useDailyPlanetaryAlignment';
 import { useJourneyStats } from '@hooks/useJourneyStats';
 import { useStreak } from '@hooks/useStreak';
@@ -11,7 +10,6 @@ import { useSpreadStats } from '@hooks/useSpreadStats';
 import { useReadings } from '@hooks/useReadings';
 import { Screen } from '@components/ui/Screen';
 import { ReadingDrawer } from '@/components/history/ReadingDrawer';
-import { PathCosmicHeader } from '@/components/path/PathCosmicHeader';
 import { PlanetaryAlignmentCard } from '@/components/path/PlanetaryAlignmentCard';
 import { StreakCard } from '@/components/path/StreakCard';
 import { JourneyStatsGrid } from '@/components/path/JourneyStatsGrid';
@@ -26,7 +24,6 @@ export default function PathScreen() {
   const { user } = useAuth();
   const { limits } = useSubscription(user?.id);
   const { userProfile } = useUserProfile(user?.id);
-  const { data: cosmic, isLoading: cosmicLoading } = useDailyMetaphysical();
   const { data: planetary, isLoading: planetaryLoading } = useDailyPlanetaryAlignment();
   const { data: stats, isLoading: statsLoading } = useJourneyStats(user?.id);
   const { data: streak, isLoading: streakLoading } = useStreak(user?.id);
@@ -44,8 +41,6 @@ export default function PathScreen() {
   return (
     <Screen style={{ paddingBottom: 84 }}>
       <CompactProfile userProfile={userProfile} />
-
-      {/* <PathCosmicHeader cosmic={cosmic} userProfile={userProfile} isLoading={cosmicLoading} /> */}
 
       <PlanetaryAlignmentCard alignment={planetary} isLoading={planetaryLoading} showFull={true} />
 

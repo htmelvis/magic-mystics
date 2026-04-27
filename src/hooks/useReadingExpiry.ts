@@ -94,6 +94,7 @@ export function useReadingExpiry(
     }
     const key = dismissKey(userId, oldest.created_at);
     AsyncStorage.getItem(key).then(val => setIsDismissed(val === 'true'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, oldest?.created_at]);
 
   const dismiss = useCallback(() => {

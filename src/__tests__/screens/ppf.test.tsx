@@ -9,6 +9,7 @@
 import React from 'react';
 import { render, act, waitFor } from '@testing-library/react-native';
 import { Animated } from 'react-native';
+import PPFScreen from '../../../app/ppf';
 
 // ── TarotDeck mock — captures onShuffleComplete so tests can fire it ──────────
 
@@ -109,8 +110,6 @@ jest.mock('@hooks/useReflection', () => ({
 }));
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
-
-import PPFScreen from '../../../app/ppf';
 
 describe('PPFScreen', () => {
   beforeEach(() => {

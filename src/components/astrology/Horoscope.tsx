@@ -3,7 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { spacing, borderRadius } from '@theme';
 import { Skeleton } from '@components/ui/Skeleton';
-import { resolveColor, buildGradientColors } from '@lib/colors/cosmicColors';
+import { buildGradientColors } from '@lib/colors/cosmicColors';
 import type { useDailyMetaphysical } from '@hooks/useDailyMetaphysical';
 
 const PHASE_EMOJI: Record<string, string> = {

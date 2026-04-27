@@ -4,7 +4,9 @@ import { NatalChartWheel } from '@components/ui/NatalChartWheel';
 import type { StoredNatalChart } from '@lib/astrology/natal-chart';
 
 jest.mock('react-native-svg', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require('react');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { Text: RNText } = require('react-native');
   const passThrough = ({ children }: { children?: React.ReactNode }) =>
     React.createElement(React.Fragment, null, children ?? null);

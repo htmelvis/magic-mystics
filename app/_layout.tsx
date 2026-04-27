@@ -57,6 +57,7 @@ function RootLayoutNav() {
     } else {
       reset();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   // Handle deep links:
@@ -134,6 +135,7 @@ function RootLayoutNav() {
       // User completed onboarding but is still in onboarding group
       router.replace('/(tabs)/home');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading, onboardingCompleted, onboardingLoading, isPasswordRecovery, segments]);
 
   return (

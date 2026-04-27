@@ -99,7 +99,8 @@ export function PlanetaryAlignmentCard({
             {alignment.supported_endeavors.map((endeavor: string, i: number) => (
               <View key={endeavor}>
                 <Text style={[styles.pillText, { color: theme.colors.brand.cosmic.stardust }]}>
-                  {endeavor + `${(alignment.supported_endeavors?.length ?? 0) == i + 1 ? '' : ','}`}
+                  {endeavor +
+                    `${(alignment.supported_endeavors?.length ?? 0) === i + 1 ? '' : ','}`}
                 </Text>
               </View>
             ))}

@@ -102,7 +102,7 @@ export const PLANET_RULING_SIGNS: Record<string, string[]> = {
 };
 
 // Orbs for each major aspect in degrees
-const ASPECTS: Array<{ angle: number; orb: number }> = [
+const ASPECTS: { angle: number; orb: number }[] = [
   { angle: 0, orb: 8 }, // conjunction
   { angle: 60, orb: 6 }, // sextile
   { angle: 90, orb: 8 }, // square

@@ -20,6 +20,12 @@
  * });
  * ```
  */
+import { colors, darkColors } from './colors';
+import { spacing, borderRadius, iconSizes, layout } from './spacing';
+import { fontSizes, fontWeights, lineHeights, letterSpacings, textStyles } from './typography';
+import { shadows } from './shadows';
+import { durations, springs, animations } from './animations';
+import type { ActiveColorScheme } from '../context/ThemeContext';
 
 export { colors, darkColors } from './colors';
 export { spacing, borderRadius, iconSizes, layout } from './spacing';
@@ -33,14 +39,6 @@ export type { Spacing, BorderRadius, IconSizes, Layout } from './spacing';
 export type { FontSizes, FontWeights, LineHeights, LetterSpacings, TextStyles } from './typography';
 export type { Shadows, ShadowKey } from './shadows';
 export type { Durations, Springs, Animations } from './animations';
-
-// Combined theme object
-import { colors, darkColors } from './colors';
-import { spacing, borderRadius, iconSizes, layout } from './spacing';
-import { fontSizes, fontWeights, lineHeights, letterSpacings, textStyles } from './typography';
-import { shadows } from './shadows';
-import { durations, springs, animations } from './animations';
-import type { ActiveColorScheme } from '../context/ThemeContext';
 
 // Function to get theme based on color scheme
 export function getTheme(colorScheme: ActiveColorScheme = 'light') {

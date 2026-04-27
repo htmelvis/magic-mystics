@@ -22,14 +22,7 @@ import {
   generateLuckyColors,
   generateLuckyNumbers,
   SIGN_ELEMENTS,
-  type DailyZodiacSign,
-  type ZodiacElement,
 } from '../_shared/daily-helpers.ts';
-
-// ── Constants ─────────────────────────────────────────────────────────────────
-
-type ZodiacSign = DailyZodiacSign;
-type Element = ZodiacElement;
 
 // Planets to check for retrograde (outer planets only — Sun/Moon don't retrograde)
 const PLANETS = [

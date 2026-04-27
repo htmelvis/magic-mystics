@@ -104,6 +104,7 @@ export default function DrawScreen() {
       return;
     }
     loadTodaysReading();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, deckLoading]);
 
   useEffect(() => {

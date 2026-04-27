@@ -95,6 +95,7 @@ export default function TarotRevealScreen() {
     }
 
     fetchAssociation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sunSign]);
 
   const handleBeginJourney = () => {

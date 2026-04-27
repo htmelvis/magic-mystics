@@ -119,5 +119,6 @@ export const config = createConfig({
 type Config = typeof config;
 
 declare module '@gluestack-style/react' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface ICustomConfig extends Config {}
 }

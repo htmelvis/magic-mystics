@@ -59,11 +59,13 @@ export function useInAppNotifications(userId: string | undefined, isPremium: boo
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, dailyStatus]);
 
   // Dismiss the daily card toast mid-session if the user draws their card
   useEffect(() => {
     if (dailyStatus?.hasDrawnToday) dismissToast('daily-card');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dailyStatus]);
 
   // Supabase-driven announcements — queue unread ones, mark read on dismiss
@@ -87,5 +89,6 @@ export function useInAppNotifications(userId: string | undefined, isPremium: boo
       // Mark read so it won't reappear on the next query refresh
       markRead(a.id);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, unreadAnnouncements.length]);
 }

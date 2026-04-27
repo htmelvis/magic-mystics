@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@lib/supabase/client';
 import type { Announcement, AnnouncementTier } from '@/types/announcement';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
 
 async function fetchActiveAnnouncements(tier: AnnouncementTier): Promise<Announcement[]> {

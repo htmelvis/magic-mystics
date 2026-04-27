@@ -47,6 +47,7 @@ export default function UpdateEmailScreen() {
     }
 
     setSent(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newEmail, updateEmail, user?.email]);
 
   return (
