@@ -43,14 +43,22 @@ export const onboardingParamsSchema = z.object({
       { message: 'Birth date must be between 1 January 1900 and today' }
     ),
 
-  birthTime: z
-    .string()
-    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Birth time must be in HH:mm format (00:00 – 23:59)'),
+  birthTime: z.union([
+    z.literal(''),
+    z
+      .string()
+      .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Birth time must be in HH:mm format (00:00 – 23:59)'),
+  ]),
 
   birthLocation: z
     .string()
     .min(2, 'Birth location must be at least 2 characters')
     .max(200, 'Birth location must be 200 characters or fewer'),
+
+  birthLat: z.string().optional(),
+  birthLng: z.string().optional(),
+  timeKnown: z.enum(['true', 'false']).optional(),
+  locationApproximate: z.enum(['true', 'false']).optional(),
 });
 
 /**
@@ -60,7 +68,9 @@ export const onboardingParamsSchema = z.object({
 export const astrologyDataSchema = z.object({
   sunSign: z.enum(ZODIAC_SIGNS, { message: 'Sun sign must be a valid zodiac sign' }),
   moonSign: z.enum(ZODIAC_SIGNS, { message: 'Moon sign must be a valid zodiac sign' }),
-  risingSign: z.enum(ZODIAC_SIGNS, { message: 'Rising sign must be a valid zodiac sign' }),
+  risingSign: z
+    .enum(ZODIAC_SIGNS, { message: 'Rising sign must be a valid zodiac sign' })
+    .nullable(),
 });
 
 /**
@@ -73,14 +83,15 @@ export const userOnboardingUpdateSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Formatted birth date must be in YYYY-MM-DD format'),
   birth_time: z
     .string()
-    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Birth time must be in HH:mm format'),
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Birth time must be in HH:mm format')
+    .nullable(),
   birth_location: z.string().min(2).max(200),
   birth_lat: z.number().nullable().optional(),
   birth_lng: z.number().nullable().optional(),
   birth_timezone: z.string().nullable().optional(),
   sun_sign: z.enum(ZODIAC_SIGNS),
   moon_sign: z.enum(ZODIAC_SIGNS),
-  rising_sign: z.enum(ZODIAC_SIGNS),
+  rising_sign: z.enum(ZODIAC_SIGNS).nullable(),
   onboarding_completed: z.literal(true),
 });
 

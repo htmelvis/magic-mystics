@@ -9,9 +9,24 @@ import { theme } from '@theme';
 // ── Static suggestion fixtures ────────────────────────────────────────────────
 
 const SUGGESTIONS: LocationSuggestion[] = [
-  { displayName: 'Los Angeles, California, United States', shortName: 'Los Angeles, California, United States' },
-  { displayName: 'Los Angeles, Texas, United States', shortName: 'Los Angeles, Texas, United States' },
-  { displayName: 'Los Angeles, Chile', shortName: 'Los Angeles, Chile' },
+  {
+    displayName: 'Los Angeles, California, United States',
+    shortName: 'Los Angeles, California, United States',
+    lat: 34.0537,
+    lng: -118.2428,
+  },
+  {
+    displayName: 'Los Angeles, Texas, United States',
+    shortName: 'Los Angeles, Texas, United States',
+    lat: 27.48,
+    lng: -98.08,
+  },
+  {
+    displayName: 'Los Angeles, Chile',
+    shortName: 'Los Angeles, Chile',
+    lat: -37.4689,
+    lng: -72.3538,
+  },
 ];
 
 /** Search override that returns static results immediately — no network call. */

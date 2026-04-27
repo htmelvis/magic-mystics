@@ -12,6 +12,27 @@ export type ZodiacSign =
   | 'Aquarius'
   | 'Pisces';
 
+const ZODIAC_ORDER: ZodiacSign[] = [
+  'Aries',
+  'Taurus',
+  'Gemini',
+  'Cancer',
+  'Leo',
+  'Virgo',
+  'Libra',
+  'Scorpio',
+  'Sagittarius',
+  'Capricorn',
+  'Aquarius',
+  'Pisces',
+];
+
+/** Map an ecliptic longitude (degrees) to its zodiac sign. Handles negative / out-of-range input. */
+export function longitudeToSign(longitude: number): ZodiacSign {
+  const norm = ((longitude % 360) + 360) % 360;
+  return ZODIAC_ORDER[Math.floor(norm / 30)];
+}
+
 interface AstrologyData {
   sunSign: ZodiacSign;
   moonSign: ZodiacSign;

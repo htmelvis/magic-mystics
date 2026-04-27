@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,13 +12,21 @@ import {
 import { useRouter } from 'expo-router';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
+import type { User } from '@supabase/supabase-js';
 import { useAuth } from '@hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { Screen, LocationInput } from '@components/ui';
 import { supabase } from '@lib/supabase/client';
-import { calculateAstrologyData } from '@lib/astrology/calculate-signs';
-import { geocodeLocation, getTimezone } from '@lib/geocoding/geocode';
+import {
+  calculateMoonSign,
+  calculateSunSign,
+  longitudeToSign,
+} from '@lib/astrology/calculate-signs';
+import { computeNatalChart } from '@lib/astrology/natal-chart';
+import { getTimezone } from '@lib/geocoding/geocode';
+import type { LocationSuggestion } from '@lib/geocoding/geocode';
+import type { UserProfile } from '@/types/user';
 
 const MIN_DATE = new Date(1900, 0, 1);
 
@@ -43,16 +51,42 @@ function formatTimeLabel(date: Date): string {
 
 export default function EditBirthDetailsScreen() {
   const router = useRouter();
-  const { user } = useAuth();
-  const { userProfile } = useUserProfile(user?.id);
+  const theme = useAppTheme();
+  const { user, loading: authLoading } = useAuth();
+  const { userProfile, loading: profileLoading } = useUserProfile(user?.id);
+
+  const settled = !authLoading && !profileLoading;
+  const missing = settled && (!user || !userProfile);
+
+  useEffect(() => {
+    if (missing) router.back();
+  }, [missing, router]);
+
+  if (!settled || !user || !userProfile) {
+    return (
+      <Screen>
+        <View style={styles.loadingCenter}>
+          <ActivityIndicator color={theme.colors.brand.primary} size="large" />
+        </View>
+      </Screen>
+    );
+  }
+
+  return <EditBirthDetailsForm user={user} userProfile={userProfile} />;
+}
+
+function EditBirthDetailsForm({ user, userProfile }: { user: User; userProfile: UserProfile }) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const theme = useAppTheme();
 
-  const [date, setDate] = useState(() => parseBirthDate(userProfile?.birthDate ?? null));
+  const originalLocation = userProfile.birthLocation ?? '';
+  const [date, setDate] = useState(() => parseBirthDate(userProfile.birthDate));
   const [showDatePicker, setShowDatePicker] = useState(Platform.OS === 'ios');
-  const [time, setTime] = useState(() => parseBirthTime(userProfile?.birthTime ?? null));
+  const [time, setTime] = useState(() => parseBirthTime(userProfile.birthTime));
   const [showTimePicker, setShowTimePicker] = useState(Platform.OS === 'ios');
-  const [location, setLocation] = useState(userProfile?.birthLocation ?? '');
+  const [location, setLocation] = useState(originalLocation);
+  const [selectedSuggestion, setSelectedSuggestion] = useState<LocationSuggestion | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -66,7 +100,13 @@ export default function EditBirthDetailsScreen() {
 
   const handleLocationChangeValue = (value: string) => {
     setLocation(value);
+    setSelectedSuggestion(null);
     if (locationError) setLocationError(validateLocation(value));
+  };
+
+  const handleLocationConfirmed = (suggestion: LocationSuggestion) => {
+    setSelectedSuggestion(suggestion);
+    setLocationError(null);
   };
 
   const handleDateChange = (_event: DateTimePickerEvent, selected?: Date) => {
@@ -80,8 +120,6 @@ export default function EditBirthDetailsScreen() {
   };
 
   const handleSave = useCallback(async () => {
-    if (!user) return;
-
     const locError = validateLocation(location);
     if (locError) {
       setLocationError(locError);
@@ -93,6 +131,15 @@ export default function EditBirthDetailsScreen() {
       return;
     }
 
+    const locationUnchanged = location.trim() === originalLocation.trim();
+    if (!locationUnchanged && !selectedSuggestion) {
+      Alert.alert(
+        'Pick a location',
+        'Please select your birthplace from the suggestions so we can update your chart accurately.',
+      );
+      return;
+    }
+
     setSaving(true);
     setSaveError(null);
 
@@ -100,7 +147,6 @@ export default function EditBirthDetailsScreen() {
       const hours = time.getHours().toString().padStart(2, '0');
       const minutes = time.getMinutes().toString().padStart(2, '0');
       const birthTime = `${hours}:${minutes}`;
-      const birthLocation = location.trim();
 
       // Use local date components — avoids UTC boundary issues from toISOString()
       const y = date.getFullYear();
@@ -110,9 +156,19 @@ export default function EditBirthDetailsScreen() {
 
       // Reconstruct birth date at local noon for accurate sign calculation
       const birthDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
-      const astrologyData = calculateAstrologyData(birthDate, birthTime, birthLocation);
-      const coords = await geocodeLocation(birthLocation);
-      const timezone = coords ? await getTimezone(coords.lat, coords.lng) : null;
+
+      // Pick coords: either the freshly selected suggestion or the stored values
+      // (when the user didn't touch the location field).
+      const birthLat = selectedSuggestion?.lat ?? userProfile.birthLat ?? null;
+      const birthLng = selectedSuggestion?.lng ?? userProfile.birthLng ?? null;
+      const birthLocation = selectedSuggestion?.displayName ?? location.trim();
+
+      const timezone =
+        birthLat !== null && birthLng !== null ? await getTimezone(birthLat, birthLng) : null;
+
+      const natalChart = computeNatalChart(birthDate, birthTime, birthLat, birthLng, timezone);
+      const risingSign =
+        natalChart.ascendant !== null ? longitudeToSign(natalChart.ascendant) : null;
 
       const { error } = await supabase
         .from('users')
@@ -120,12 +176,13 @@ export default function EditBirthDetailsScreen() {
           birth_date: formattedDate,
           birth_time: birthTime,
           birth_location: birthLocation,
-          birth_lat: coords?.lat ?? null,
-          birth_lng: coords?.lng ?? null,
-          birth_timezone: timezone ?? null,
-          sun_sign: astrologyData.sunSign,
-          moon_sign: astrologyData.moonSign,
-          rising_sign: astrologyData.risingSign,
+          birth_lat: birthLat,
+          birth_lng: birthLng,
+          birth_timezone: timezone,
+          sun_sign: calculateSunSign(birthDate),
+          moon_sign: calculateMoonSign(birthDate),
+          rising_sign: risingSign,
+          natal_chart_data: natalChart,
           birth_details_edited_at: new Date().toISOString(),
         })
         .eq('id', user.id);
@@ -150,7 +207,7 @@ export default function EditBirthDetailsScreen() {
     } finally {
       setSaving(false);
     }
-  }, [user, date, time, location, queryClient, router]);
+  }, [user, userProfile, date, time, location, selectedSuggestion, originalLocation, queryClient, router]);
 
   return (
     <Screen>
@@ -256,6 +313,7 @@ export default function EditBirthDetailsScreen() {
           label="Birth Location"
           value={location}
           onChangeValue={handleLocationChangeValue}
+          onConfirmed={handleLocationConfirmed}
           error={locationError ?? undefined}
           onBlur={() => setLocationError(validateLocation(location))}
         />
@@ -284,6 +342,11 @@ export default function EditBirthDetailsScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingCenter: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   scrollContent: {
     paddingBottom: 40,
     gap: 24,

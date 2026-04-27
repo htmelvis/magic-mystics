@@ -1,23 +1,27 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, ActivityIndicator, Pressable, StyleSheet } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@hooks/useAuth';
 import { supabase } from '@lib/supabase/client';
-import { calculateAstrologyData, ZodiacSign } from '@lib/astrology/calculate-signs';
+import {
+  calculateSunSign,
+  calculateMoonSign,
+  longitudeToSign,
+  ZodiacSign,
+} from '@lib/astrology/calculate-signs';
 import { computeNatalChart } from '@lib/astrology/natal-chart';
 import {
   onboardingParamsSchema,
-  astrologyDataSchema,
   userOnboardingUpdateSchema,
 } from '@lib/validation/onboarding';
-import { geocodeLocation, getTimezone } from '@lib/geocoding/geocode';
+import { useOnboardingDraft } from '@lib/onboarding/OnboardingContext';
 import { ZodiacAvatar } from '@components/ui';
 import { useAppTheme } from '@/hooks/useAppTheme';
 
 export default function CalculatingScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams();
+  const { draft, resetDraft } = useOnboardingDraft();
   const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const [status, setStatus] = useState('Calculating your signs...');
@@ -34,65 +38,70 @@ export default function CalculatingScreen() {
     setStatus('Calculating your signs...');
 
     try {
-      // Validate raw params from router before any processing
+      // Validate the draft via the existing schema (still string-shaped so the
+      // contract is unchanged for callers/tests).
       const validatedParams = onboardingParamsSchema.parse({
-        displayName: params.displayName,
-        birthDate: params.birthDate,
-        birthTime: params.birthTime,
-        birthLocation: params.birthLocation,
+        displayName: draft.displayName,
+        birthDate: draft.birthDate,
+        birthTime: draft.birthTime,
+        birthLocation: draft.birthLocation,
+        birthLat: draft.birthLat !== null ? String(draft.birthLat) : undefined,
+        birthLng: draft.birthLng !== null ? String(draft.birthLng) : undefined,
+        timeKnown: draft.timeKnown ? 'true' : 'false',
+        locationApproximate: draft.locationApproximate ? 'true' : 'false',
       });
 
       // Parse birth date as local noon to avoid UTC boundary issues.
-      // "YYYY-MM-DD" strings passed via router params are always local calendar
-      // dates — constructing at noon ensures the calendar date stays correct
-      // regardless of the device timezone.
       const [year, month, day] = validatedParams.birthDate.split('-').map(Number);
       const birthDate = new Date(year, month - 1, day, 12, 0, 0);
 
-      // Calculate astrology signs
       setStatus('Calculating your astrological signs...');
-      const rawAstrologyData = calculateAstrologyData(
+      const sunSignValue = calculateSunSign(birthDate);
+      const moonSignValue = calculateMoonSign(birthDate);
+      setSunSign(sunSignValue);
+
+      const birthLat = draft.birthLat;
+      const birthLng = draft.birthLng;
+      // Timezone was resolved on the location step; null when the user opted out
+      // or when the lookup failed (the time step already surfaced the warning).
+      const birthTimezone = draft.birthTimezone;
+
+      // Compute natal chart. When the user skipped birth time, fall back to local
+      // noon for planet positions — ASC won't be used (locked out via canDeriveAsc).
+      setStatus('Charting your sky...');
+      const timeForChart = validatedParams.birthTime || '12:00';
+      const natalChart = computeNatalChart(
         birthDate,
-        validatedParams.birthTime,
-        validatedParams.birthLocation
+        timeForChart,
+        birthLat,
+        birthLng,
+        birthTimezone,
       );
 
-      // Validate calculated signs before writing to DB
-      const astrologyData = astrologyDataSchema.parse(rawAstrologyData);
-      setSunSign(astrologyData.sunSign);
+      const canDeriveAsc =
+        validatedParams.timeKnown !== 'false' &&
+        validatedParams.locationApproximate !== 'true' &&
+        natalChart.ascendant !== null;
+      const risingSignValue: ZodiacSign | null = canDeriveAsc
+        ? longitudeToSign(natalChart.ascendant!)
+        : null;
 
-      // Geocode birth location — non-blocking, falls back to null coords on failure
-      setStatus('Locating your birthplace...');
-      let birthLat: number | null = null;
-      let birthLng: number | null = null;
-      let birthTimezone: string | null = null;
-      const coords = await geocodeLocation(validatedParams.birthLocation);
-      if (coords) {
-        birthLat = coords.lat;
-        birthLng = coords.lng;
-        birthTimezone = await getTimezone(coords.lat, coords.lng);
-      }
+      const storedBirthTime = validatedParams.birthTime || null;
 
-      // Compute natal chart — with real coords if geocoding succeeded, ASC/MC filled in
-      setStatus('Charting your sky...');
-      const natalChart = computeNatalChart(birthDate, validatedParams.birthTime, birthLat, birthLng);
-
-      // Validate the full DB update payload
       const updatePayload = userOnboardingUpdateSchema.parse({
         display_name: validatedParams.displayName,
         birth_date: validatedParams.birthDate,
-        birth_time: validatedParams.birthTime,
+        birth_time: storedBirthTime,
         birth_location: validatedParams.birthLocation,
         birth_lat: birthLat,
         birth_lng: birthLng,
         birth_timezone: birthTimezone,
-        sun_sign: astrologyData.sunSign,
-        moon_sign: astrologyData.moonSign,
-        rising_sign: astrologyData.risingSign,
+        sun_sign: sunSignValue,
+        moon_sign: moonSignValue,
+        rising_sign: risingSignValue,
         onboarding_completed: true,
       });
 
-      // Save to database (upsert to handle case where trigger didn't create row)
       setStatus('Saving your profile...');
       const { error } = await supabase
         .from('users')
@@ -120,7 +129,6 @@ export default function CalculatingScreen() {
         throw error;
       }
 
-      // Ensure user has a subscription (in case trigger didn't fire)
       const { data: existingSub } = await supabase
         .from('subscriptions')
         .select('id')
@@ -151,32 +159,27 @@ export default function CalculatingScreen() {
         birthLng,
         birthTimezone,
         birthDetailsEditedAt: null,
-        sunSign: astrologyData.sunSign,
-        moonSign: astrologyData.moonSign,
-        risingSign: astrologyData.risingSign,
+        sunSign: sunSignValue,
+        moonSign: moonSignValue,
+        risingSign: risingSignValue,
         natalChartData: natalChart,
-        tarotCard: null, // populated by tarot-reveal step
+        tarotCard: null,
         onboardingCompleted: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
 
-      // Update onboarding cache so the layout's effect fires and navigates to home.
-      // This avoids a race where router.replace runs while onboardingCompleted is
-      // still false in cache, causing the layout to redirect back to onboarding.
       setStatus('Your cosmic profile is ready.');
       setCompleted(true);
+      resetDraft();
     } catch (err) {
       console.warn('Error completing onboarding:', err);
       setStatus('Something went wrong.');
       setFailed(true);
     }
-  }, [user, params, queryClient]);
+  }, [user, draft, queryClient, resetDraft]);
 
   useEffect(() => {
-    // Wait for auth to resolve before attempting — user is null during the
-    // initial render and would cause a silent early return, setting hasRun
-    // before the real work could run.
     if (authLoading || !user) return;
     if (!hasRun.current) {
       hasRun.current = true;

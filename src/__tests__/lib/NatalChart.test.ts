@@ -163,6 +163,21 @@ describe('computeNatalChart', () => {
       const london = computeNatalChart(BIRTH_DATE, BIRTH_TIME, 51.5074, -0.1278);
       expect(london.ascendant).not.toBeCloseTo(chart.ascendant!, 0);
     });
+
+    it('shifts the ascendant when a timezone is supplied', () => {
+      // Same wall-clock time in NYC vs. UTC: the underlying UTC instants differ
+      // by the NYC offset, producing a different sidereal time and thus a
+      // different Ascendant.
+      const noTz = computeNatalChart(BIRTH_DATE, BIRTH_TIME, BIRTH_LAT, BIRTH_LNG);
+      const withTz = computeNatalChart(
+        BIRTH_DATE,
+        BIRTH_TIME,
+        BIRTH_LAT,
+        BIRTH_LNG,
+        'America/New_York',
+      );
+      expect(withTz.ascendant).not.toBeCloseTo(noTz.ascendant!, 1);
+    });
   });
 
   // ── Sun sign spot-check ───────────────────────────────────────────────────

@@ -1,20 +1,32 @@
 import { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useAppTheme } from '@/hooks/useAppTheme';
+import { useOnboardingDraft } from '@lib/onboarding/OnboardingContext';
+import { getNextStep, getStepIndex } from '@lib/onboarding/steps';
 
 const MIN_DATE = new Date(1900, 0, 1);
+
+function parseDraftDate(stored: string): Date {
+  if (stored) {
+    const [y, m, d] = stored.split('-').map(Number);
+    if (y && m && d) return new Date(y, m - 1, d);
+  }
+  const t = new Date();
+  return new Date(2000, t.getMonth(), t.getDate());
+}
 
 export default function BirthDateScreen() {
   const router = useRouter();
   const { capture } = useAnalytics();
   const theme = useAppTheme();
-  const params = useLocalSearchParams();
-  const [date, setDate] = useState(new Date());
+  const { draft, updateDraft } = useOnboardingDraft();
+  const [date, setDate] = useState(() => parseDraftDate(draft.birthDate));
   const [showPicker, setShowPicker] = useState(Platform.OS === 'ios');
   const [error, setError] = useState<string | null>(null);
+  const { index, total } = getStepIndex('birth-date');
 
   capture('screen_viewed', { screen: 'onboarding birth date' });
 
@@ -34,10 +46,8 @@ export default function BirthDateScreen() {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
-    router.push({
-      pathname: '/(onboarding)/birth-time',
-      params: { displayName: params.displayName as string, birthDate: `${y}-${m}-${d}` },
-    });
+    updateDraft({ birthDate: `${y}-${m}-${d}` });
+    router.push(`/(onboarding)/${getNextStep('birth-date')}`);
   };
 
   const onChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
@@ -51,7 +61,9 @@ export default function BirthDateScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface.background }]}>
       <View style={styles.content}>
-        <Text style={[styles.progress, { color: theme.colors.brand.primary }]}>Step 2 of 4</Text>
+        <Text style={[styles.progress, { color: theme.colors.brand.primary }]}>
+          Step {index} of {total}
+        </Text>
         <Text style={[styles.title, { color: theme.colors.text.primary }]} accessibilityRole="header">
           When were you born?
         </Text>
@@ -101,7 +113,6 @@ export default function BirthDateScreen() {
         onPress={handleContinue}
         accessibilityRole="button"
         accessibilityLabel="Continue"
-        accessibilityHint="Proceeds to birth time selection"
       >
         <Text style={styles.buttonText}>Continue</Text>
       </Pressable>
