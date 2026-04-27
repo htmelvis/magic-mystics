@@ -269,7 +269,7 @@ export function ReflectionSheet({
           <View style={styles.body}>
             {step === 1 && (
               <SentimentPicker
-                question="How do you feel about this reading?"
+                question="How does this card resonate with you today?"
                 value={feeling}
                 onChange={handleFeelingChange}
               />
@@ -277,7 +277,7 @@ export function ReflectionSheet({
 
             {step === 2 && (
               <SentimentPicker
-                question="Does this align with your journey?"
+                question="Do you think it aligns with your current path or challenges?"
                 value={alignment}
                 onChange={handleAlignmentChange}
               />
@@ -322,7 +322,7 @@ export function ReflectionSheet({
                   Carry this into your Journal?
                 </Text>
                 <Text style={[styles.textHint, { color: theme.colors.text.muted }]}>
-                  Your reflection is saved. You can also write it into a private journal entry.
+                  Your reflection is saved. You can also expand it into a private journal entry.
                 </Text>
               </View>
             )}
