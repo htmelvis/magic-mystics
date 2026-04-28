@@ -159,6 +159,18 @@ export interface DailyMetaphysicalData {
   createdAt: string;
 }
 
+// ============== DAILY HOROSCOPES ==============
+export interface DailyHoroscope {
+  date: string;
+  sign: string;
+  headline: string | null;
+  body: string | null;
+  theme: string | null;
+  love_note: string | null;
+  career_note: string | null;
+  wellness_note: string | null;
+}
+
 // ============== JOINED DATA TYPES ==============
 // For queries that join reference data with user data
 

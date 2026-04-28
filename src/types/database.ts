@@ -363,6 +363,44 @@ export interface Database {
         };
         Relationships: [];
       };
+      daily_horoscopes: {
+        Row: {
+          id: number;
+          date: string;
+          sign: string;
+          headline: string | null;
+          body: string | null;
+          theme: string | null;
+          love_note: string | null;
+          career_note: string | null;
+          wellness_note: string | null;
+          metadata: unknown;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          date: string;
+          sign: string;
+          headline?: string | null;
+          body?: string | null;
+          theme?: string | null;
+          love_note?: string | null;
+          career_note?: string | null;
+          wellness_note?: string | null;
+          metadata?: unknown;
+          created_at?: string;
+        };
+        Update: {
+          headline?: string | null;
+          body?: string | null;
+          theme?: string | null;
+          love_note?: string | null;
+          career_note?: string | null;
+          wellness_note?: string | null;
+          metadata?: unknown;
+        };
+        Relationships: [];
+      };
       support_tickets: {
         Row: {
           id: string;

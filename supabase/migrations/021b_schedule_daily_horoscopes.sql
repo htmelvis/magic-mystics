@@ -1,0 +1,39 @@
+-- =====================================================
+-- Migration 021b: Schedule daily-horoscopes edge function
+-- Registers a pg_cron job at 00:03 UTC daily.
+-- =====================================================
+
+-- pg_cron and pg_net must already be enabled (see migration 004).
+-- This function runs after daily-metaphysical (00:01) and daily-planetary (00:02)
+-- so the planet positions and moon data it reads are guaranteed to exist.
+--
+-- Run the block below in the Supabase SQL Editor:
+--
+--   SELECT cron.schedule(
+--     'daily-horoscopes',
+--     '3 0 * * *',
+--     $$
+--     SELECT net.http_post(
+--       url        := 'https://rbfrnhjlirnsgigozdbc.supabase.co/functions/v1/daily-horoscopes',
+--       headers    := '{"Content-Type":"application/json","Authorization":"Bearer <SERVICE_ROLE_KEY>"}'::jsonb,
+--       body       := '{}'::jsonb,
+--       timeout_milliseconds := 60000
+--     );
+--     $$
+--   );
+--
+-- Find <SERVICE_ROLE_KEY>: Dashboard → Settings → API → Project API keys → service_role
+--
+-- NOTE: timeout_milliseconds is 60000 because this function makes 12 parallel Claude
+-- Haiku calls — actual wall-clock time is ~5-8 s but we leave headroom for cold starts.
+-- Edge Functions have a 60 s hard limit.
+--
+-- Verify the job is registered:
+--   SELECT jobname, schedule FROM cron.job;
+--
+-- Check run history and errors:
+--   SELECT * FROM cron.job_run_details ORDER BY start_time DESC LIMIT 20;
+--
+-- Backfill a specific date (after daily-metaphysical and daily-planetary exist for that date):
+--   GET /functions/v1/daily-horoscopes?date=YYYY-MM-DD
+-- ─────────────────────────────────────────────────────────────────────────────
