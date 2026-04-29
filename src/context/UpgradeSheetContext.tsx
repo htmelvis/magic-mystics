@@ -8,7 +8,7 @@ interface UpgradeSheetContextType {
   open: () => void;
 }
 
-const UpgradeSheetContext = createContext<UpgradeSheetContextType | undefined>(undefined);
+export const UpgradeSheetContext = createContext<UpgradeSheetContextType | undefined>(undefined);
 
 export function UpgradeSheetProvider({ children }: { children: ReactNode }) {
   const [isVisible, setIsVisible] = useState(false);
