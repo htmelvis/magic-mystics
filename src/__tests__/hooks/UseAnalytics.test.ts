@@ -1,12 +1,13 @@
 import { renderHook } from '@testing-library/react-native';
 import { useAnalytics } from '@hooks/useAnalytics';
-import { usePostHog, mockPostHogClient } from 'posthog-react-native';
+import { usePostHog } from 'posthog-react-native';
+import { mockPostHogClient } from '../../__mocks__/posthog-react-native';
 
 const mockUsePostHog = jest.mocked(usePostHog);
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockUsePostHog.mockReturnValue(mockPostHogClient);
+  mockUsePostHog.mockReturnValue(mockPostHogClient as never);
 });
 
 // ── capture ───────────────────────────────────────────────────────────────────

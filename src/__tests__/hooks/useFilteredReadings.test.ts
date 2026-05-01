@@ -92,7 +92,7 @@ describe('search', () => {
 
   afterEach(() => jest.clearAllTimers());
 
-  function search(result: ReturnType<typeof renderHook<ReturnType<typeof useFilteredReadings>, ReadingRow[]>['result']>, query: string) {
+  function search(result: { current: ReturnType<typeof useFilteredReadings> }, query: string) {
     act(() => result.current.onChangeSearch(query));
     act(() => jest.advanceTimersByTime(250));
   }
