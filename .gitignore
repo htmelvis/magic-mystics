@@ -54,6 +54,7 @@ storybook-static
 
 # dependencies
 node_modules/
+worker/node_modules/
 
 # Expo
 .expo/

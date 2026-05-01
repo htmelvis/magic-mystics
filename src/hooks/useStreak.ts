@@ -7,7 +7,7 @@ export interface StreakData {
   monthlyActivity: { month: string; count: number }[];
 }
 
-function computeStreakData(rawDates: string[]): StreakData {
+export function computeStreakData(rawDates: string[]): StreakData {
   if (rawDates.length === 0) {
     const now = new Date();
     const monthlyActivity = Array.from({ length: 6 }, (_, i) => {
