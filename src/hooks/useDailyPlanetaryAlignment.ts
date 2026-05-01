@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@lib/supabase/client';
 import type { DailyPlanetaryAlignment } from '@/types/metaphysical';
+import { localDateString } from '@lib/utils/date';
 
 async function fetchTodayPlanetaryAlignment(date: string): Promise<DailyPlanetaryAlignment | null> {
   const { data, error } = await supabase
@@ -29,15 +30,6 @@ async function fetchTodayPlanetaryAlignment(date: string): Promise<DailyPlanetar
  * One DB round-trip per calendar day per device — cache invalidates automatically
  * when the date changes because the query key includes today's date string.
  */
-function localDateString(): string {
-  const d = new Date();
-  return [
-    d.getFullYear(),
-    String(d.getMonth() + 1).padStart(2, '0'),
-    String(d.getDate()).padStart(2, '0'),
-  ].join('-');
-}
-
 export function useDailyPlanetaryAlignment() {
   const today = localDateString();
 

@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@lib/supabase/client';
+import { localDateString } from '@lib/utils/date';
 
 export interface DailyMetaphysical {
   date: string;
   moon_phase: string;
+  moon_special_name: string | null;
   retrograde_planets: string[] | null;
   lucky_numbers: number[] | null;
   lucky_colors: string[] | null;
@@ -19,6 +21,7 @@ async function fetchTodayMetaphysical(date: string): Promise<DailyMetaphysical |
       `
       date,
       moon_phase,
+      moon_special_name,
       retrograde_planets,
       lucky_numbers,
       lucky_colors,
@@ -42,7 +45,7 @@ async function fetchTodayMetaphysical(date: string): Promise<DailyMetaphysical |
  * staleTime: Infinity means a single DB round-trip per calendar day per device.
  */
 export function useDailyMetaphysical() {
-  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  const today = localDateString();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['daily-metaphysical', today],

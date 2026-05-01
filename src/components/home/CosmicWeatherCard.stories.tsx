@@ -6,6 +6,7 @@ import type { DailyMetaphysical } from '@hooks/useDailyMetaphysical';
 const SAMPLE_DATA: DailyMetaphysical = {
   date: '2026-04-11',
   moon_phase: 'Full Moon',
+  moon_special_name: 'Flower Moon',
   retrograde_planets: ['Mercury', 'Saturn'],
   lucky_numbers: [3, 7, 12, 28],
   lucky_colors: ['violet', 'gold', 'midnight blue'],
@@ -18,6 +19,7 @@ const SAMPLE_DATA: DailyMetaphysical = {
 const MINIMAL_DATA: DailyMetaphysical = {
   date: '2026-04-11',
   moon_phase: 'Waxing Crescent',
+  moon_special_name: null,
   retrograde_planets: null,
   lucky_numbers: null,
   lucky_colors: null,

@@ -25,7 +25,17 @@ CREATE INDEX IF NOT EXISTS idx_daily_horoscopes_date_sign
 -- Public read — horoscopes are keyed by sign, not user identity.
 ALTER TABLE daily_horoscopes ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "horoscopes_public_read"
-  ON daily_horoscopes
-  FOR SELECT
-  USING (true);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename  = 'daily_horoscopes'
+      AND policyname = 'horoscopes_public_read'
+  ) THEN
+    CREATE POLICY "horoscopes_public_read"
+      ON daily_horoscopes
+      FOR SELECT
+      USING (true);
+  END IF;
+END $$;

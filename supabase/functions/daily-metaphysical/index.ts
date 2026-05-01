@@ -8,16 +8,16 @@
  *
  * Query params:
  *   ?date=YYYY-MM-DD  — override the target date (useful for backfilling)
+ *   ?force=true       — regenerate even if a row already exists for the date
  *
- * Idempotent: returns 200 with status "already_exists" if a row for the date
- * is already present. Safe to call multiple times.
+ * Idempotent by default: returns 200 with status "already_exists" if a row
+ * for the date is already present. Pass ?force=true to overwrite.
  */
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import Anthropic from 'npm:@anthropic-ai/sdk@0.35';
 import * as Astronomy from 'npm:astronomy-engine@2';
 import {
-  getMoonPhaseName,
   eclipticLonToSign,
   generateLuckyColors,
   generateLuckyNumbers,
@@ -36,6 +36,136 @@ const PLANETS = [
 ] as const;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+// Traditional full moon names by calendar month (UTC)
+const MONTHLY_MOON_NAMES: Record<number, string> = {
+  1: 'Wolf Moon',
+  2: 'Snow Moon',
+  3: 'Worm Moon',
+  4: 'Pink Moon',
+  5: 'Flower Moon',
+  6: 'Strawberry Moon',
+  7: 'Buck Moon',
+  8: 'Sturgeon Moon',
+  9: 'Corn Moon',
+  10: "Hunter's Moon",
+  11: 'Beaver Moon',
+  12: 'Cold Moon',
+};
+
+/**
+ * Computes the special cultural/astronomical name for a Full Moon day.
+ * Returns null for non-full-moon days (caller must gate on moonPhaseName).
+ *
+ * Composition: [Super] [Blue] [Blood] <BaseName>
+ * Base precedence: Harvest Moon > Hunter's Moon > monthly traditional name
+ */
+function computeMoonSpecialName(noonDate: Date, moonVec: Astronomy.Vector): string | null {
+  const dayStart = new Date(noonDate);
+  dayStart.setUTCHours(0, 0, 0, 0);
+  const dayEnd = new Date(noonDate);
+  dayEnd.setUTCHours(23, 59, 59, 999);
+  const year = noonDate.getUTCFullYear();
+  const month = noonDate.getUTCMonth() + 1; // 1-indexed
+
+  // ── Base name ──────────────────────────────────────────────────────────────
+  let baseName = MONTHLY_MOON_NAMES[month] ?? 'Full Moon';
+
+  // Harvest Moon: full moon nearest the autumnal equinox (can be Sep or Oct)
+  const equinox = Astronomy.Seasons(year).sep_equinox.date;
+  // Full moon in the ~30 days preceding the equinox
+  const fullMoon1 = Astronomy.SearchMoonPhase(
+    180,
+    new Date(equinox.getTime() - 30 * 86400000),
+    30
+  );
+  // Full moon in the ~30 days following that one
+  const fullMoon2 = fullMoon1
+    ? Astronomy.SearchMoonPhase(180, new Date(fullMoon1.date.getTime() + 86400000), 35)
+    : null;
+
+  if (fullMoon1) {
+    const diff1 = Math.abs(fullMoon1.date.getTime() - equinox.getTime());
+    const diff2 = fullMoon2
+      ? Math.abs(fullMoon2.date.getTime() - equinox.getTime())
+      : Infinity;
+    const harvestDate = (diff1 <= diff2 ? fullMoon1 : fullMoon2!).date;
+
+    if (harvestDate >= dayStart && harvestDate <= dayEnd) {
+      baseName = 'Harvest Moon';
+    } else {
+      // Hunter's Moon: the full moon immediately following the Harvest Moon
+      const hunterFull = Astronomy.SearchMoonPhase(
+        180,
+        new Date(harvestDate.getTime() + 86400000),
+        35
+      );
+      if (hunterFull && hunterFull.date >= dayStart && hunterFull.date <= dayEnd) {
+        baseName = "Hunter's Moon";
+      }
+    }
+  }
+
+  // ── Modifiers ──────────────────────────────────────────────────────────────
+  const prefixes: string[] = [];
+
+  // Super Moon: moon distance ≤ 360,000 km at the moment of the full moon
+  const distKm =
+    Math.sqrt(moonVec.x ** 2 + moonVec.y ** 2 + moonVec.z ** 2) * 149597870.7;
+  if (distKm <= 360000) prefixes.push('Super');
+
+  // Blue Moon: second full moon in the same UTC calendar month
+  const firstOfMonth = new Date(Date.UTC(year, month - 1, 1));
+  const priorFull = Astronomy.SearchMoonPhase(180, firstOfMonth, 30);
+  if (priorFull && priorFull.date < dayStart) prefixes.push('Blue');
+
+  // Blood Moon: total lunar eclipse whose peak falls on this UTC calendar day
+  try {
+    const eclipse = Astronomy.NextLunarEclipse(dayStart);
+    if (
+      eclipse.kind === 'total' &&
+      eclipse.peak.date >= dayStart &&
+      eclipse.peak.date <= dayEnd
+    ) {
+      prefixes.push('Blood');
+    }
+  } catch {
+    // eclipse detection unavailable — skip silently
+  }
+
+  // ── Compose ────────────────────────────────────────────────────────────────
+  return prefixes.length > 0 ? `${prefixes.join(' ')} ${baseName}` : baseName;
+}
+
+// Primary phases are point-in-time events. A day is labeled with a primary
+// phase name only when the exact event (Moon reaching 0°/90°/180°/270°) falls
+// within that UTC calendar day, matching how Google and standard apps label it.
+const PRIMARY_PHASES = [
+  { targetLon: 0, name: 'New Moon' },
+  { targetLon: 90, name: 'First Quarter' },
+  { targetLon: 180, name: 'Full Moon' },
+  { targetLon: 270, name: 'Last Quarter' },
+] as const;
+
+function getMoonPhaseNameForDay(angle: number, noonDate: Date): string {
+  const dayStart = new Date(noonDate);
+  dayStart.setUTCHours(0, 0, 0, 0);
+  const dayEnd = new Date(noonDate);
+  dayEnd.setUTCHours(23, 59, 59, 999);
+
+  for (const { targetLon, name } of PRIMARY_PHASES) {
+    const event = Astronomy.SearchMoonPhase(targetLon, dayStart, 1.0);
+    if (event !== null && event.date >= dayStart && event.date <= dayEnd) {
+      return name;
+    }
+  }
+
+  // No primary phase event today — determine intermediate phase from quadrant
+  if (angle < 90) return 'Waxing Crescent';
+  if (angle < 180) return 'Waxing Gibbous';
+  if (angle < 270) return 'Waning Gibbous';
+  return 'Waning Crescent';
+}
 
 /** Detects if a planet is retrograde by comparing today's vs yesterday's geocentric ecliptic longitude. */
 function isRetrograde(body: Astronomy.Body, today: Date, yesterday: Date): boolean {
@@ -56,10 +186,17 @@ Deno.serve(async (req: Request) => {
   try {
     const url = new URL(req.url);
     const dateParam = url.searchParams.get('date');
+    const forceRegen = url.searchParams.get('force') === 'true';
 
     // Use noon UTC on the target date so planetary positions are representative
     // of the middle of the day rather than midnight edge cases.
-    const date = dateParam ? new Date(`${dateParam}T12:00:00Z`) : new Date();
+    const date = dateParam
+      ? new Date(`${dateParam}T12:00:00Z`)
+      : (() => {
+          const d = new Date();
+          d.setUTCHours(12, 0, 0, 0);
+          return d;
+        })();
     const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
 
     const supabase = createClient(
@@ -74,7 +211,7 @@ Deno.serve(async (req: Request) => {
       .eq('date', dateStr)
       .maybeSingle();
 
-    if (existing) {
+    if (existing && !forceRegen) {
       return Response.json({ status: 'already_exists', date: dateStr });
     }
 
@@ -82,11 +219,15 @@ Deno.serve(async (req: Request) => {
 
     // Moon phase — returns [0, 360)
     const moonPhaseAngle = Astronomy.MoonPhase(date);
-    const moonPhaseName = getMoonPhaseName(moonPhaseAngle);
+    const moonPhaseName = getMoonPhaseNameForDay(moonPhaseAngle, date);
 
     // Moon ecliptic longitude → sign
     const moonVec = Astronomy.GeoMoon(date);
     const moonEcl = Astronomy.Ecliptic(moonVec);
+
+    // Special cultural/astronomical name (Full Moon days only)
+    const moonSpecialName =
+      moonPhaseName === 'Full Moon' ? computeMoonSpecialName(date, moonVec) : null;
     const moonSignName = eclipticLonToSign(moonEcl.elon);
     const element = SIGN_ELEMENTS[moonSignName];
 
@@ -140,8 +281,16 @@ Deno.serve(async (req: Request) => {
     // ── Claude Haiku: energy theme + advice ───────────────────────────────────
     const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY')! });
 
+    // Build a polarity hint so Haiku doesn't hallucinate the wrong phase direction.
+    const phasePolarity = moonPhaseName.toLowerCase().includes('waxing')
+      ? 'This is a WAXING (building, growing) phase — use only waxing/growing language in advice.'
+      : moonPhaseName.toLowerCase().includes('waning')
+        ? 'This is a WANING (releasing, decreasing) phase — use only waning/releasing language in advice.'
+        : '';
+
     const prompt = `Cosmic snapshot for ${dateStr}:
-- Moon: ${Math.round(moonDegreeInSign)}° ${moonSignName} (${moonPhaseName}, phase angle ${Math.round(moonPhaseAngle)}°)
+- Moon phase: ${moonPhaseName}${phasePolarity ? ` — ${phasePolarity}` : ''}
+- Moon position: ${Math.round(moonDegreeInSign)}° ${moonSignName}, phase angle ${Math.round(moonPhaseAngle)}°
 - Sun: ${sunSignName}
 - Mercury: ${innerPlanetSigns['Mercury']}
 - Venus: ${innerPlanetSigns['Venus']}
@@ -176,11 +325,25 @@ Respond with valid JSON only. No markdown fences, no extra text.`;
       console.warn('[daily-metaphysical] Could not parse Claude response, using fallback.');
     }
 
+    // Guard: reject advice that uses the wrong phase polarity (e.g. "waning" for a
+    // waxing phase). Haiku can hallucinate this when the angle is near a boundary.
+    const adviceLower = advice.toLowerCase();
+    const isWaxing = moonPhaseName.toLowerCase().includes('waxing');
+    const isWaning = moonPhaseName.toLowerCase().includes('waning');
+    if (
+      (isWaxing && adviceLower.includes('waning')) ||
+      (isWaning && adviceLower.includes('waxing'))
+    ) {
+      console.warn('[daily-metaphysical] AI advice had wrong moon polarity; using fallback.');
+      advice = `Align with the ${moonPhaseName.toLowerCase()} as the Moon moves through ${moonSignName} — focus on ${element.toLowerCase()} energy today.`;
+    }
+
     // ── Upsert ────────────────────────────────────────────────────────────────
     const { error: upsertError } = await supabase.from('daily_metaphysical_data').upsert(
       {
         date: dateStr,
         moon_phase: moonPhaseName,
+        moon_special_name: moonSpecialName,
         moon_sign_id: moonSignRow?.id ?? null,
         retrograde_planets: retrogradePlanets,
         lucky_numbers: luckyNumbers,

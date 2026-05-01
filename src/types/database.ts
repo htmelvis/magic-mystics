@@ -291,6 +291,7 @@ export interface Database {
           retrograde_planets: string[] | null;
           energy_theme: string | null;
           advice: string | null;
+          moon_special_name: string | null;
           metadata: unknown;
           created_at: string;
         };
@@ -306,6 +307,7 @@ export interface Database {
           retrograde_planets?: string[] | null;
           energy_theme?: string | null;
           advice?: string | null;
+          moon_special_name?: string | null;
           metadata?: unknown;
           created_at?: string;
         };
@@ -320,6 +322,7 @@ export interface Database {
           retrograde_planets?: string[] | null;
           energy_theme?: string | null;
           advice?: string | null;
+          moon_special_name?: string | null;
           metadata?: unknown;
         };
         Relationships: [];
