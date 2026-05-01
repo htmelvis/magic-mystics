@@ -107,6 +107,13 @@ export function CosmicWeatherCard({ cosmic, isLoading }: CosmicWeatherCardProps)
           </View>
         )}
       </View>
+      {cosmic.moon_special_name && (
+        <View style={[styles.pill, styles.pillSpecial]}>
+          <Text style={[styles.pillText, styles.pillTextSpecial]}>
+            ✦ {cosmic.moon_special_name}
+          </Text>
+        </View>
+      )}
       <View>
         {retrogradeText && (
           <View style={[styles.pill, styles.pillWarning]}>
@@ -173,6 +180,12 @@ const styles = StyleSheet.create({
   },
   pillTextWarning: {
     color: '#fca5a5',
+  },
+  pillSpecial: {
+    backgroundColor: 'rgba(251, 191, 36, 0.15)',
+  },
+  pillTextSpecial: {
+    color: '#fbbf24',
   },
   colorRow: {
     flexDirection: 'row',

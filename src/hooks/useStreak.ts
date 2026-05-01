@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@lib/supabase/client';
+import { localDateString } from '@lib/utils/date';
 
 export interface StreakData {
   currentStreak: number;
@@ -33,8 +34,10 @@ function computeStreakData(rawDates: string[]): StreakData {
     }
   }
 
-  const today = new Date().toISOString().split('T')[0];
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  const today = localDateString();
+  const _now = new Date();
+  const _yest = new Date(_now.getFullYear(), _now.getMonth(), _now.getDate() - 1);
+  const yesterday = localDateString(_yest);
   const lastDay = uniqueDays[uniqueDays.length - 1];
 
   let currentStreak = 0;
