@@ -1,5 +1,5 @@
 -- In-app announcements table for surfacing feature updates and CTAs to users
-CREATE TABLE announcements (
+CREATE TABLE IF NOT EXISTS announcements (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
   message TEXT,
@@ -14,7 +14,7 @@ CREATE TABLE announcements (
 );
 
 -- Tracks which users have dismissed/seen each announcement
-CREATE TABLE user_announcement_reads (
+CREATE TABLE IF NOT EXISTS user_announcement_reads (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   announcement_id UUID NOT NULL REFERENCES announcements(id) ON DELETE CASCADE,
   read_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -23,12 +23,34 @@ CREATE TABLE user_announcement_reads (
 
 -- Announcements are read-only for authenticated users (admin inserts via service key)
 ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Authenticated users can read active announcements"
-  ON announcements FOR SELECT
-  USING (auth.uid() IS NOT NULL);
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename  = 'announcements'
+      AND policyname = 'Authenticated users can read active announcements'
+  ) THEN
+    CREATE POLICY "Authenticated users can read active announcements"
+      ON announcements FOR SELECT
+      USING (auth.uid() IS NOT NULL);
+  END IF;
+END $$;
 
 -- Users manage their own read records
 ALTER TABLE user_announcement_reads ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users manage their own announcement reads"
-  ON user_announcement_reads FOR ALL
-  USING (auth.uid() = user_id);
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename  = 'user_announcement_reads'
+      AND policyname = 'Users manage their own announcement reads'
+  ) THEN
+    CREATE POLICY "Users manage their own announcement reads"
+      ON user_announcement_reads FOR ALL
+      USING (auth.uid() = user_id);
+  END IF;
+END $$;

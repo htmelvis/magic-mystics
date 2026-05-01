@@ -15,6 +15,7 @@ jest.mock('@components/ui/Skeleton', () => ({
 const FULL_DATA: DailyMetaphysical = {
   date: '2026-04-11',
   moon_phase: 'Full Moon',
+  moon_special_name: 'Flower Moon',
   retrograde_planets: ['Mercury', 'Saturn'],
   lucky_numbers: [3, 7, 12, 28, 33],
   lucky_colors: ['violet', 'gold'],
@@ -76,6 +77,7 @@ describe('CosmicWeatherCard', () => {
     const MINIMAL: DailyMetaphysical = {
       date: '2026-04-11',
       moon_phase: 'New Moon',
+      moon_special_name: null,
       retrograde_planets: null,
       lucky_numbers: null,
       lucky_colors: null,

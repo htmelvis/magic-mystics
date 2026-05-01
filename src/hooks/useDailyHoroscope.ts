@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@lib/supabase/client';
+import { localDateString } from '@lib/utils/date';
 
 export interface DailyHoroscope {
   date: string;
@@ -32,7 +33,7 @@ async function fetchDailyHoroscope(date: string, sign: string): Promise<DailyHor
  * staleTime: Infinity means one DB round-trip per calendar day per device.
  */
 export function useDailyHoroscope(sunSign: string | null | undefined) {
-  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  const today = localDateString();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['daily-horoscope', today, sunSign],
