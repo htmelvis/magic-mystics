@@ -14,6 +14,7 @@ const meta = {
     ),
   ],
   args: {
+    id: 'toast-default',
     type: 'info',
     title: 'Reading saved',
     message: 'Your daily draw has been added to your history.',

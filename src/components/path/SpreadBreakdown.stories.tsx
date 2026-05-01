@@ -45,7 +45,7 @@ export const AllSpreads: Story = {
       { spreadType: 'past-present-future', count: 18, percentage: 22 },
       { spreadType: 'relationship', count: 10, percentage: 12 },
       { spreadType: 'mind-body-spirit', count: 8, percentage: 10 },
-      { spreadType: 'accept-embrace-let-go', count: 6, percentage: 7 },
+      { spreadType: 'situation-obstacle-solution', count: 6, percentage: 7 },
     ],
   },
 };

@@ -14,6 +14,7 @@ import type { StoryObj } from '@storybook/react-native';
 import { useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { drawDailyCard, drawCard, drawSpread } from './draw';
+import type { DrawResult } from './draw';
 import { theme } from '@theme';
 
 const ALL_IDS = Array.from({ length: 78 }, (_, i) => i + 1);
@@ -56,8 +57,8 @@ function DailyCardDemo() {
 // ── Live draw demos — cryptographically random ────────────────────────────────
 
 function LiveDrawDemo() {
-  const [single, setSingle] = useState<ReturnType<typeof drawCard> | null>(null);
-  const [spread, setSpread] = useState<ReturnType<typeof drawSpread> | null>(null);
+  const [single, setSingle] = useState<DrawResult<number> | null>(null);
+  const [spread, setSpread] = useState<DrawResult<number>[] | null>(null);
 
   return (
     <View style={styles.section}>

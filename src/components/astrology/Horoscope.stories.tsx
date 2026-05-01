@@ -6,6 +6,7 @@ import type { DailyMetaphysical } from '@hooks/useDailyMetaphysical';
 const SAMPLE: DailyMetaphysical = {
   date: '2026-04-28',
   moon_phase: 'Waxing Gibbous',
+  moon_special_name: null,
   retrograde_planets: ['Mercury'],
   lucky_numbers: [4, 9, 17, 33, 41],
   lucky_colors: ['indigo', 'violet'],
