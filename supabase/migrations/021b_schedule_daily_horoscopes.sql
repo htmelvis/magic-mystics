@@ -1,17 +1,23 @@
 -- =====================================================
 -- Migration 021b: Schedule daily-horoscopes edge function
--- Registers a pg_cron job at 00:03 UTC daily.
+-- Registers a pg_cron job at 00:15 UTC daily.
 -- =====================================================
 
 -- pg_cron and pg_net must already be enabled (see migration 004).
--- This function runs after daily-metaphysical (00:01) and daily-planetary (00:02)
--- so the planet positions and moon data it reads are guaranteed to exist.
+-- This function runs after daily-metaphysical (00:01) and daily-planetary (00:02).
+--
+-- WHY 00:15 and not 00:03:
+--   daily-planetary fires at 00:02 but takes up to 55 s to complete (Deno cold start +
+--   astronomy-engine + Claude Haiku + Supabase upsert). Firing horoscopes at 00:03 left
+--   only a 60-second window — planetary often hadn't written its row yet, causing
+--   daily-horoscopes to return 422 and write nothing. 00:15 gives planetary a 13-minute
+--   buffer, which is more than sufficient.
 --
 -- Run the block below in the Supabase SQL Editor:
 --
 --   SELECT cron.schedule(
 --     'daily-horoscopes',
---     '3 0 * * *',
+--     '15 0 * * *',
 --     $$
 --     SELECT net.http_post(
 --       url        := 'https://rbfrnhjlirnsgigozdbc.supabase.co/functions/v1/daily-horoscopes',
@@ -27,6 +33,10 @@
 -- NOTE: timeout_milliseconds is 60000 because this function makes 12 parallel Claude
 -- Haiku calls — actual wall-clock time is ~5-8 s but we leave headroom for cold starts.
 -- Edge Functions have a 60 s hard limit.
+--
+-- To update an existing job registered at 00:03 (run both lines):
+--   SELECT cron.unschedule('daily-horoscopes');
+--   -- then re-run the cron.schedule block above
 --
 -- Verify the job is registered:
 --   SELECT jobname, schedule FROM cron.job;

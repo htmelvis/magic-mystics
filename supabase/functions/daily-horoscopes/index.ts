@@ -1,8 +1,9 @@
 /**
  * Daily Horoscope Generator
  *
- * Runs once per day (scheduled via pg_cron at 00:03 UTC, after daily-metaphysical
- * and daily-planetary so their data is available to use as context).
+ * Runs once per day (scheduled via pg_cron at 00:15 UTC, after daily-metaphysical
+ * at 00:01 and daily-planetary at 00:02). The 13-minute gap ensures daily-planetary
+ * (which can take up to 55 s) has fully written its row before this function reads it.
  *
  * Reads today's planet positions from daily_planetary_alignment and moon phase
  * from daily_metaphysical_data, then calls Claude Haiku in parallel for all 12
