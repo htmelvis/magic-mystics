@@ -1,8 +1,9 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Screen, Button } from '@components/ui';
+import { Screen, Button, ZodiacBackground } from '@components/ui';
 import { theme } from '@theme';
 import { useAnalytics } from '@/hooks/useAnalytics';
+// import SVGatorComponent from '@/components/tarot/VectorEyeLightFinal';
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -17,18 +18,18 @@ export default function WelcomeScreen() {
 
   return (
     <Screen scroll={false} padding={false}>
+      <ZodiacBackground />
       <View style={styles.container}>
         <View style={styles.content}>
-          <Text style={styles.emoji}>🔮✨</Text>
-          <Text style={styles.title}>Welcome to Magic Mystics</Text>
-          <Text style={styles.subtitle}>Your personal tarot and astrology companion</Text>
+          <Text style={[styles.subtitle, { marginTop: theme.spacing.xxxl }]}>
+            Your personalized daily oracle awaits
+          </Text>
 
           <View style={styles.descriptionContainer}>
             <Text style={styles.description}>
-              To provide you with personalized insights, we'll need a few details about you.
-            </Text>
-            <Text style={styles.description}>
-              We'll calculate your Sun, Moon, and Rising signs to enhance your daily readings.
+              Magic Mystics is your enchanted companion, blending ancient tarot with star-born
+              astrology. Share your essence—name, birth moment, and place—and we’ll unveil your Sun,
+              Moon, and Rising.
             </Text>
           </View>
         </View>
@@ -56,7 +57,6 @@ const styles = StyleSheet.create({
   },
   title: {
     ...theme.textStyles.display,
-    color: theme.colors.brand.primary,
     textAlign: 'center',
     marginBottom: theme.spacing.sm,
   },
