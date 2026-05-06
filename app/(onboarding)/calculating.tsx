@@ -13,7 +13,7 @@ import {
 import { computeNatalChart } from '@lib/astrology/natal-chart';
 import { onboardingParamsSchema, userOnboardingUpdateSchema } from '@lib/validation/onboarding';
 import { useOnboardingDraft } from '@lib/onboarding/OnboardingContext';
-import { ZodiacAvatar } from '@components/ui';
+import { ZodiacSignGlyph } from '@components/ui';
 import { useAppTheme } from '@/hooks/useAppTheme';
 
 export default function CalculatingScreen() {
@@ -194,7 +194,7 @@ export default function CalculatingScreen() {
         <Text style={styles.emoji}>⚠️</Text>
       ) : sunSign ? (
         <View style={styles.avatarReveal}>
-          <ZodiacAvatar sign={sunSign} size={120} />
+          <ZodiacSignGlyph sign={sunSign} size={120} color={theme.colors.brand.primary} />
           <Text style={[styles.sunSignLabel, { color: theme.colors.brand.primary }]}>
             Your sun is in {sunSign}
           </Text>

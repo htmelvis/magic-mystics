@@ -27,6 +27,8 @@ export { LoadingState } from './LoadingState';
 export type { LoadingStateProps, LoadingVariant } from './LoadingState';
 
 export { ZodiacAvatar, ZodiacAvatarPlaceholder } from './ZodiacAvatar';
+export { ZodiacBackground } from './ZodiacBackground';
+export { ZodiacSignGlyph } from './ZodiacSignGlyph';
 export { NatalChartWheel } from './NatalChartWheel';
 
 export {
