@@ -23,6 +23,7 @@ import {
   generateLuckyNumbers,
   SIGN_ELEMENTS,
 } from '../_shared/daily-helpers.ts';
+import { requireCronSecret } from '../_shared/auth.ts';
 
 // Planets to check for retrograde (outer planets only — Sun/Moon don't retrograde)
 const PLANETS = [
@@ -183,6 +184,11 @@ function isRetrograde(body: Astronomy.Body, today: Date, yesterday: Date): boole
 // ── Handler ───────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req: Request) => {
+  // Authorize BEFORE any work: reject unauthorized callers before the idempotency
+  // read, astronomy computation, or the paid Anthropic call are ever reached.
+  const denied = requireCronSecret(req, 'daily-metaphysical');
+  if (denied) return denied;
+
   try {
     const url = new URL(req.url);
     const dateParam = url.searchParams.get('date');
