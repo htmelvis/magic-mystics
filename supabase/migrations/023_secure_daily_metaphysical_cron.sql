@@ -1,0 +1,124 @@
+-- =====================================================
+-- Migration 023: Re-register the daily-metaphysical cron job with x-cron-secret
+-- Supersedes the schedule block documented in migration 004.
+-- =====================================================
+
+-- WHY THIS EXISTS
+--   daily-metaphysical now rejects any request that does not carry a correct
+--   `x-cron-secret` header (see supabase/functions/_shared/auth.ts). The guard runs
+--   before the idempotency read, the astronomy computation, and the Anthropic client
+--   construction, so unauthorized callers can no longer drive AI spend.
+--
+--   The guard FAILS CLOSED: if DAILY_CRON_SECRET is unset in the function's
+--   environment, every request is rejected — including the cron job's. The schedule
+--   block in migration 004 sends only `Authorization`, so once the guarded function is
+--   deployed, that job starts returning 401 and the day's row stops being written.
+--
+--   Run the steps below to keep the daily run working.
+
+-- ── DEPLOYMENT ORDER (do not reorder) ────────────────────────────────────────
+--
+--   Steps 1 and 2 must both complete BEFORE step 3. The secret must exist in the
+--   function's environment and in the cron job's headers before the guarded code is
+--   serving traffic; otherwise there is a window where the scheduled job 401s.
+--
+--   1. Generate the secret (once). Keep it somewhere you can paste it three times:
+--
+--        openssl rand -hex 32
+--
+--   2. Provision it in the deployed function's secrets, so the guard has something
+--      to compare against:
+--
+--        supabase secrets set DAILY_CRON_SECRET=<value> --project-ref rbfrnhjlirnsgigozdbc
+--
+--      (Or: Dashboard → Edge Functions → Manage secrets → Add new secret.)
+--      Confirm it landed:  supabase secrets list --project-ref rbfrnhjlirnsgigozdbc
+--
+--   3. Deploy the guarded function:
+--
+--        supabase functions deploy daily-metaphysical --project-ref rbfrnhjlirnsgigozdbc
+--
+--   4. Re-register the cron job with the new header (SQL block below). Until this
+--      runs, the scheduled job is still sending the old headers and will 401.
+--
+--   Rolling back? Undeploy/revert the function BEFORE removing the secret. Removing
+--   the secret while the guarded function is live rejects everything, cron included.
+
+-- ── STEP 4: re-register the schedule ─────────────────────────────────────────
+--
+-- pg_cron and pg_net must already be enabled (see migration 004).
+-- Run the block below in the Supabase SQL Editor. Both statements, in this order —
+-- cron.schedule() on an existing jobname would otherwise leave the old job in place.
+--
+--   SELECT cron.unschedule('daily-metaphysical');
+--
+--   SELECT cron.schedule(
+--     'daily-metaphysical',
+--     '1 0 * * *',
+--     $$
+--     SELECT net.http_post(
+--       url        := 'https://rbfrnhjlirnsgigozdbc.supabase.co/functions/v1/daily-metaphysical',
+--       headers    := '{"Content-Type":"application/json","Authorization":"Bearer <SERVICE_ROLE_KEY>","x-cron-secret":"<DAILY_CRON_SECRET>"}'::jsonb,
+--       body       := '{}'::jsonb,
+--       timeout_milliseconds := 30000
+--     );
+--     $$
+--   );
+--
+-- Find <SERVICE_ROLE_KEY>:   Dashboard → Settings → API → Project API keys → service_role
+-- Find <DAILY_CRON_SECRET>:  the value generated in step 1 — must match the function
+--                            secret byte for byte (no quotes, no trailing newline).
+--
+-- The `Authorization` header stays. It satisfies Supabase's verify_jwt gate; the
+-- x-cron-secret header satisfies the function's own authorization check. Both are
+-- required.
+--
+-- NOTE ON SECRET STORAGE: this writes the secret in plaintext into the `cron.job`
+-- table, readable by anyone with database access — the same exposure the service_role
+-- key already has here. If that becomes a concern, move both values into Supabase
+-- Vault (vault.create_secret + vault.decrypted_secrets) and build the headers with
+-- jsonb_build_object() instead of a literal.
+--
+-- NOTE ON TIMEOUT: 30000 is carried over from migration 004 unchanged. Be aware that
+-- daily-planetary does comparable work (Deno cold start + astronomy-engine + Claude
+-- Haiku) and had to be raised to 55000 because it regularly exceeded 30 s — see
+-- migration 016b. If you see timeouts in cron.job_run_details, raise this to 55000
+-- (Edge Functions hard-limit at 60 s).
+
+-- ── VERIFY ───────────────────────────────────────────────────────────────────
+--
+-- The job is registered and carries the header (check the headers before trusting it):
+--   SELECT jobname, schedule, command FROM cron.job WHERE jobname = 'daily-metaphysical';
+--
+-- Run history and errors:
+--   SELECT * FROM cron.job_run_details ORDER BY start_time DESC LIMIT 20;
+--
+-- Today's row was written:
+--   SELECT date, created_at FROM daily_metaphysical_data ORDER BY date DESC LIMIT 3;
+--
+-- End-to-end, without waiting for 00:01 UTC. An authorized call succeeds:
+--   curl -i 'https://rbfrnhjlirnsgigozdbc.supabase.co/functions/v1/daily-metaphysical' \
+--     -H 'Authorization: Bearer <SERVICE_ROLE_KEY>' \
+--     -H 'x-cron-secret: <DAILY_CRON_SECRET>'
+--   → 200, {"status":"created"} or {"status":"already_exists"}
+--
+-- The same call without the secret is rejected, and costs nothing:
+--   curl -i 'https://rbfrnhjlirnsgigozdbc.supabase.co/functions/v1/daily-metaphysical'
+--   → 401, {"error":"Unauthorized"}
+--
+-- An anon-key caller is also rejected — this is the hole the guard closes, since the
+-- anon key ships in the app and satisfies verify_jwt on its own:
+--   curl -i 'https://rbfrnhjlirnsgigozdbc.supabase.co/functions/v1/daily-metaphysical?force=true' \
+--     -H 'Authorization: Bearer <ANON_KEY>'
+--   → 401, and no Anthropic call in the function logs
+--
+-- Manual backfill and forced regeneration still work for authorized callers:
+--   curl 'https://.../functions/v1/daily-metaphysical?date=YYYY-MM-DD' \
+--     -H 'Authorization: Bearer <SERVICE_ROLE_KEY>' -H 'x-cron-secret: <DAILY_CRON_SECRET>'
+--   curl 'https://.../functions/v1/daily-metaphysical?force=true' \
+--     -H 'Authorization: Bearer <SERVICE_ROLE_KEY>' -H 'x-cron-secret: <DAILY_CRON_SECRET>'
+--
+-- Rotating the secret later: set the new function secret, then immediately re-run the
+-- unschedule/schedule block with the new value. The window between the two is a
+-- window of 401s, so do them back to back.
+-- ─────────────────────────────────────────────────────────────────────────────
