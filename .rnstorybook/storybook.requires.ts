@@ -2,16 +2,15 @@
 /// <reference types="@storybook/react-native/metro-env" />
 import { start, updateView, View, type Features } from '@storybook/react-native';
 
-import '@storybook/addon-ondevice-controls/register';
-import '@storybook/addon-ondevice-actions/register';
+import "@storybook/addon-ondevice-controls/register";
+import "@storybook/addon-ondevice-actions/register";
 
 const normalizedStories = [
   {
-    titlePrefix: '',
-    directory: './.rnstorybook/stories',
-    files: '**/*.stories.?(ts|tsx|js|jsx)',
-    importPathMatcher:
-      /^\.(?:(?:^|\/|(?:(?:(?!(?:^|\/)\.).)*?)\/)(?!\.)(?=.)[^/]*?\.stories\.(?:ts|tsx|js|jsx)?)$/,
+    titlePrefix: "",
+    directory: "./.rnstorybook/stories",
+    files: "**/*.stories.?(ts|tsx|js|jsx)",
+    importPathMatcher: /^\.(?:(?:^|\/|(?:(?:(?!(?:^|\/)\.).)*?)\/)(?!\.)(?=.)[^/]*?\.stories\.(?:ts|tsx|js|jsx)?)$/,
     req: require.context(
       './stories',
       true,
@@ -19,36 +18,46 @@ const normalizedStories = [
     ),
   },
   {
-    titlePrefix: '',
-    directory: './src/components',
-    files: '**/*.stories.?(ts|tsx|js|jsx)',
-    importPathMatcher:
-      /^\.(?:(?:^|\/|(?:(?:(?!(?:^|\/)\.).)*?)\/)(?!\.)(?=.)[^/]*?\.stories\.(?:ts|tsx|js|jsx)?)$/,
+    titlePrefix: "",
+    directory: "./src/components",
+    files: "**/*.stories.?(ts|tsx|js|jsx)",
+    importPathMatcher: /^\.(?:(?:^|\/|(?:(?:(?!(?:^|\/)\.).)*?)\/)(?!\.)(?=.)[^/]*?\.stories\.(?:ts|tsx|js|jsx)?)$/,
     req: require.context(
       '../src/components',
       true,
       /^\.(?:(?:^|\/|(?:(?:(?!(?:^|\/)\.).)*?)\/)(?!\.)(?=.)[^/]*?\.stories\.(?:ts|tsx|js|jsx)?)$/
     ),
-  },
+  }
 ];
+
 
 declare global {
   var view: View;
   var STORIES: typeof normalizedStories;
-  var STORYBOOK_WEBSOCKET: { host?: string; port?: number; secured?: boolean } | undefined;
+  var STORYBOOK_WEBSOCKET:
+    | { host?: string; port?: number; secured?: boolean }
+    | undefined;
   var FEATURES: Features;
 }
 
-const annotations = [require('./preview'), require('@storybook/react-native/preview')];
+
+const annotations = [
+  require('./preview'),
+  require("@storybook/react-native/preview")
+];
 
 globalThis.STORIES = normalizedStories;
 
+
 module?.hot?.accept?.();
+
+
 
 if (!globalThis.view) {
   globalThis.view = start({
     annotations,
     storyEntries: normalizedStories,
+
   });
 } else {
   updateView(globalThis.view, annotations, normalizedStories);

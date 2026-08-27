@@ -15,6 +15,12 @@ export function useAuth() {
       .getSession()
       .then(({ data: { session }, error: sessionError }) => {
         if (sessionError) {
+          // If refresh token is invalid, clear the session
+          if (sessionError.message?.includes('Refresh Token')) {
+            supabase.auth.signOut().catch(() => {});
+            setSession(null);
+            setUser(null);
+          }
           setError(sessionError);
         } else {
           setSession(session);

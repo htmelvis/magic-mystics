@@ -144,18 +144,8 @@ app/
 
 ### 🚧 In Progress
 
-- Tarot card data and deck implementation
 - Card drawing logic and UI
-- Reading history views
-
-### 📋 Planned
-
-- AI integration for card interpretations
-- Past/Present/Future spread
-- Card animations
 - RevenueCat integration
-- Reflection/journaling interface
-- Reading history with filters
 
 ## Development Setup
 

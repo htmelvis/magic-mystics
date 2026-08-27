@@ -89,3 +89,9 @@ yarn-error.*
 *.tsbuildinfo
 
 # @end expo-cli
+
+# AI
+
+.claude
+prd/
+plans/
