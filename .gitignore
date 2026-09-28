@@ -85,6 +85,12 @@ yarn-error.*
 # local env files
 .env*.local
 
+# local agent/planning workspace — not shared
+.claude
+.claude/*
+plans/
+prd/
+
 # typescript
 *.tsbuildinfo
 

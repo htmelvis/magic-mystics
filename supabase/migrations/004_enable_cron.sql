@@ -12,6 +12,12 @@ CREATE EXTENSION IF NOT EXISTS pg_net SCHEMA extensions;
 --   Dashboard → Database → Extensions → search "pg_cron" → toggle on
 --
 -- ── Schedule (run AFTER enabling pg_cron in the dashboard) ───────────────────
+--
+-- SUPERSEDED BY MIGRATION 023 — do not copy the block below as-is. daily-metaphysical
+-- now requires an `x-cron-secret` header; a job registered with these headers alone
+-- will be rejected with 401 and the day's row will not be written. Use the schedule
+-- block in 023_secure_daily_metaphysical_cron.sql instead.
+--
 -- Open the SQL editor and run the block below with your actual values:
 --
 --   SELECT cron.schedule(
