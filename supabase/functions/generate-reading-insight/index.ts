@@ -15,8 +15,11 @@
  */
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import Anthropic from 'npm:@anthropic-ai/sdk@0.35';
+import { createAnthropic } from 'npm:@ai-sdk/anthropic@3';
+import { generateText, NoObjectGeneratedError, Output } from 'npm:ai@6';
+import type { z } from 'npm:zod@4';
 import { DEFAULT_INTENTIONS, SPREAD_DISPLAY_NAMES, parseAIInsight } from '../_shared/ai-insight.ts';
+import { SingleCardOutput, SpreadOutput, type AIInsight } from '../_shared/insight-schema.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -63,22 +66,13 @@ Keep your total response under 380 tokens.
   <retrograde_planets>${retrogradeStr}</retrograde_planets>${recentCardsBlock ? '\n' + recentCardsBlock : ''}
 </context>
 
-Deliver a reading that integrates every element above. Return ONLY valid JSON with this exact shape:
-
-{
-  "opening": "One or two sentences naming what the querent is really asking beneath their stated intention. Specific, not generic.",
-  "card_essence": "The core meaning of this card in this orientation, explained in 2-3 sentences with concrete, embodied imagery.",
-  "celestial_overlay": "How the sun/moon/rising signs plus the moon phase and any retrograde planets color this card's message. 2-3 sentences.",
-  "guidance": "One concrete, embodied practice or reflection for the next 24-72 hours. Actionable, not vague.",
-  "resonance": "A single quote-worthy line the querent will want to screenshot. 15 words or fewer."
-}
+Deliver a reading that integrates every element above, following the field descriptions in the output schema.
 
 Voice rules:
 - Speak TO the querent in second person. Never about them.
 - Never predict with certainty. Use "the card suggests", "this energy asks", "you may find".
 - Avoid clichés: "trust the journey", "the universe has a plan", "everything happens for a reason", "embrace your truth".
-- Avoid evasive hedging ("this could mean many things"). Commit to an interpretation.${recentCardsBlock ? '\n- If recent_cards is present, weave recurring themes naturally — do not force connections.' : ''}
-- Return ONLY the JSON. No preamble, no markdown fences, no trailing commentary.`;
+- Avoid evasive hedging ("this could mean many things"). Commit to an interpretation.${recentCardsBlock ? '\n- If recent_cards is present, weave recurring themes naturally — do not force connections.' : ''}`;
 }
 
 function buildSpreadPrompt(p: {
@@ -121,21 +115,57 @@ ${cardsXml}
 
 The querent already sees the individual card meanings. Your job is to read the spread as a whole — name the story that emerges across the positions, the tensions and resolutions between cards, and what that arc means for the intention. Do NOT describe each card in isolation.
 
-Return ONLY valid JSON with this exact shape:
-
-{
-  "opening": "One or two sentences naming what the querent is really carrying beneath their stated intention. Specific, not generic.",
-  "spread_reading": "The holistic narrative of this spread — 4-6 sentences reading the cards as a single arc. Name what the positions reveal about each other: contrast, confirmation, progression, or paradox. Weave in celestial context where it sharpens the story.",
-  "guidance": "One concrete, embodied practice or reflection for the next 24-72 hours that honors the full spread. Actionable, not vague.",
-  "resonance": "A single quote-worthy line the querent will want to screenshot. 15 words or fewer."
-}
+Follow the field descriptions in the output schema.
 
 Voice rules:
 - Speak TO the querent in second person. Never about them.
 - Never predict with certainty. Use "the spread suggests", "this arc asks", "you may find".
 - Avoid clichés: "trust the journey", "the universe has a plan", "everything happens for a reason", "embrace your truth".
-- Avoid evasive hedging. Commit to an interpretation of the spread's narrative.${recentCardsBlock ? '\n- If recent_cards is present, call out recurring patterns naturally — do not force connections.' : ''}
-- Return ONLY the JSON. No preamble, no markdown fences, no trailing commentary.`;
+- Avoid evasive hedging. Commit to an interpretation of the spread's narrative.${recentCardsBlock ? '\n- If recent_cards is present, call out recurring patterns naturally — do not force connections.' : ''}`;
+}
+
+// ── Claude call ───────────────────────────────────────────────────────────────
+
+const MODEL = 'claude-haiku-4-5-20251001';
+
+/**
+ * Generates an insight constrained to `schema`. The AI SDK sends the schema to
+ * Claude as a structured-output format and validates the response against it, so a
+ * returned `output` is always well-formed.
+ *
+ * A response that is truncated or fails validation throws NoObjectGeneratedError.
+ * That is retried once with double the token budget, since the prompts ask for a
+ * length close to the limit and truncation is the likeliest cause. Transport errors
+ * are already retried inside generateText.
+ */
+async function generateInsight<T extends object>(
+  schema: z.ZodType<T>,
+  prompt: string,
+  maxOutputTokens: number
+) {
+  const model = createAnthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY')! })(MODEL);
+
+  try {
+    return await generateText({
+      model,
+      output: Output.object({ schema }),
+      prompt,
+      maxOutputTokens,
+    });
+  } catch (err) {
+    if (!NoObjectGeneratedError.isInstance(err)) throw err;
+    console.warn('[generate-reading-insight] Invalid output, retrying:', {
+      finishReason: err.finishReason,
+      cause: err.cause instanceof Error ? err.cause.message : err.cause,
+      text: err.text,
+    });
+    return await generateText({
+      model,
+      output: Output.object({ schema }),
+      prompt,
+      maxOutputTokens: maxOutputTokens * 2,
+    });
+  }
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────────
@@ -252,8 +282,13 @@ Deno.serve(async (req: Request) => {
     const moonPhase = metaphysicalRes.data?.moon_phase ?? 'unknown';
     const retrogradePlanets = (metaphysicalRes.data?.retrograde_planets as string[]) ?? [];
 
-    const prompt = isMultiCard
-      ? buildSpreadPrompt({
+    // ── Generate ──────────────────────────────────────────────────────────────
+    // `kind` is added here rather than generated, so Claude spends no tokens on it.
+    let insight: AIInsight;
+    let usage: unknown;
+    try {
+      if (isMultiCard) {
+        const prompt = buildSpreadPrompt({
           intention,
           spreadLabel: SPREAD_DISPLAY_NAMES[spreadType] ?? spreadType,
           cards: drawnCards.map(c => ({
@@ -267,8 +302,12 @@ Deno.serve(async (req: Request) => {
           moonPhase,
           retrogradePlanets,
           recentCards,
-        })
-      : buildSingleCardPrompt({
+        });
+        const result = await generateInsight(SpreadOutput, prompt, 580);
+        insight = { kind: 'spread', ...result.output };
+        usage = result.totalUsage;
+      } else {
+        const prompt = buildSingleCardPrompt({
           intention,
           cardName: drawnCards[0].cardName,
           orientation: drawnCards[0].orientation,
@@ -279,49 +318,33 @@ Deno.serve(async (req: Request) => {
           retrogradePlanets,
           recentCards,
         });
-
-    // ── Claude call ───────────────────────────────────────────────────────────
-    const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY')! });
-
-    const completion = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: isMultiCard ? 580 : 420,
-      messages: [{ role: 'user', content: prompt }],
-    });
-
-    const rawText = completion.content[0].type === 'text' ? completion.content[0].text.trim() : '';
-
-    // Strip markdown fences if the model ignores that instruction
-    const jsonText = rawText.replace(/^```json?\n?/, '').replace(/\n?```$/, '');
-
-    let parsed: Record<string, unknown>;
-    try {
-      parsed = JSON.parse(jsonText);
-    } catch {
-      console.error('[generate-reading-insight] Failed to parse Claude response:', rawText);
-      return Response.json({ error: 'Failed to parse AI response' }, { status: 500 });
+        const result = await generateInsight(SingleCardOutput, prompt, 420);
+        insight = { kind: 'single', ...result.output };
+        usage = result.totalUsage;
+      }
+    } catch (err) {
+      if (!NoObjectGeneratedError.isInstance(err)) throw err;
+      console.error('[generate-reading-insight] Invalid output after retry:', {
+        finishReason: err.finishReason,
+        text: err.text,
+      });
+      return Response.json({ error: 'Failed to generate a valid reading' }, { status: 502 });
     }
 
-    // Inject kind discriminator (not requested from Claude to avoid wasting tokens)
-    parsed.kind = isMultiCard ? 'spread' : 'single';
-
-    const insightStr = JSON.stringify(parsed);
-
     // ── Persist ───────────────────────────────────────────────────────────────
+    // Only schema-validated insights reach the database.
     const { error: updateError } = await supabase
       .from('readings')
-      .update({ ai_insight: insightStr })
+      .update({ ai_insight: JSON.stringify(insight) })
       .eq('id', body.reading_id);
 
     if (updateError) throw updateError;
 
-    const insight = parseAIInsight(insightStr);
-
     console.log('[generate-reading-insight]', {
       reading_id: body.reading_id,
       spread_type: spreadType,
-      variant: isMultiCard ? 'spread' : 'single',
-      tokens_used: completion.usage,
+      variant: insight.kind,
+      tokens_used: usage,
     });
 
     return Response.json({ insight });
