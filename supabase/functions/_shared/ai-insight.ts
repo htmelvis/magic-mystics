@@ -1,11 +1,15 @@
-export function parseAIInsight(raw: string | null): Record<string, unknown> | null {
+import { AIInsightSchema, type AIInsight } from './insight-schema.ts';
+
+/**
+ * Parses a stored insight, returning null unless every field matches the schema.
+ * A stored insight that fails validation is treated as missing, so the idempotency
+ * guard regenerates it instead of serving a broken reading forever.
+ */
+export function parseAIInsight(raw: string | null): AIInsight | null {
   if (!raw) return null;
   try {
-    const parsed = JSON.parse(raw);
-    if (parsed.kind === 'single' || parsed.kind === 'spread' || parsed.kind === 'followup') {
-      return parsed;
-    }
-    return null;
+    const result = AIInsightSchema.safeParse(JSON.parse(raw));
+    return result.success ? result.data : null;
   } catch {
     return null;
   }
